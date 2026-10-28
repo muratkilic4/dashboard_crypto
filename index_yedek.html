@@ -434,20 +434,21 @@
                     <div id="chart-legend" class="grid grid-cols-2 gap-2 mt-4 text-xs text-slate-600 dark:text-slate-300"></div>
                 </div>
 
-                <!-- Live Trend Chart -->
-                <div class="card-bg p-5 rounded-2xl border lg:col-span-2 flex flex-col justify-between">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                            <i data-lucide="activity" class="w-4 h-4 text-indigo-500"></i> Canlı Piyasa Fiyat Akışı (Binance)
-                        </h2>
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span class="text-xs text-slate-500 dark:text-slate-400">Canlı Bağlantı</span>
+                <!-- Portfolio Performance -->
+                <div class="card-bg p-5 rounded-2xl border lg:col-span-2 flex flex-col">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                        <div>
+                            <h2 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="chart-no-axes-combined" class="w-4 h-4 text-indigo-500"></i> Portföy Performansı
+                            </h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">İşlem geçmişine göre biriken gerçekleşmiş kâr/zarar</p>
                         </div>
+                        <span id="performance-chart-summary" class="text-xs font-semibold text-slate-500">Henüz satış verisi yok</span>
                     </div>
-                    <div class="relative h-[240px] w-full">
-                        <canvas id="marketTrendChart"></canvas>
+                    <div class="relative h-[220px] w-full">
+                        <canvas id="portfolioPerformanceChart"></canvas>
                     </div>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-2">Not: Grafik geçmiş portföy değerini değil, kayıtlı satışlardan hesaplanan birikimli gerçekleşmiş K/Z'yi gösterir.</p>
                 </div>
             </div>
 
@@ -478,19 +479,40 @@
                     </div>
                 </div>
 
-                <!-- Binance Watchlist -->
+                <!-- Market Movers -->
                 <div class="card-bg p-5 rounded-2xl border flex flex-col">
-                    <div class="flex justify-between items-center mb-4">
+                    <div class="flex justify-between items-center gap-2 mb-4">
                         <h2 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                            <i data-lucide="globe" class="w-4 h-4 text-indigo-500"></i> Binance Canlı Piyasa
+                            <i data-lucide="trending-up-down" class="w-4 h-4 text-indigo-500"></i> Yükselenler / Düşenler
                         </h2>
-                        <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 font-mono font-bold">USDT</span>
+                        <span id="market-status" class="text-[10px] font-semibold text-slate-500">● Bekleniyor</span>
                     </div>
-                    <div class="space-y-2.5 custom-scrollbar overflow-y-auto max-h-[340px]" id="market-prices-list">
-                        <!-- Binance Live Data Cards -->
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div><div class="text-[10px] uppercase tracking-wider text-emerald-500 font-bold mb-2">En çok yükselen</div><div class="space-y-2" id="market-gainers"></div></div>
+                        <div><div class="text-[10px] uppercase tracking-wider text-rose-500 font-bold mb-2">En çok düşen</div><div class="space-y-2" id="market-losers"></div></div>
                     </div>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-auto">24 saatlik değişim · Binance USDT piyasaları</p>
                 </div>
             </div>
+
+            <!-- Recent Transactions -->
+            <section class="card-bg p-5 rounded-2xl border">
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h2 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2"><i data-lucide="history" class="w-4 h-4 text-indigo-500"></i> Son İşlemler</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Alış, satış ve gerçekleşen kâr/zarar özeti</p>
+                    </div>
+                    <button type="button" onclick="showPage('manage')" class="text-xs font-semibold text-indigo-500 hover:text-indigo-400">Tüm işlemler <i data-lucide="arrow-up-right" class="inline w-3 h-3"></i></button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+                        <thead class="table-head-bg text-xs uppercase tracking-wider"><tr>
+                            <th class="p-3 rounded-l-lg">Tarih</th><th class="p-3">İşlem</th><th class="p-3">Varlık</th><th class="p-3">Miktar</th><th class="p-3">Birim fiyat</th><th class="p-3">Toplam</th><th class="p-3 rounded-r-lg">Gerçekleşen K/Z</th>
+                        </tr></thead>
+                        <tbody id="recent-transactions-body" class="divide-y divide-slate-200 dark:divide-slate-800"></tbody>
+                    </table>
+                </div>
+            </section>
         </div>
 
         <!-- ================= PAGE 2: PROTECTED TRANSACTION MANAGEMENT ================= -->
@@ -765,7 +787,7 @@
         let marketSocket = null;
         let marketReconnectTimer = null;
         let marketRetryMs = 2000;
-        let trendHistory = [];
+
         let authMode = 'signin';
 
         // Binance Market Data Configuration & Icon SVGs
@@ -784,7 +806,7 @@
 
         let selectedTxType = 'BUY';
         let pieChartInstance = null;
-        let trendChartInstance = null;
+        let performanceChartInstance = null;
 
         // --- Boot / Authentication ---
         window.addEventListener('load', async () => {
@@ -1105,7 +1127,7 @@ async function activateApp(session) {
             if (marketReconnectTimer) clearTimeout(marketReconnectTimer);
             marketReconnectTimer = null;
             if (pieChartInstance) { pieChartInstance.destroy(); pieChartInstance = null; }
-            if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
+            if (performanceChartInstance) { performanceChartInstance.destroy(); performanceChartInstance = null; }
             document.getElementById('app-root').classList.add('hidden');
             document.getElementById('auth-screen').classList.remove('hidden');
             document.getElementById('account-email').textContent = '';
@@ -1212,7 +1234,7 @@ async function activateApp(session) {
                     MARKET_DATA[symbol].price = price;
                     MARKET_DATA[symbol].change = change;
                     MARKET_DATA[symbol].lastUpdated = Date.now();
-                    if (symbol === 'BTC' || symbol === 'ETH') addTrendPoint(symbol, price);
+                    
                     setMarketStatus('live');
                     updateDashboard();
                 } catch (error) {
@@ -1246,24 +1268,6 @@ async function activateApp(session) {
             }[state] || ['● Bilinmiyor', 'text-slate-500'];
             el.textContent = config[0];
             el.className = `ml-1 ${config[1]}`;
-        }
-
-        function addTrendPoint(symbol, price) {
-            if (!trendChartInstance) return;
-            const now = new Date();
-            let point = trendHistory[trendHistory.length - 1];
-            if (!point || now.getTime() - point.time.getTime() >= 1000) {
-                point = { time: now, BTC: null, ETH: null };
-                trendHistory.push(point);
-                if (trendHistory.length > 30) trendHistory.shift();
-            }
-            point[symbol] = formatCurrencyVal(price, true);
-            trendChartInstance.data.labels = trendHistory.map(item => item.time.toLocaleTimeString('tr-TR', {
-                hour: '2-digit', minute: '2-digit', second: '2-digit'
-            }));
-            trendChartInstance.data.datasets[0].data = trendHistory.map(item => item.BTC);
-            trendChartInstance.data.datasets[1].data = trendHistory.map(item => item.ETH);
-            trendChartInstance.update('none');
         }
 
         async function refreshUsdTryRate() {
@@ -1536,6 +1540,7 @@ async function activateApp(session) {
             renderAssetsTable(summary.assetDetails);
             renderMarketPrices();
             updateCharts(summary.assetDetails);
+            renderRecentTransactions();
             if (isManageUnlocked) renderManageTable();
         }
 
@@ -1576,34 +1581,56 @@ async function activateApp(session) {
             });
         }
 
-        // Render Binance Live Watchlist
+        // Render 24-hour gainers and losers from Binance ticker data.
         function renderMarketPrices() {
-            const container = document.getElementById('market-prices-list');
-            container.innerHTML = '';
+            const gainersEl = document.getElementById('market-gainers');
+            const losersEl = document.getElementById('market-losers');
+            if (!gainersEl || !losersEl) return;
+            gainersEl.innerHTML = ''; losersEl.innerHTML = '';
+            const rows = Object.keys(MARKET_DATA).map(symbol => ({
+                symbol, ...MARKET_DATA[symbol],
+                change: Number(MARKET_DATA[symbol].change || 0),
+                price: Number(MARKET_DATA[symbol].price || 0)
+            }));
+            const gainers = [...rows].sort((a,b) => b.change - a.change).slice(0,4);
+            const losers = [...rows].sort((a,b) => a.change - b.change).slice(0,4);
+            const makeRow = coin => {
+                const el = document.createElement('button');
+                el.type = 'button';
+                el.className = 'w-full flex items-center justify-between gap-1 p-2 rounded-lg input-bg border border-transparent hover:border-indigo-500/30 transition text-left';
+                el.onclick = () => { openModal(); selectCoinFromSearch(coin.symbol); };
+                const up = coin.change >= 0;
+                el.innerHTML = `<span class="flex items-center gap-1.5 min-w-0">${getCoinIconHtml(coin.symbol,'w-5 h-5')}<span class="text-xs font-semibold text-slate-900 dark:text-white">${coin.symbol}</span></span><span class="text-[10px] font-bold whitespace-nowrap ${up?'text-emerald-500':'text-rose-500'}">${up?'+':''}${coin.change.toFixed(2)}%</span>`;
+                return el;
+            };
+            gainers.forEach(coin => gainersEl.appendChild(makeRow(coin)));
+            losers.forEach(coin => losersEl.appendChild(makeRow(coin)));
+        }
 
-            Object.keys(MARKET_DATA).forEach(symbol => {
-                const coin = MARKET_DATA[symbol];
-                const isPos = coin.change >= 0;
-
-                const div = document.createElement('div');
-                div.className = 'flex justify-between items-center p-2.5 rounded-xl input-bg border hover:border-indigo-500/40 transition cursor-pointer';
-                div.onclick = () => { openModal(); selectCoinFromSearch(symbol); };
-                div.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        ${getCoinIconHtml(symbol, 'w-7 h-7')}
-                        <div>
-                            <div class="font-semibold text-slate-900 dark:text-white text-xs">${coin.name}</div>
-                            <div class="text-[10px] text-slate-500 dark:text-slate-400">${symbol}/USDT</div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-semibold text-slate-900 dark:text-white text-xs">${formatCurrencyVal(coin.price)}</div>
-                        <div class="text-[10px] font-bold ${isPos ? 'text-emerald-500' : 'text-rose-500'}">
-                            ${isPos ? '+' : ''}${coin.change.toFixed(2)}%
-                        </div>
-                    </div>
+        function renderRecentTransactions() {
+            const tbody = document.getElementById('recent-transactions-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (!transactions.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-500 text-xs">Henüz kayıtlı işlem bulunmuyor.</td></tr>';
+                return;
+            }
+            const realizedById = calculateRealizedPnLByTransaction();
+            [...transactions].sort((a,b) => new Date(b.date)-new Date(a.date)).slice(0,6).forEach(tx => {
+                const isBuy = tx.type === 'BUY';
+                const realized = Number(realizedById.get(String(tx.id)) || 0);
+                const tr = document.createElement('tr');
+                tr.className = 'table-row-hover transition';
+                tr.innerHTML = `
+                    <td class="p-3 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">${new Date(tx.date).toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'})}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 text-[10px] rounded-md font-bold ${isBuy?'bg-emerald-500/10 text-emerald-500':'bg-rose-500/10 text-rose-500'}">${isBuy?'ALIŞ':'SATIŞ'}</span></td>
+                    <td class="p-3 font-semibold text-slate-900 dark:text-white">${tx.coin}</td>
+                    <td class="p-3">${Number(tx.amount).toLocaleString('tr-TR',{maximumFractionDigits:8})}</td>
+                    <td class="p-3 whitespace-nowrap">${formatCurrencyVal(tx.price)}</td>
+                    <td class="p-3 font-semibold whitespace-nowrap">${formatCurrencyVal(tx.amount*tx.price)}</td>
+                    <td class="p-3 font-semibold whitespace-nowrap ${isBuy?'text-slate-400':(realized>=0?'text-emerald-500':'text-rose-500')}">${isBuy?'—':((realized>=0?'+':'')+formatCurrencyVal(realized))}</td>
                 `;
-                container.appendChild(div);
+                tbody.appendChild(tr);
             });
         }
 
@@ -1706,113 +1733,80 @@ async function activateApp(session) {
 
         // --- Chart Configuration & Dynamic Updates ---
         function initCharts() {
-            // activateApp birden fazla kez tetiklenirse aynı canvas üzerinde ikinci Chart oluşturma.
             const pieCanvas = document.getElementById('portfolioPieChart');
-            const trendCanvas = document.getElementById('marketTrendChart');
+            const performanceCanvas = document.getElementById('portfolioPerformanceChart');
             if (pieChartInstance) { pieChartInstance.destroy(); pieChartInstance = null; }
-            if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
-            // Önceki instance değişkeni kaybolmuş olsa bile Chart.js kayıtlarını temizle.
+            if (performanceChartInstance) { performanceChartInstance.destroy(); performanceChartInstance = null; }
             if (window.Chart && typeof Chart.getChart === 'function') {
-                const existingPie = Chart.getChart(pieCanvas);
-                const existingTrend = Chart.getChart(trendCanvas);
-                if (existingPie) existingPie.destroy();
-                if (existingTrend) existingTrend.destroy();
+                const oldPie = Chart.getChart(pieCanvas), oldPerformance = Chart.getChart(performanceCanvas);
+                if (oldPie) oldPie.destroy();
+                if (oldPerformance) oldPerformance.destroy();
             }
-            const ctxPie = pieCanvas.getContext('2d');
-            pieChartInstance = new Chart(ctxPie, {
-                type: 'doughnut',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        data: [],
-                        backgroundColor: [],
-                        borderWidth: 0,
-                        hoverOffset: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    cutout: '72%'
-                }
+            pieChartInstance = new Chart(pieCanvas.getContext('2d'), {
+                type:'doughnut',
+                data:{labels:[],datasets:[{data:[],backgroundColor:[],borderWidth:0,hoverOffset:6}]},
+                options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'72%'}
             });
-
-            const ctxTrend = trendCanvas.getContext('2d');
-            trendChartInstance = new Chart(ctxTrend, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [
-                        {
-                            label: 'Bitcoin (BTC)',
-                            data: [],
-                            borderColor: '#F7931A',
-                            backgroundColor: 'rgba(247, 147, 26, 0.08)',
-                            fill: true,
-                            tension: 0.35
-                        },
-                        {
-                            label: 'Ethereum (ETH)',
-                            data: [],
-                            borderColor: '#627EEA',
-                            backgroundColor: 'rgba(98, 126, 234, 0.08)',
-                            fill: true,
-                            tension: 0.35
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#94A3B8', font: { family: 'Inter', size: 11 } } }
-                    },
-                    scales: {
-                        x: { grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#64748B', font: { size: 10 } } },
-                        y: { grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#64748B', font: { size: 10 } } }
+            performanceChartInstance = new Chart(performanceCanvas.getContext('2d'), {
+                type:'line',
+                data:{labels:[],datasets:[{label:'Birikimli gerçekleşen K/Z',data:[],borderColor:'#818cf8',backgroundColor:'rgba(129,140,248,.12)',fill:true,tension:.3,pointRadius:3,pointHoverRadius:5}]},
+                options:{
+                    responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},
+                    plugins:{legend:{labels:{color:currentTheme==='dark'?'#94A3B8':'#475569',font:{family:'Inter',size:11}}}},
+                    scales:{
+                        x:{grid:{color:'rgba(148,163,184,.1)'},ticks:{color:'#64748B',maxRotation:0,autoSkip:true,maxTicksLimit:7,font:{size:10}}},
+                        y:{grid:{color:'rgba(148,163,184,.1)'},ticks:{color:'#64748B',callback:value=>formatCurrencyVal(value)}}
                     }
                 }
             });
         }
 
         function updateCharts(assets) {
-            if (!pieChartInstance) return;
-
-            const labels = assets.map(a => a.symbol);
-            const data = assets.map(a => formatCurrencyVal(a.currentValue, true));
-            const colors = assets.map(a => MARKET_DATA[a.symbol]?.color || '#6366F1');
-
-            pieChartInstance.data.labels = labels;
-            pieChartInstance.data.datasets[0].data = data;
-            pieChartInstance.data.datasets[0].backgroundColor = colors;
+            if (!pieChartInstance || !performanceChartInstance) return;
+            pieChartInstance.data.labels = assets.map(a=>a.symbol);
+            pieChartInstance.data.datasets[0].data = assets.map(a=>Number(a.currentValue)||0);
+            pieChartInstance.data.datasets[0].backgroundColor = assets.map(a=>MARKET_DATA[a.symbol]?.color||'#6366F1');
             pieChartInstance.update();
 
             const legendContainer = document.getElementById('chart-legend');
             legendContainer.innerHTML = '';
             assets.forEach(asset => {
-                const color = MARKET_DATA[asset.symbol]?.color || '#6366F1';
                 const div = document.createElement('div');
                 div.className = 'flex items-center gap-1.5';
-                div.innerHTML = `
-                    <span class="w-2 h-2 rounded-full" style="background-color: ${color}"></span>
-                    <span>${asset.symbol}: <strong class="text-slate-900 dark:text-white">${formatCurrencyVal(asset.currentValue)}</strong></span>
-                `;
+                div.innerHTML = `<span class="w-2 h-2 rounded-full" style="background-color:${MARKET_DATA[asset.symbol]?.color||'#6366F1'}"></span><span>${asset.symbol}: <strong class="text-slate-900 dark:text-white">${formatCurrencyVal(asset.currentValue)}</strong></span>`;
                 legendContainer.appendChild(div);
             });
+
+            // Show cumulative realized profit/loss by sale date; do not invent historical portfolio prices.
+            const realizedById = calculateRealizedPnLByTransaction();
+            const labels = [], values = [];
+            let cumulative = 0;
+            [...transactions].sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(tx => {
+                if (tx.type !== 'SELL') return;
+                cumulative += Number(realizedById.get(String(tx.id))||0);
+                labels.push(new Date(tx.date).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'}));
+                values.push(Number(cumulative.toFixed(8)));
+            });
+            performanceChartInstance.data.labels = labels;
+            performanceChartInstance.data.datasets[0].data = values;
+            performanceChartInstance.update();
+            const summary = document.getElementById('performance-chart-summary');
+            if (summary) {
+                summary.textContent = labels.length ? ((cumulative>=0?'+':'')+formatCurrencyVal(cumulative)) : 'Henüz satış verisi yok';
+                summary.className = 'text-xs font-semibold '+(cumulative>=0?'text-emerald-500':'text-rose-500');
+            }
         }
 
         function updateChartsTheme() {
-            if (!trendChartInstance) return;
-            const textColor = currentTheme === 'dark' ? '#94A3B8' : '#475569';
-            const gridColor = currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-
-            trendChartInstance.options.scales.x.grid.color = gridColor;
-            trendChartInstance.options.scales.x.ticks.color = textColor;
-            trendChartInstance.options.scales.y.grid.color = gridColor;
-            trendChartInstance.options.scales.y.ticks.color = textColor;
-            trendChartInstance.options.plugins.legend.labels.color = textColor;
-            trendChartInstance.update();
+            if (!performanceChartInstance) return;
+            const textColor = currentTheme==='dark'?'#94A3B8':'#475569';
+            const gridColor = currentTheme==='dark'?'rgba(255,255,255,.05)':'rgba(0,0,0,.05)';
+            performanceChartInstance.options.scales.x.grid.color = gridColor;
+            performanceChartInstance.options.scales.x.ticks.color = textColor;
+            performanceChartInstance.options.scales.y.grid.color = gridColor;
+            performanceChartInstance.options.scales.y.ticks.color = textColor;
+            performanceChartInstance.options.plugins.legend.labels.color = textColor;
+            performanceChartInstance.update();
         }
 
         // --- Coin Autocomplete Search & Selection ---
