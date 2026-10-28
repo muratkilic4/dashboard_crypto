@@ -1539,7 +1539,7 @@ async function activateApp(session) {
             return { totalValue, totalCost, unrealizedPnL, unrealizedPnLPercent, realizedPnL, assetDetails };
         }
 
-        function validateTransactionSet(candidate, targetId) {
+        function validateTransactionSet(candidate, targetId, skipSellBalanceCheck = false) {
             const balances = new Map();
             const ordered = [...candidate].sort((a, b) => {
                 const aType = String(a.type).toUpperCase();
@@ -1577,7 +1577,7 @@ async function activateApp(session) {
 
                 const balance = balances.get(tx.coin) || 0;
                 const isSubmitted = String(tx.id) === String(targetId);
-                if (isSubmitted && String(tx.type).toUpperCase() === 'SELL' && amount > balance + Math.max(1e-8, Math.abs(balance) * 1e-10)) {
+                if (!skipSellBalanceCheck && isSubmitted && String(tx.type).toUpperCase() === 'SELL' && amount > balance + Math.max(1e-8, Math.abs(balance) * 1e-10)) {
                     return `${tx.coin} satışı mevcut bakiyeyi aşıyor. İşlem tarihindeki kullanılabilir miktar: ${balance.toLocaleString('tr-TR', {maximumFractionDigits: 8})}.`;
                 }
                 if (String(tx.type).toUpperCase() === 'BUY') {
@@ -2292,7 +2292,24 @@ async function activateApp(session) {
             const candidate = editId
                 ? transactions.map(tx => String(tx.id) === String(editId) ? candidateTx : tx)
                 : [...transactions, candidateTx];
-            const validationError = validateTransactionSet(candidate, candidateTx.id);
+            const validationError = validateTransactionSet(candidate, candidateTx.id, true);
+            if (validationError) {
+                showToast(validationError, true);
+                return;
+            }
+
+            // Satış miktarını geçmiş kayıtların sıralamasından değil, portföyün gerçek
+            // mevcut bakiyesinden kontrol et. Düzenlenen satışın kendi miktarını geri ekle.
+            if (selectedTxType === 'SELL') {
+                const currentBalance = getAvailableCoinAmount(coin);
+                const oldTx = editId ? transactions.find(t => String(t.id) === String(editId)) : null;
+                const availableBalance = currentBalance + (oldTx && String(oldTx.type).toUpperCase() === 'SELL' ? Number(oldTx.amount) || 0 : 0);
+                const epsilon = Math.max(1e-8, Math.abs(availableBalance) * 1e-10);
+                if (amount > availableBalance + epsilon) {
+                    showToast(`${coin} satışı mevcut bakiyeyi aşıyor. Kullanılabilir miktar: ${availableBalance.toLocaleString('tr-TR', {maximumFractionDigits: 8})}.`, true);
+                    return;
+                }
+            }
             if (validationError) {
                 showToast(validationError, true);
                 return;
