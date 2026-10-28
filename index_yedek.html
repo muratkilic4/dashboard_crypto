@@ -661,6 +661,7 @@
                         <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-2.5 top-3"></i>
                     </div>
                     <input type="hidden" id="selected-coin-symbol" required>
+                    <p id="coin-search-status" class="mt-1 text-[10px] text-slate-500">CoinGecko üzerinden coin adı veya sembolüyle arayın.</p>
                     
                     <!-- Dropdown Results -->
                     <div id="coin-dropdown" class="absolute left-0 right-0 top-full mt-1 input-bg border rounded-xl max-h-48 overflow-y-auto custom-scrollbar hidden z-50 shadow-xl">
@@ -1140,12 +1141,12 @@ async function activateApp(session) {
         }
 
         async function loadTransactions() {
-            const columns = 'id, type, coin, amount, price, executed_at, fee';
-            const { data, error } = await dbClient
-                .from('transactions')
-                .select(columns)
-                .eq('user_id', activeUserId)
-                .order('executed_at', { ascending: true });
+            const columns = 'id, type, coin, amount, price, executed_at, fee, coin_id, coin_name, coin_image, binance_symbol';
+            let data, error;
+            ({ data, error } = await dbClient.from('transactions').select(columns).eq('user_id', activeUserId).order('executed_at', { ascending: true }));
+            if (error && /coin_id|coin_name|coin_image|binance_symbol|column/i.test(error.message || '')) {
+                ({ data, error } = await dbClient.from('transactions').select('id, type, coin, amount, price, executed_at, fee').eq('user_id', activeUserId).order('executed_at', { ascending: true }));
+            }
             if (error) throw error;
 
             let rows = data || [];
@@ -1171,15 +1172,13 @@ async function activateApp(session) {
                 }
             }
 
-            transactions = rows.map(row => ({
-                id: row.id,
-                type: String(row.type || '').toUpperCase(),
-                coin: row.coin,
-                amount: Number(row.amount),
-                price: Number(row.price),
-                fee: Number(row.fee || 0),
-                date: toLocalDateTimeInput(row.executed_at)
-            }));
+            transactions = rows.map(row => {
+                const symbol = String(row.coin || '').toUpperCase();
+                if (row.coin_id || row.coin_image || row.coin_name) {
+                    MARKET_DATA[symbol] = { ...(MARKET_DATA[symbol] || {}), symbol, name: row.coin_name || MARKET_DATA[symbol]?.name || symbol, coinGeckoId: row.coin_id || MARKET_DATA[symbol]?.coinGeckoId || '', icon: row.coin_image || MARKET_DATA[symbol]?.icon || '', binanceSymbol: row.binance_symbol || MARKET_DATA[symbol]?.binanceSymbol || '', price: MARKET_DATA[symbol]?.price || Number(row.price) || 0, change: MARKET_DATA[symbol]?.change || 0, color: MARKET_DATA[symbol]?.color || '#6366F1' };
+                }
+                return { id: row.id, type: String(row.type || '').toUpperCase(), coin: symbol, coinId: row.coin_id || MARKET_DATA[symbol]?.coinGeckoId || '', coinName: row.coin_name || MARKET_DATA[symbol]?.name || symbol, coinImage: row.coin_image || MARKET_DATA[symbol]?.icon || '', binanceSymbol: row.binance_symbol || MARKET_DATA[symbol]?.binanceSymbol || '', amount: Number(row.amount), price: Number(row.price), fee: Number(row.fee || 0), date: toLocalDateTimeInput(row.executed_at) };
+            });
         }
 
         function toLocalDateTimeInput(value) {
@@ -1624,7 +1623,7 @@ async function activateApp(session) {
                 tr.innerHTML = `
                     <td class="p-3 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">${new Date(tx.date).toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'})}</td>
                     <td class="p-3"><span class="px-2 py-0.5 text-[10px] rounded-md font-bold ${isBuy?'bg-emerald-500/10 text-emerald-500':'bg-rose-500/10 text-rose-500'}">${isBuy?'ALIŞ':'SATIŞ'}</span></td>
-                    <td class="p-3 font-semibold text-slate-900 dark:text-white">${tx.coin}</td>
+                    <td class="p-3"><div class="flex items-center gap-2"><img src="${escapeCoinText(tx.coinImage || MARKET_DATA[tx.coin]?.icon || '')}" alt="" class="w-5 h-5 rounded-full object-cover" onerror="this.style.display='none'"><span class="font-semibold text-slate-900 dark:text-white">${escapeCoinText(tx.coinName || MARKET_DATA[tx.coin]?.name || tx.coin)} <span class="text-[10px] text-slate-400">${escapeCoinText(tx.coin)}</span></span></div></td>
                     <td class="p-3">${Number(tx.amount).toLocaleString('tr-TR',{maximumFractionDigits:8})}</td>
                     <td class="p-3 whitespace-nowrap">${formatCurrencyVal(tx.price)}</td>
                     <td class="p-3 font-semibold whitespace-nowrap">${formatCurrencyVal(tx.amount*tx.price)}</td>
@@ -1810,48 +1809,114 @@ async function activateApp(session) {
         }
 
         // --- Coin Autocomplete Search & Selection ---
-        function filterCoinSearch() {
-            const query = document.getElementById('input-coin-search').value.toLowerCase();
+        let coinSearchTimer = null;
+        let coinSearchRequest = 0;
+        const coinSearchCache = new Map();
+
+        async function filterCoinSearch() {
+            const input = document.getElementById('input-coin-search');
+            const dropdown = document.getElementById('coin-dropdown');
+            const query = input.value.trim();
+            document.getElementById('selected-coin-symbol').value = '';
+            clearTimeout(coinSearchTimer);
+            dropdown.innerHTML = '';
+            if (!query) {
+                const popular = Object.values(MARKET_DATA).filter(c => c && c.symbol && c.name).slice(0, 8).map(c => ({ id: c.coinGeckoId || '', symbol: c.symbol, name: c.name, thumb: c.icon || '', market_cap_rank: null }));
+                renderCoinSearchResults(popular, 'Popüler coinler');
+                return;
+            }
+            dropdown.classList.remove('hidden');
+            dropdown.innerHTML = '<div class="p-3 text-xs text-slate-500 text-center">CoinGecko üzerinde aranıyor…</div>';
+            const requestId = ++coinSearchRequest;
+            coinSearchTimer = setTimeout(async () => {
+                try {
+                    let results = coinSearchCache.get(query.toLowerCase());
+                    if (!results) {
+                        const response = await fetch(`https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(query)}`);
+                        if (!response.ok) throw new Error(response.status === 429 ? 'Arama sınırına ulaşıldı; biraz sonra tekrar deneyin.' : 'Coin arama servisine ulaşılamadı.');
+                        const payload = await response.json();
+                        results = (payload.coins || []).slice(0, 10).map(c => ({ id: c.id, symbol: String(c.symbol || '').toUpperCase(), name: c.name, thumb: c.large || c.thumb || '', market_cap_rank: c.market_cap_rank || null }));
+                        coinSearchCache.set(query.toLowerCase(), results);
+                    }
+                    if (requestId === coinSearchRequest) renderCoinSearchResults(results, 'Arama sonuçları');
+                } catch (error) {
+                    if (requestId === coinSearchRequest) dropdown.innerHTML = `<div class="p-3 text-xs text-rose-500 text-center">${escapeCoinText(error.message || 'Arama başarısız oldu.')}</div>`;
+                }
+            }, 300);
+        }
+
+        function escapeCoinText(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+        }
+
+        function renderCoinSearchResults(results, label) {
             const dropdown = document.getElementById('coin-dropdown');
             dropdown.innerHTML = '';
-
-            const matches = Object.keys(MARKET_DATA).filter(symbol => {
-                const name = MARKET_DATA[symbol].name.toLowerCase();
-                return symbol.toLowerCase().includes(query) || name.includes(query);
-            });
-
-            if (matches.length === 0) {
-                dropdown.innerHTML = `<div class="p-3 text-xs text-slate-500 text-center">Coin bulunamadı</div>`;
-            } else {
-                matches.forEach(symbol => {
-                    const coin = MARKET_DATA[symbol];
-                    const item = document.createElement('div');
-                    item.className = 'flex items-center gap-2.5 p-2.5 hover:bg-indigo-500/10 cursor-pointer transition border-b border-slate-100 dark:border-slate-800 last:border-none';
-                    item.onclick = () => selectCoinFromSearch(symbol);
-                    item.innerHTML = `
-                        ${getCoinIconHtml(symbol, 'w-5 h-5')}
-                        <div class="flex-1">
-                            <span class="font-bold text-xs text-slate-900 dark:text-white">${symbol}</span>
-                            <span class="text-[10px] text-slate-400 ml-1">(${coin.name})</span>
-                        </div>
-                        <span class="text-xs font-mono text-slate-600 dark:text-slate-300">$${coin.price}</span>
-                    `;
-                    dropdown.appendChild(item);
-                });
+            if (!results.length) {
+                dropdown.innerHTML = '<div class="p-3 text-xs text-slate-500 text-center">Coin bulunamadı.</div>';
+                dropdown.classList.remove('hidden');
+                return;
             }
+            const heading = document.createElement('div');
+            heading.className = 'px-3 py-2 text-[10px] uppercase tracking-wide text-slate-400 border-b border-slate-100 dark:border-slate-800';
+            heading.textContent = `${label} · CoinGecko`;
+            dropdown.appendChild(heading);
+            results.forEach(result => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'w-full text-left flex items-center gap-2.5 p-2.5 hover:bg-indigo-500/10 cursor-pointer transition border-b border-slate-100 dark:border-slate-800 last:border-none';
+                const icon = result.thumb || `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${String(result.symbol || '').toLowerCase()}.png`;
+                const rank = result.market_cap_rank ? `#${result.market_cap_rank}` : 'Token';
+                item.innerHTML = `<img src="${escapeCoinText(icon)}" alt="" class="w-7 h-7 rounded-full object-cover" onerror="this.style.visibility='hidden'"> <span class="flex-1 min-w-0"><span class="block font-bold text-xs text-slate-900 dark:text-white">${escapeCoinText(result.name)}</span><span class="text-[10px] text-slate-400">${escapeCoinText(result.symbol)} · ${rank}</span></span><span class="text-[10px] text-slate-500">Seç</span>`;
+                item.onclick = () => selectCoinFromSearch(result.symbol, result);
+                dropdown.appendChild(item);
+            });
             dropdown.classList.remove('hidden');
         }
 
-        function selectCoinFromSearch(symbol) {
-            const coin = MARKET_DATA[symbol];
-            document.getElementById('input-coin-search').value = `${symbol} - ${coin ? coin.name : ''}`;
+        async function selectCoinFromSearch(symbol, coinResult = null) {
+            symbol = String(symbol || '').toUpperCase().trim();
+            let coin = coinResult;
+            if (!coin) {
+                const existing = MARKET_DATA[symbol];
+                coin = existing ? { id: existing.coinGeckoId || '', symbol, name: existing.name || symbol, thumb: existing.icon || '' } : { id: '', symbol, name: symbol, thumb: '' };
+            }
+            if (!symbol) return;
+            const name = coin.name || symbol;
+            const image = coin.thumb || coin.large || MARKET_DATA[symbol]?.icon || '';
+            let binanceSymbol = '';
+            let price = Number(MARKET_DATA[symbol]?.price || 0);
+            let change = Number(MARKET_DATA[symbol]?.change || 0);
+            try {
+                const pair = `${symbol}USDT`;
+                const pairResponse = await fetch(`https://api.binance.com/api/v3/exchangeInfo?symbol=${encodeURIComponent(pair)}`);
+                if (pairResponse.ok) {
+                    const pairData = await pairResponse.json();
+                    if ((pairData.symbols || []).some(p => p.symbol === pair && p.status === 'TRADING' && p.quoteAsset === 'USDT')) {
+                        binanceSymbol = pair;
+                        const tickerResponse = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${encodeURIComponent(pair)}`);
+                        if (tickerResponse.ok) {
+                            const ticker = await tickerResponse.json();
+                            price = Number(ticker.lastPrice) || price;
+                            change = Number(ticker.priceChangePercent) || 0;
+                        }
+                    }
+                }
+            } catch (e) { console.warn('Binance parite kontrolü başarısız:', e); }
+            if (!price && coin.id) {
+                try {
+                    const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(coin.id)}&vs_currencies=usd`);
+                    if (response.ok) { const data = await response.json(); price = Number(data?.[coin.id]?.usd || 0); }
+                } catch (e) { console.warn('CoinGecko fiyatı alınamadı:', e); }
+            }
+            MARKET_DATA[symbol] = { ...(MARKET_DATA[symbol] || {}), name, symbol, coinGeckoId: coin.id || '', icon: image, binanceSymbol, price, change, color: MARKET_DATA[symbol]?.color || '#6366F1' };
+            document.getElementById('input-coin-search').value = `${name} (${symbol})`;
             document.getElementById('selected-coin-symbol').value = symbol;
             document.getElementById('coin-dropdown').classList.add('hidden');
-
-            if (coin && coin.price) {
-                document.getElementById('input-price').value = coin.price;
-                calculateAmountFromTotal();
-            }
+            if (price > 0) document.getElementById('input-price').value = price;
+            if (document.getElementById('input-total-amount').value) calculateAmountFromTotal();
+            const helper = document.getElementById('coin-search-status');
+            if (helper) helper.textContent = binanceSymbol ? 'Binance USDT paritesi bulundu.' : 'Binance USDT paritesi bulunamadı; coin kaydedilebilir, fiyatı manuel girilebilir.';
         }
 
         // BUY: total + unit price calculates coin amount.
@@ -1902,6 +1967,7 @@ async function activateApp(session) {
             document.getElementById('edit-tx-id').value = '';
             document.getElementById('input-coin-search').value = '';
             document.getElementById('selected-coin-symbol').value = '';
+            document.getElementById('coin-search-status').textContent = 'CoinGecko üzerinden coin adı veya sembolüyle arayın.';
             document.getElementById('input-total-amount').value = '';
             document.getElementById('input-amount').value = '';
             document.getElementById('input-price').value = '';
@@ -1947,12 +2013,13 @@ async function activateApp(session) {
 
             const editId = document.getElementById('edit-tx-id').value;
             const coin = document.getElementById('selected-coin-symbol').value.toUpperCase().trim();
+            const coinMeta = MARKET_DATA[coin];
             const amount = Number(document.getElementById('input-amount').value);
             const price = Number(document.getElementById('input-price').value);
             const date = document.getElementById('input-date').value;
 
-            if (!coin || !MARKET_DATA[coin]) {
-                showToast('Listeden geçerli bir kripto para seçin.', true);
+            if (!coin || !coinMeta) {
+                showToast('Arama sonuçlarından bir coin seçin.', true);
                 return;
             }
             if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(price) || price <= 0) {
@@ -1986,27 +2053,30 @@ async function activateApp(session) {
             if (saveButton) { saveButton.disabled = true; saveButton.classList.add('opacity-60'); }
             try {
                 const row = {
-                    type: selectedTxType.toLowerCase(),
-                    coin,
-                    amount,
-                    price,
-                    fee: candidateTx.fee,
-                    executed_at: new Date(date).toISOString()
+                    type: selectedTxType.toLowerCase(), coin, amount, price, fee: candidateTx.fee,
+                    executed_at: new Date(date).toISOString(),
+                    coin_id: coinMeta.coinGeckoId || null,
+                    coin_name: coinMeta.name || coin,
+                    coin_image: coinMeta.icon || null,
+                    binance_symbol: coinMeta.binanceSymbol || null
                 };
-                let result;
-                if (editId) {
-                    result = await dbClient.from('transactions').update(row)
-                        .eq('id', editId).eq('user_id', activeUserId)
-                        .select('id, type, coin, amount, price, executed_at, fee').single();
-                } else {
-                    result = await dbClient.from('transactions').insert({ ...row, user_id: activeUserId })
-                        .select('id, type, coin, amount, price, executed_at, fee').single();
+                const saveRow = async (includeMetadata) => {
+                    const payload = includeMetadata ? row : (({ coin_id, coin_name, coin_image, binance_symbol, ...legacy }) => legacy)(row);
+                    if (editId) return await dbClient.from('transactions').update(payload).eq('id', editId).eq('user_id', activeUserId).select('id, type, coin, amount, price, executed_at, fee').single();
+                    return await dbClient.from('transactions').insert({ ...payload, user_id: activeUserId }).select('id, type, coin, amount, price, executed_at, fee').single();
+                };
+                let result = await saveRow(true);
+                if (result.error && /coin_id|coin_name|coin_image|binance_symbol|column/i.test(result.error.message || '')) {
+                    result = await saveRow(false);
+                    if (!result.error) showToast('İşlem kaydedildi. Coin logo bilgilerinin kalıcı saklanması için Supabase sütunlarını ekleyin.', true);
                 }
                 if (result.error) throw result.error;
 
                 const saved = result.data;
                 const mapped = {
                     id: saved.id, type: String(saved.type || '').toUpperCase(), coin: saved.coin,
+                    coinId: coinMeta.coinGeckoId || '', coinName: coinMeta.name || coin,
+                    coinImage: coinMeta.icon || '', binanceSymbol: coinMeta.binanceSymbol || '',
                     amount: Number(saved.amount), price: Number(saved.price),
                     fee: Number(saved.fee || 0), date: toLocalDateTimeInput(saved.executed_at)
                 };
