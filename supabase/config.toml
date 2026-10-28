@@ -1,0 +1,2 @@
+[functions.username-reminder]
+verify_jwt = false
