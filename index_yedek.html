@@ -502,7 +502,8 @@
                                     <th class="p-3">Ort. Maliyet</th>
                                     <th class="p-3">Anlık Fiyat (Binance)</th>
                                     <th class="p-3">Toplam Değer</th>
-                                    <th class="p-3">Kâr / Zarar</th>
+                                    <th class="p-3">Satış Kârı / Zararı</th>
+                                    <th class="p-3">Açık Pozisyon K/Z</th>
                                     <th class="p-3 rounded-r-lg">Mini Performans</th>
                                 </tr>
                             </thead>
@@ -1486,6 +1487,7 @@ async function activateApp(session) {
         function calculatePortfolio() {
             const holdings = {};
             let realizedPnL = 0;
+            const realizedPnLByCoin = {};
             const ordered = [...transactions].sort((a, b) => {
                 const dateDiff = new Date(a.date) - new Date(b.date);
                 if (dateDiff !== 0) return dateDiff;
@@ -1510,7 +1512,9 @@ async function activateApp(session) {
                     // Guard against invalid historical data; saving also performs a strict validation.
                     if (amount > holding.amount + 1e-10) continue;
                     const avgCost = holding.amount > 0 ? holding.totalCost / holding.amount : 0;
-                    realizedPnL += (price * amount - fee) - (avgCost * amount);
+                    const salePnL = (price * amount - fee) - (avgCost * amount);
+                    realizedPnL += salePnL;
+                    realizedPnLByCoin[tx.coin] = (realizedPnLByCoin[tx.coin] || 0) + salePnL;
                     holding.amount -= amount;
                     holding.totalCost = Math.max(0, holding.totalCost - avgCost * amount);
                 }
@@ -1522,7 +1526,7 @@ async function activateApp(session) {
 
             Object.keys(holdings).forEach(symbol => {
                 const data = holdings[symbol];
-                if (data.amount > 1e-10) {
+                if (data.amount > 1e-10 || Object.prototype.hasOwnProperty.call(realizedPnLByCoin, symbol)) {
                     const currentPrice = MARKET_DATA[symbol]?.price || 0;
                     const currentValue = data.amount * currentPrice;
                     const avgCost = data.amount > 0 ? data.totalCost / data.amount : 0;
@@ -1530,7 +1534,7 @@ async function activateApp(session) {
                     const pnlPercent = data.totalCost > 0 ? (pnl / data.totalCost) * 100 : 0;
                     totalValue += currentValue;
                     totalCost += data.totalCost;
-                    assetDetails.push({ symbol, amount: data.amount, investedAmount: data.totalCost, avgCost, currentPrice, currentValue, pnl, pnlPercent });
+                    assetDetails.push({ symbol, amount: data.amount, investedAmount: data.totalCost, avgCost, currentPrice, currentValue, pnl, pnlPercent, realizedPnL: realizedPnLByCoin[symbol] || 0 });
                 }
             });
 
@@ -1635,13 +1639,14 @@ async function activateApp(session) {
             tbody.innerHTML = '';
 
             if (assets.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500 text-xs">Portföyünüzde henüz aktif varlık bulunmuyor.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-500 text-xs">Portföyünüzde henüz aktif varlık veya gerçekleşmiş satış bulunmuyor.</td></tr>`;
                 return;
             }
 
             assets.forEach(asset => {
                 const coinMeta = MARKET_DATA[asset.symbol] || { name: asset.symbol };
                 const isPos = asset.pnl >= 0;
+                const isRealizedPos = (asset.realizedPnL || 0) >= 0;
 
                 const tr = document.createElement('tr');
                 tr.className = 'table-row-hover transition';
@@ -1658,6 +1663,10 @@ async function activateApp(session) {
                     <td class="p-3">${formatCurrencyVal(asset.avgCost)}</td>
                     <td class="p-3 font-medium">${formatCurrencyVal(asset.currentPrice)}</td>
                     <td class="p-3 font-semibold text-slate-900 dark:text-white">${formatCurrencyVal(asset.currentValue)}</td>
+                    <td class="p-3 font-semibold ${isRealizedPos ? 'text-emerald-500' : 'text-rose-500'}">
+                        ${isRealizedPos ? '+' : ''}${formatCurrencyVal(asset.realizedPnL || 0)}
+                        <span class="text-xs block font-normal opacity-80">Satışlardan net sonuç</span>
+                    </td>
                     <td class="p-3 font-semibold ${isPos ? 'text-emerald-500' : 'text-rose-500'}">
                         ${isPos ? '+' : ''}${formatCurrencyVal(asset.pnl)}
                         <span class="text-xs block font-normal opacity-80">(${isPos ? '+' : ''}${asset.pnlPercent.toFixed(2)}%)</span>
