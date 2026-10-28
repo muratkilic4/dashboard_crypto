@@ -24,3 +24,15 @@ create policy "CryptoDash users can update own avatar objects"
 on storage.objects for update to authenticated
 using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text)
 with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- Authenticated users can edit only their own profile row.
+drop policy if exists "CryptoDash users can read own profile" on public.profiles;
+create policy "CryptoDash users can read own profile"
+on public.profiles for select to authenticated
+using (user_id = auth.uid());
+
+drop policy if exists "CryptoDash users can update own profile" on public.profiles;
+create policy "CryptoDash users can update own profile"
+on public.profiles for update to authenticated
+using (user_id = auth.uid())
+with check (user_id = auth.uid());
