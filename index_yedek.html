@@ -268,6 +268,72 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #62528e; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
         ::selection { background: rgba(139, 92, 246, .32); color: #fff; }
+        /* Mofi-inspired alternate layout. Keeps the existing app DOM and features intact. */
+        body.mofi-design {
+            background: #f3f5f9;
+            color: #263248;
+        }
+        .mofi-design .header-bg {
+            background: rgba(255,255,255,.94) !important;
+            border-color: #e7eaf0 !important;
+            box-shadow: 0 3px 18px rgba(31,45,61,.04);
+        }
+        .mofi-design .dashboard-intro {
+            background: linear-gradient(120deg, #ffffff 0%, #f7f8ff 100%);
+            border: 1px solid #e6eaf2;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            box-shadow: 0 6px 24px rgba(31,45,61,.04);
+        }
+        .mofi-design .card-bg {
+            background: #ffffff !important;
+            border-color: #e7eaf0 !important;
+            border-radius: 1.1rem !important;
+            box-shadow: 0 5px 22px rgba(31,45,61,.045);
+        }
+        .mofi-design .input-bg {
+            background: #ffffff !important;
+            border-color: #e1e6ef !important;
+        }
+        .mofi-design main { max-width: 1720px; }
+        .mofi-design #nav-dashboard,
+        .mofi-design #nav-manage {
+            width: 100%;
+            justify-content: flex-start;
+            padding: .85rem 1rem;
+            border-radius: .8rem;
+        }
+        @media (min-width: 768px) {
+            .mofi-design header nav {
+                position: fixed;
+                z-index: 35;
+                top: 82px;
+                bottom: 0;
+                left: 0;
+                width: 220px;
+                height: calc(100vh - 82px);
+                align-items: stretch;
+                flex-direction: column;
+                justify-content: flex-start;
+                gap: .5rem;
+                padding: 1rem .8rem;
+                border-radius: 0;
+                border-top: 0;
+                border-left: 0;
+                border-bottom: 0;
+                background: #fff !important;
+                box-shadow: 4px 0 20px rgba(31,45,61,.035);
+            }
+            .mofi-design header { padding-left: 1.5rem; }
+            .mofi-design main { margin-left: 220px; width: calc(100% - 220px); }
+            .mofi-design #readonly-demo-banner { margin-left: 236px; }
+        }
+        @media (max-width: 767px) {
+            .mofi-design .dashboard-intro { padding: 1rem; }
+            .mofi-design #design-toggle { padding: .55rem .65rem; }
+            .mofi-design #design-toggle-label { display: none; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
         }
@@ -447,6 +513,12 @@
             <button onclick="toggleCurrency()" id="btn-currency" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold input-bg border hover:border-indigo-500 transition">
                 <span class="text-indigo-500 font-bold">$</span>
                 <span id="currency-label">USD</span>
+            </button>
+
+            <!-- Alternative Mofi-inspired layout toggle -->
+            <button id="design-toggle" type="button" onclick="toggleDesignMode()" class="flex items-center gap-1.5 rounded-xl border border-violet-400/40 bg-violet-500/10 px-3 py-2 text-xs font-semibold text-violet-600 transition hover:bg-violet-500/20 dark:text-violet-200" title="Alternatif tasarıma geç">
+                <i data-lucide="panels-top-left" class="h-4 w-4"></i>
+                <span id="design-toggle-label">Mofi Tasarımı</span>
             </button>
 
             <!-- Light / Dark Mode Toggle -->
@@ -1518,6 +1590,31 @@ async function activateApp(session) {
         }
 
         // --- Theme Switcher (Dark / Light) ---
+        function toggleDesignMode(forceMode) {
+            const enable = typeof forceMode === 'boolean'
+                ? forceMode
+                : !document.body.classList.contains('mofi-design');
+            document.body.classList.toggle('mofi-design', enable);
+            localStorage.setItem('cryptodash_design_mode', enable ? 'mofi' : 'classic');
+            const label = document.getElementById('design-toggle-label');
+            const button = document.getElementById('design-toggle');
+            if (label) label.textContent = enable ? 'Mevcut Tasarım' : 'Mofi Tasarımı';
+            if (button) {
+                button.title = enable ? 'Mevcut tasarıma dön' : 'Mofi tarzı tasarıma geç';
+                button.setAttribute('aria-pressed', enable ? 'true' : 'false');
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            if (typeof updateChartsTheme === 'function') updateChartsTheme();
+        }
+
+        function restoreDesignMode() {
+            try {
+                toggleDesignMode(localStorage.getItem('cryptodash_design_mode') === 'mofi');
+            } catch (error) {
+                console.warn('Tasarım tercihi yüklenemedi:', error);
+            }
+        }
+
         function toggleTheme() {
             const html = document.documentElement;
             const iconSun = document.getElementById('theme-icon-sun');
@@ -2840,6 +2937,7 @@ async function activateApp(session) {
                 toast.classList.add('translate-y-20', 'opacity-0');
             }, 3000);
         }
+        restoreDesignMode();
     </script>
 </body>
 </html>
