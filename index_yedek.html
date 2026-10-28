@@ -1051,7 +1051,6 @@
             document.getElementById('auth-form').addEventListener('submit', handleAuthSubmit);
             document.getElementById('demo-login-button').addEventListener('click', () => {
                 if (authMode !== 'signin') {
-                    authMode = 'signin';
                     document.getElementById('auth-mode-toggle').click();
                 }
                 document.getElementById('auth-email').value = 'demo';
