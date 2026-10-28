@@ -559,9 +559,14 @@
 
             /* Clean, modern mini performance chart shared by dashboard and admin tables */
         .performance-range-btn { color: #64748b; background: transparent; }
-        .performance-range-btn:hover { color: #4f46e5; }
-        .performance-range-btn.is-active { color: #4338ca; background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.10); }
+        .performance-range-btn:hover { color: #4338ca; }
+        .performance-range-btn.is-active { color: #3730a3; background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.10), 0 0 0 1px rgba(99,102,241,.08); }
+        .dark .performance-range-btn { color: #94a3b8; }
+        .dark .performance-range-btn:hover { color: #c7d2fe; }
         .dark .performance-range-btn.is-active { color: #e0e7ff; background: #334155; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+        .performance-chart-shell { background: linear-gradient(180deg, rgba(16,185,129,.035), rgba(16,185,129,0) 70%); }
+        .dark .performance-chart-shell { background: linear-gradient(180deg, rgba(16,185,129,.055), rgba(15,23,42,0) 70%); }
+        #portfolioPerformanceChart { border: 0 !important; outline: 0 !important; box-shadow: none !important; }
         .mini-performance { width: 136px; display: flex; flex-direction: column; gap: 7px; padding: 2px 0; }
         .mini-performance-track { position: relative; height: 10px; width: 100%; overflow: hidden; border-radius: 999px; background: linear-gradient(90deg,rgba(244,63,94,.13) 0%,rgba(148,163,184,.09) 48%,rgba(148,163,184,.09) 52%,rgba(16,185,129,.13) 100%); box-shadow: inset 0 1px 2px rgba(15,23,42,.08); }
         .mini-performance-track::after { content: ''; position: absolute; inset: 0; border: 1px solid rgba(148,163,184,.15); border-radius: inherit; pointer-events: none; }
@@ -916,13 +921,13 @@
                         </div>
                         <span id="performance-chart-period-note" class="text-[10px] text-slate-500 dark:text-slate-400">Tüm kayıtlı satışlar</span>
                     </div>
-                    <div class="relative h-[230px] w-full">
+                    <div class="performance-chart-shell relative h-[260px] w-full rounded-xl overflow-hidden">
                         <canvas id="portfolioPerformanceChart"></canvas>
                     </div>
                     <div class="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/70">
-                        <div class="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                            <span class="w-5 h-0.5 rounded-full bg-emerald-500"></span>
-                            <span>Birikimli gerçekleşen K/Z</span>
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-slate-500 dark:text-slate-400">
+                            <span class="inline-flex items-center gap-2"><span class="w-5 h-0.5 rounded-full bg-emerald-500"></span> Kâr bölgesi</span>
+                            <span class="inline-flex items-center gap-2"><span class="w-5 h-0.5 rounded-full bg-rose-500"></span> Zarar bölgesi</span>
                         </div>
                         <p class="text-[10px] text-right text-slate-500 dark:text-slate-400">Geçmiş portföy değeri değil; kayıtlı satışlardan hesaplanır.</p>
                     </div>
@@ -2483,36 +2488,71 @@ async function activateApp(session) {
                     label:'Birikimli gerçekleşen K/Z',
                     data:[],
                     borderColor:'#10b981',
-                    borderWidth:2.5,
+                    segment:{borderColor:context => (context.p1.parsed.y < 0 ? '#f43f5e' : '#10b981')},
+                    borderWidth:2.8,
+                    borderCapStyle:'round',
+                    borderJoinStyle:'round',
                     backgroundColor:context=>{
                         const chart=context.chart, area=chart.chartArea;
-                        if (!area) return 'rgba(16,185,129,.12)';
+                        if (!area) return 'rgba(16,185,129,.10)';
                         const gradient=chart.ctx.createLinearGradient(0,area.top,0,area.bottom);
-                        gradient.addColorStop(0,'rgba(16,185,129,.24)');
-                        gradient.addColorStop(1,'rgba(16,185,129,.005)');
+                        gradient.addColorStop(0,currentTheme==='dark'?'rgba(16,185,129,.24)':'rgba(16,185,129,.18)');
+                        gradient.addColorStop(.58,currentTheme==='dark'?'rgba(16,185,129,.09)':'rgba(16,185,129,.07)');
+                        gradient.addColorStop(1,'rgba(16,185,129,0)');
                         return gradient;
                     },
-                    fill:true,tension:.35,
-                    pointRadius:0,pointHoverRadius:5,pointHitRadius:14,
-                    pointHoverBackgroundColor:'#10b981',pointHoverBorderColor:currentTheme==='dark'?'#0f172a':'#ffffff',pointHoverBorderWidth:2
+                    fill:{target:{value:0}},
+                    tension:.32,
+                    cubicInterpolationMode:'monotone',
+                    pointRadius:context=>context.dataIndex===context.dataset.data.length-1?3:0,
+                    pointBackgroundColor:'#10b981',
+                    pointBorderColor:currentTheme==='dark'?'#0f172a':'#ffffff',
+                    pointBorderWidth:2,
+                    pointHoverRadius:5,
+                    pointHitRadius:14,
+                    pointHoverBackgroundColor:'#10b981',
+                    pointHoverBorderColor:currentTheme==='dark'?'#0f172a':'#ffffff',
+                    pointHoverBorderWidth:2
                 }]},
                 options:{
-                    responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},
-                    animation:{duration:450},
+                    responsive:true,maintainAspectRatio:false,
+                    interaction:{intersect:false,mode:'index'},
+                    animation:{duration:500,easing:'easeOutQuart'},
+                    layout:{padding:{top:8,right:8,bottom:0,left:0}},
                     plugins:{
                         legend:{display:false},
                         tooltip:{
-                            backgroundColor:currentTheme==='dark'?'#0f172a':'#ffffff',
-                            titleColor:currentTheme==='dark'?'#e2e8f0':'#0f172a',
+                            backgroundColor:currentTheme==='dark'?'#0b1220':'#ffffff',
+                            titleColor:currentTheme==='dark'?'#f1f5f9':'#0f172a',
                             bodyColor:currentTheme==='dark'?'#cbd5e1':'#334155',
-                            borderColor:currentTheme==='dark'?'#334155':'#e2e8f0',borderWidth:1,
-                            padding:12,displayColors:false,
-                            callbacks:{label:context=>' Gerçekleşen K/Z: '+formatCurrencyVal(context.parsed.y)}
+                            borderColor:currentTheme==='dark'?'#334155':'#e2e8f0',
+                            borderWidth:1,
+                            padding:12,
+                            cornerRadius:10,
+                            displayColors:false,
+                            callbacks:{
+                                title:items=>items.length?items[0].label:'',
+                                label:context=>' Birikimli K/Z: '+(context.parsed.y>0?'+':'')+formatCurrencyVal(context.parsed.y)
+                            }
                         }
                     },
                     scales:{
-                        x:{grid:{display:false},border:{display:false},ticks:{color:'#64748B',maxRotation:0,autoSkip:true,maxTicksLimit:7,font:{family:'Inter',size:10},padding:8}},
-                        y:{grid:{color:currentTheme==='dark'?'rgba(148,163,184,.10)':'rgba(100,116,139,.12)',drawTicks:false},border:{display:false,dash:[3,4]},ticks:{color:'#64748B',maxTicksLimit:5,padding:10,callback:value=>formatCurrencyVal(value),font:{family:'Inter',size:10}}}
+                        x:{
+                            grid:{display:false},
+                            border:{display:false},
+                            ticks:{color:currentTheme==='dark'?'#94a3b8':'#64748b',maxRotation:0,autoSkip:true,maxTicksLimit:7,font:{family:'Inter',size:10},padding:9}
+                        },
+                        y:{
+                            grid:{
+                                drawTicks:false,
+                                color:context=>context.tick.value===0
+                                    ? (currentTheme==='dark'?'rgba(203,213,225,.34)':'rgba(71,85,105,.28)')
+                                    : (currentTheme==='dark'?'rgba(148,163,184,.10)':'rgba(100,116,139,.11)'),
+                                lineWidth:context=>context.tick.value===0?1.4:1
+                            },
+                            border:{display:false},
+                            ticks:{color:currentTheme==='dark'?'#94a3b8':'#64748b',maxTicksLimit:5,padding:10,callback:value=>formatCurrencyVal(value),font:{family:'Inter',size:10}}
+                        }
                     }
                 }
             });
@@ -2625,7 +2665,10 @@ async function activateApp(session) {
             }
             if (!performanceChartInstance) return;
             performanceChartInstance.options.scales.x.ticks.color = textColor;
-            performanceChartInstance.options.scales.y.grid.color = gridColor;
+            performanceChartInstance.options.scales.y.grid.color = context => context.tick.value===0
+                ? (dark?'rgba(203,213,225,.34)':'rgba(71,85,105,.28)') : gridColor;
+            performanceChartInstance.options.scales.y.grid.lineWidth = context => context.tick.value===0?1.4:1;
+            performanceChartInstance.options.scales.x.ticks.color = textColor;
             performanceChartInstance.options.scales.y.ticks.color = textColor;
             if (performanceChartInstance.options.plugins.tooltip) {
                 performanceChartInstance.options.plugins.tooltip.backgroundColor = dark ? '#111827' : '#ffffff';
