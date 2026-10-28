@@ -1162,7 +1162,7 @@ async function activateApp(session) {
                     const { data: seededRows, error: seedError } = await dbClient
                         .from('transactions')
                         .insert(demoRows)
-                        .select(columns);
+                        .select('id, type, coin, amount, price, executed_at, fee');
                     if (seedError) throw seedError;
                     rows = (seededRows || []).sort((a, b) => new Date(a.executed_at) - new Date(b.executed_at));
                     showToast('Örnek SOL senaryosu yüklendi. İstersen işlem yönetiminden silebilirsin.');
@@ -1706,9 +1706,11 @@ async function activateApp(session) {
                             ${isBuy ? 'ALIM' : 'SATIM'}
                         </span>
                     </td>
-                    <td class="p-3 font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                        ${getCoinIconHtml(tx.coin, 'w-5 h-5')}
-                        <span>${tx.coin}</span>
+                    <td class="p-3 font-semibold text-slate-900 dark:text-white">
+                        <div class="flex items-center gap-2">
+                            <img src="${escapeCoinText(tx.coinImage || MARKET_DATA[tx.coin]?.icon || '')}" alt="" class="w-5 h-5 rounded-full object-cover" onerror="this.style.display='none'">
+                            <span>${escapeCoinText(tx.coinName || MARKET_DATA[tx.coin]?.name || tx.coin)} <small class="text-[10px] text-slate-400">${escapeCoinText(tx.coin)}</small></span>
+                        </div>
                     </td>
                     <td class="p-3 font-medium">${tx.amount}</td>
                     <td class="p-3">${formatCurrencyVal(tx.price)}</td>
