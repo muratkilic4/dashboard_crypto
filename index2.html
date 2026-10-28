@@ -101,111 +101,89 @@
             color: #94A3B8;
         }
 
+        /* Preset 2: Dark Cyber Pro Override */
+        html[data-preset="cyber"] body {
+            background-color: #090D16 !important;
+            color: #F8FAFC !important;
+        }
+        html[data-preset="cyber"] .v-card {
+            background-color: #0F172A !important;
+            border-color: #1E293B !important;
+            box-shadow: 0 4px 25px -4px rgba(6, 182, 212, 0.08) !important;
+        }
+        html[data-preset="cyber"] .v-sidebar, html[data-preset="cyber"] .v-header {
+            background-color: #0F172A !important;
+            border-color: #1E293B !important;
+        }
+        html[data-preset="cyber"] .v-input {
+            background-color: #090D16 !important;
+            border-color: #334155 !important;
+            color: #F8FAFC !important;
+        }
+
+        /* Preset 3: Sunset Gold Override */
+        html[data-preset="sunset"] body {
+            background-color: #140E0A !important;
+            color: #FFF7ED !important;
+        }
+        html[data-preset="sunset"] .v-card {
+            background-color: #1C140E !important;
+            border-color: #2E2016 !important;
+            box-shadow: 0 4px 25px -4px rgba(245, 158, 11, 0.08) !important;
+        }
+        html[data-preset="sunset"] .v-sidebar, html[data-preset="sunset"] .v-header {
+            background-color: #1C140E !important;
+            border-color: #2E2016 !important;
+        }
+        html[data-preset="sunset"] .v-input {
+            background-color: #140E0A !important;
+            border-color: #432E1E !important;
+            color: #FFF7ED !important;
+        }
+
+        /* Preset 4: Royal Indigo Override */
+        html[data-preset="royal"] body {
+            background-color: #F1F5F9 !important;
+            color: #0F172A !important;
+        }
+        html[data-preset="royal"] .v-card {
+            background-color: #FFFFFF !important;
+            border-color: #E2E8F0 !important;
+            box-shadow: 0 4px 20px -2px rgba(79, 70, 229, 0.04) !important;
+        }
+        html[data-preset="royal"] .v-sidebar, html[data-preset="royal"] .v-header {
+            background-color: #FFFFFF !important;
+            border-color: #E2E8F0 !important;
+        }
+        html[data-preset="royal"] .v-input {
+            background-color: #F8FAFC !important;
+            border-color: #CBD5E1 !important;
+            color: #0F172A !important;
+        }
+
+        /* Preset 5: Minimal Monochrome Override */
+        html[data-preset="mono"] body {
+            background-color: #FFFFFF !important;
+            color: #000000 !important;
+        }
+        html[data-preset="mono"] .v-card {
+            background-color: #FFFFFF !important;
+            border-color: #000000 !important;
+            border-width: 2px !important;
+            box-shadow: 4px 4px 0px 0px #000000 !important;
+        }
+        html[data-preset="mono"] .v-sidebar, html[data-preset="mono"] .v-header {
+            background-color: #FFFFFF !important;
+            border-color: #000000 !important;
+        }
+        html[data-preset="mono"] .v-input {
+            background-color: #FFFFFF !important;
+            border-color: #000000 !important;
+            color: #000000 !important;
+        }
+
         /* Scrollbar Styling */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 5px;
-            height: 5px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #CBD5E1;
-            border-radius: 99px;
-        }
-        html.dark .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #334155;
-        }
-    </style>
-</head>
-<body class="antialiased min-h-screen flex flex-col lg:flex-row">
-
-    <!-- ================= SIDEBAR NAVIGATION (VENTIC STYLE) ================= -->
-    <aside class="v-sidebar w-full lg:w-64 border-r flex-shrink-0 flex flex-col justify-between sticky top-0 z-30 h-auto lg:h-screen transition-colors">
-        <div>
-            <!-- Ventic Brand Header -->
-            <div class="p-5 flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-ventic-600 flex items-center justify-center text-white shadow-lg shadow-ventic-600/30 font-black text-xl">
-                        V
-                    </div>
-                    <div>
-                        <h1 class="font-bold text-lg leading-tight text-slate-900 dark:text-white flex items-center gap-1.5">
-                            CryptoDash <span class="text-[10px] px-1.5 py-0.5 rounded bg-ventic-100 dark:bg-ventic-900/60 text-ventic-700 dark:text-ventic-500 font-extrabold">PRO</span>
-                        </h1>
-                        <p class="text-[11px] text-slate-400 font-medium">Ventic Theme Edition</p>
-                    </div>
-                </div>
-                <!-- Mobile Menu Toggle Button -->
-                <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
-                    <i data-lucide="menu" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <!-- Navigation Links -->
-            <nav id="sidebar-menu" class="p-4 space-y-1 hidden lg:block">
-                <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">ANA MENÜ</div>
-                
-                <button onclick="setFilterView('all')" id="nav-filter-all" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold transition-all bg-ventic-600 text-white shadow-md shadow-ventic-600/20">
-                    <div class="flex items-center gap-3">
-                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                        <span>Genel Görünüm</span>
-                    </div>
-                    <span id="badge-count-all" class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">0</span>
-                </button>
-
-                <button onclick="setFilterView('bought')" id="nav-filter-bought" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
-                    <div class="flex items-center gap-3">
-                        <i data-lucide="arrow-down-left" class="w-4 h-4 text-emerald-500"></i>
-                        <span>Alınanlar</span>
-                    </div>
-                    <span id="badge-count-bought" class="text-[10px] bg-emerald-500/10 text-emerald-500 font-bold px-2 py-0.5 rounded-full">0</span>
-                </button>
-
-                <button onclick="setFilterView('sold')" id="nav-filter-sold" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
-                    <div class="flex items-center gap-3">
-                        <i data-lucide="arrow-up-right" class="w-4 h-4 text-rose-500"></i>
-                        <span>Satılanlar</span>
-                    </div>
-                    <span id="badge-count-sold" class="text-[10px] bg-rose-500/10 text-rose-500 font-bold px-2 py-0.5 rounded-full">0</span>
-                </button>
-
-                <div class="pt-4 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">YÖNETİM & AYARLAR</div>
-
-                <button onclick="switchTab('manage')" id="nav-manage" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
-                    <div class="flex items-center gap-3">
-                        <i data-lucide="sliders" class="w-4 h-4"></i>
-                        <span>İşlem Yönetimi</span>
-                    </div>
-                    <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-500"></i>
-                </button>
-
-                <a href="#market-section" onclick="switchTab('dashboard')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
-                    <i data-lucide="globe" class="w-4 h-4"></i>
-                    <span>Canlı Piyasa</span>
-                </a>
-            </nav>
-        </div>
-
-        <!-- Ventic Style Mini Sidebar Card Promo -->
-        <div class="p-4 hidden lg:block">
-            <div class="bg-gradient-to-br from-ventic-600 to-emerald-800 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden">
-                <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
-                <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center mb-3">
-                    <i data-lucide="trending-up" class="w-4 h-4 text-white"></i>
-                </div>
-                <h4 class="font-bold text-xs mb-1">Aktif Filtre</h4>
-                <p class="text-[11px] text-emerald-100 leading-snug mb-3" id="sidebar-filter-desc">Genel Portföy Görünümü</p>
-                <button onclick="openProfileModal()" class="w-full py-2 bg-white text-ventic-800 rounded-xl text-[11px] font-bold hover:bg-emerald-50 transition shadow-sm">
-                    Profil Düzenle
-                </button>
-            </div>
-        </div>
-    </aside>
-
-    <!-- ================= MAIN CONTENT AREA ================= -->
-    <div class="flex-1 flex flex-col min-w-0">
-
+<!-- ... existing code -->
         <!-- Ventic Top Navbar -->
         <header class="v-header sticky top-0 z-20 border-b backdrop-blur-md px-4 lg:px-8 py-3.5 flex items-center justify-between gap-4 transition-colors">
             
@@ -217,510 +195,25 @@
 
             <!-- Header Right Controls -->
             <div class="flex items-center gap-3 ml-auto">
+                
+                <!-- Tasarım Seç (Design Preset Dropdown) -->
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold v-input border hover:border-ventic-500 transition">
+                    <i data-lucide="palette" class="w-4 h-4 text-ventic-600"></i>
+                    <select id="preset-selector" onchange="applyDesignPreset(this.value)" class="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer">
+                        <option value="ventic">Ventic Emerald</option>
+                        <option value="cyber">Dark Cyber Pro</option>
+                        <option value="sunset">Sunset Gold</option>
+                        <option value="royal">Royal Indigo</option>
+                        <option value="mono">Minimal Monochrome</option>
+                    </select>
+                </div>
+
                 <!-- Currency Toggle -->
                 <button onclick="toggleCurrency()" id="btn-currency" class="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-bold v-input border hover:border-ventic-500 transition">
                     <span class="text-ventic-600 font-extrabold">$</span>
                     <span id="currency-label">USD</span>
                 </button>
-
-                <!-- Light / Dark Theme Toggle -->
-                <button onclick="toggleTheme()" class="p-2.5 rounded-2xl v-input border text-slate-600 dark:text-slate-300 hover:text-ventic-600 transition">
-                    <i data-lucide="sun" id="theme-icon-sun" class="w-4 h-4 hidden"></i>
-                    <i data-lucide="moon" id="theme-icon-moon" class="w-4 h-4"></i>
-                </button>
-
-                <!-- Quick Transaction Add Button -->
-                <button onclick="openModal()" class="flex items-center gap-2 bg-ventic-600 hover:bg-ventic-700 text-white font-semibold text-xs px-4 py-2.5 rounded-2xl transition shadow-md shadow-ventic-600/30 active:scale-95">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span class="hidden sm:inline">Hızlı İşlem</span>
-                </button>
-
-                <!-- Ventic User Profile Avatar Pill (Click opens Profile Modal) -->
-                <div onclick="openProfileModal()" class="pl-2 border-l border-slate-200 dark:border-slate-800 flex items-center gap-2.5 cursor-pointer group">
-                    <img id="header-avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="User Avatar" class="w-9 h-9 rounded-2xl object-cover ring-2 ring-ventic-500/20 group-hover:ring-ventic-500 transition">
-                    <div class="hidden xl:block text-left">
-                        <div id="header-user-name" class="text-xs font-bold leading-tight text-slate-900 dark:text-white group-hover:text-ventic-600 transition">Ahmet Yılmaz</div>
-                        <div id="header-user-role" class="text-[10px] text-slate-400 font-medium">Portföy Yöneticisi</div>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Dynamic Body View Container -->
-        <main class="p-4 lg:p-8 space-y-6 max-w-[1600px] w-full mx-auto">
-
-            <!-- ================= PAGE 1: DASHBOARD VIEW ================= -->
-            <div id="page-dashboard" class="space-y-6">
-
-                <!-- 1. DYNAMIC VENTIC TOP STAT CARDS (UPDATES BASED ON MENU FILTER) -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    
-                    <!-- Card 1: Value / Volume -->
-                    <div class="v-card p-5 rounded-3xl border relative overflow-hidden flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400" id="card1-title">Portföy Değeri</span>
-                                <div class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1" id="metric-total-value">$0.00</div>
-                            </div>
-                            <div class="p-2.5 rounded-2xl bg-ventic-50 dark:bg-ventic-900/40 text-ventic-600">
-                                <i data-lucide="wallet" id="card1-icon" class="w-5 h-5"></i>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/60">
-                            <span class="text-xs text-slate-400"><span id="card1-sublabel">Maliyet:</span> <strong id="metric-total-cost" class="text-slate-700 dark:text-slate-200">$0.00</strong></span>
-                            <svg class="w-16 h-6 text-ventic-500" viewBox="0 0 100 30" fill="none" stroke="currentColor" stroke-width="3">
-                                <path d="M0 25 Q25 5 50 18 T100 5" stroke-linecap="round"/>
-                            </svg>
-                        </div>
-                    </div>
-
-                    <!-- Card 2: PnL / Realized Profit -->
-                    <div class="v-card p-5 rounded-3xl border relative overflow-hidden flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400" id="card2-title">Bekleyen Kâr / Zarar</span>
-                                <div class="text-2xl font-extrabold text-emerald-500 mt-1" id="metric-pnl">$0.00</div>
-                            </div>
-                            <div class="p-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500">
-                                <i data-lucide="trending-up" class="w-5 h-5"></i>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/60">
-                            <span id="metric-pnl-percent-badge" class="px-2.5 py-1 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-500">+0.00%</span>
-                            <svg class="w-16 h-6 text-emerald-500" viewBox="0 0 100 30" fill="none" stroke="currentColor" stroke-width="3">
-                                <path d="M0 20 Q30 28 60 10 T100 3" stroke-linecap="round"/>
-                            </svg>
-                        </div>
-                    </div>
-
-                    <!-- Card 3: Best Asset / Best Trade -->
-                    <div class="v-card p-5 rounded-3xl border relative overflow-hidden flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400" id="card3-title">En Yüksek Getiri</span>
-                                <div class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1" id="metric-best-asset">-</div>
-                            </div>
-                            <div class="p-2.5 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-500">
-                                <i data-lucide="award" class="w-5 h-5"></i>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/60">
-                            <span class="text-xs text-slate-400" id="metric-best-asset-pnl">Performans: 0.00%</span>
-                            <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-                        </div>
-                    </div>
-
-                    <!-- Card 4: Sales Profit / Active Coin Count -->
-                    <div class="v-card p-5 rounded-3xl border relative overflow-hidden flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400" id="card4-title">Satış Kazancı</span>
-                                <div class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1" id="metric-realized-pnl">$0.00</div>
-                            </div>
-                            <div class="p-2.5 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500">
-                                <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/60">
-                            <span class="text-xs text-slate-400" id="metric-tx-count">0 Kayıtlı İşlem</span>
-                            <i data-lucide="check-circle-2" class="w-4 h-4 text-ventic-500"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. VENTIC BANNER & CHARTS ROW -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
-                    <!-- Ventic Mint Featured Report Card Banner -->
-                    <div class="bg-gradient-to-r from-ventic-700 via-ventic-600 to-emerald-500 text-white rounded-3xl p-6 lg:p-8 flex flex-col justify-between relative overflow-hidden shadow-xl lg:col-span-2">
-                        <div class="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
-                        <div class="relative z-10 max-w-md">
-                            <span class="px-3 py-1 rounded-full bg-white/20 text-white font-bold text-[10px] uppercase tracking-wider backdrop-blur-md">Canlı Piyasa Özeti</span>
-                            <h3 class="text-2xl lg:text-3xl font-black mt-3 mb-2 leading-tight" id="banner-welcome-heading">Hoş Geldiniz, Ahmet Yılmaz</h3>
-                            <p class="text-xs text-emerald-100 leading-relaxed mb-6" id="banner-welcome-sub">
-                                Portföyünüzü "Genel Görünüm", "Alınanlar" ve "Satılanlar" sekmelerinden detaylı filtreleyebilir ve yönetebilirsiniz.
-                            </p>
-                        </div>
-                        <div class="relative z-10 flex flex-wrap items-center gap-3">
-                            <button onclick="openModal()" class="bg-white text-ventic-800 font-bold px-5 py-3 rounded-2xl text-xs hover:bg-emerald-50 transition shadow-md active:scale-95 flex items-center gap-2">
-                                <i data-lucide="plus" class="w-4 h-4"></i> İşlem Kaydı Ekle
-                            </button>
-                            <button onclick="openProfileModal()" class="bg-emerald-800/40 hover:bg-emerald-800/60 border border-white/20 text-white font-semibold px-5 py-3 rounded-2xl text-xs backdrop-blur-md transition flex items-center gap-2">
-                                <i data-lucide="user-check" class="w-4 h-4 text-amber-300"></i> Profil / Admin Paneli
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Doughnut Allocation Chart (Ventic Style Donut) -->
-                    <div class="v-card p-6 rounded-3xl border flex flex-col justify-between" id="analytics-section">
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    <i data-lucide="pie-chart" class="w-4 h-4 text-ventic-600"></i> Varlık Dağılımı
-                                </h3>
-                                <span class="text-[10px] text-slate-400 font-semibold" id="chart-filter-label">Filtreli Görünüm</span>
-                            </div>
-                            <div class="relative flex justify-center items-center h-[180px]">
-                                <canvas id="portfolioPieChart"></canvas>
-                            </div>
-                        </div>
-                        <div id="chart-legend" class="grid grid-cols-2 gap-2 mt-4 text-xs font-medium text-slate-600 dark:text-slate-300 max-h-24 overflow-y-auto custom-scrollbar"></div>
-                    </div>
-                </div>
-
-                <!-- 3. LIVE MARKET TREND CHART & HOLDINGS TABLE -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
-                    <!-- Main Trend Line Chart -->
-                    <div class="v-card p-6 rounded-3xl border lg:col-span-2 flex flex-col justify-between">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-                            <div>
-                                <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    <i data-lucide="activity" class="w-4 h-4 text-ventic-600"></i> Canlı Binance Trend Akışı (BTC / ETH)
-                                </h3>
-                                <p class="text-[11px] text-slate-400">Anlık fiyat değişim grafiği</p>
-                            </div>
-                            <div class="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-xl border border-emerald-500/20">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Binance WebSocket Canlı</span>
-                            </div>
-                        </div>
-                        <div class="relative h-[240px] w-full">
-                            <canvas id="marketTrendChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Binance Watchlist Widget -->
-                    <div class="v-card p-6 rounded-3xl border flex flex-col" id="market-section">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <i data-lucide="globe" class="w-4 h-4 text-ventic-600"></i> Binance Canlı Liste
-                            </h3>
-                            <span class="text-[10px] px-2.5 py-1 rounded-xl bg-ventic-50 dark:bg-ventic-900/50 text-ventic-700 dark:text-ventic-400 font-bold">USDT</span>
-                        </div>
-                        <div class="space-y-2.5 custom-scrollbar overflow-y-auto max-h-[260px] pr-1" id="market-prices-list">
-                            <!-- Dynamic Cards -->
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- 4. DYNAMIC HOLDINGS / TRANSACTIONS TABLE -->
-                <div class="v-card p-6 rounded-3xl border">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2" id="table-main-title">
-                            <i data-lucide="layers" class="w-4 h-4 text-ventic-600"></i> Aktif Varlıklar & Detaylı Performans
-                        </h3>
-                        <span class="text-xs text-slate-400 font-semibold" id="holdings-count-badge">0 Varlık</span>
-                    </div>
-
-                    <div class="overflow-x-auto custom-scrollbar">
-                        <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-                            <thead class="v-table-head text-[10px] uppercase tracking-wider font-extrabold rounded-2xl" id="table-head-element">
-                                <tr>
-                                    <th class="p-3.5 rounded-l-2xl">Varlık</th>
-                                    <th class="p-3.5">Miktar</th>
-                                    <th class="p-3.5">Ort. Maliyet</th>
-                                    <th class="p-3.5">Anlık Fiyat (Binance)</th>
-                                    <th class="p-3.5">Toplam Değer</th>
-                                    <th class="p-3.5 rounded-r-2xl">Kâr / Zarar</th>
-                                </tr>
-                            </thead>
-                            <tbody id="assets-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
-                                <!-- Dynamic Rows -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- ================= PAGE 2: PROTECTED TRANSACTION MANAGEMENT ================= -->
-            <div id="page-manage" class="hidden space-y-6">
-                
-                <!-- Password Lock Overlay -->
-                <div id="lock-screen" class="v-card p-8 rounded-3xl border max-w-md mx-auto text-center space-y-4 my-12 shadow-xl">
-                    <div class="w-16 h-16 bg-amber-500/10 text-amber-500 rounded-3xl flex items-center justify-center mx-auto border border-amber-500/20">
-                        <i data-lucide="lock" class="w-8 h-8"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-extrabold text-slate-900 dark:text-white">İşlem Yönetimi Korumalı</h3>
-                        <p class="text-xs text-slate-400 mt-1">Alım-satım eklemek, düzenlemek veya silmek için güvenlik PIN kodunuzu girin.</p>
-                    </div>
-
-                    <div class="space-y-3 pt-2">
-                        <input type="password" id="pin-input" maxlength="6" placeholder="PIN Kodu (Varsayılan: 1234)" class="w-full text-center text-xl tracking-widest font-bold v-input border rounded-2xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-ventic-500/30">
-                        <button onclick="verifyPin()" class="w-full bg-ventic-600 hover:bg-ventic-700 text-white font-bold py-3.5 rounded-2xl transition text-xs shadow-lg shadow-ventic-600/30 active:scale-95">
-                            Giriş Yap ve Kilidi Aç
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Unlocked Content -->
-                <div id="manage-content" class="hidden space-y-6">
-                    
-                    <!-- Admin Status Bar -->
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-ventic-50 dark:bg-ventic-950/40 border border-ventic-500/20 p-5 rounded-3xl">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2.5 bg-ventic-600 text-white rounded-2xl shadow-md">
-                                <i data-lucide="shield-check" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-bold text-slate-900 dark:text-white">Güvenli Yönetim Paneli Aktif</h4>
-                                <p class="text-[11px] text-slate-400">Tüm geçmiş alım-satımlarınızı düzenleyebilir ve PIN kodunu güncelleyebilirsiniz.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="openChangePinModal()" class="text-xs bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-3.5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold hover:text-ventic-600 transition shadow-sm">
-                                <i data-lucide="key-round" class="w-3.5 h-3.5 inline mr-1"></i> PIN Değiştir
-                            </button>
-                            <button onclick="lockManagePage()" class="text-xs bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-3.5 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold hover:text-amber-500 transition shadow-sm">
-                                <i data-lucide="lock" class="w-3.5 h-3.5 inline mr-1"></i> Kilitle
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Admin Summary Stats -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="v-card p-4 rounded-2xl border">
-                            <div class="text-[11px] font-bold text-slate-400 uppercase">Toplam İşlem</div>
-                            <div class="text-xl font-extrabold text-slate-900 dark:text-white mt-1" id="admin-summary-count">0</div>
-                        </div>
-                        <div class="v-card p-4 rounded-2xl border">
-                            <div class="text-[11px] font-bold text-slate-400 uppercase">Toplam Alım Hacmi</div>
-                            <div class="text-xl font-extrabold text-emerald-500 mt-1" id="admin-summary-buy-volume">$0.00</div>
-                        </div>
-                        <div class="v-card p-4 rounded-2xl border">
-                            <div class="text-[11px] font-bold text-slate-400 uppercase">Toplam Satım Hacmi</div>
-                            <div class="text-xl font-extrabold text-rose-500 mt-1" id="admin-summary-sell-volume">$0.00</div>
-                        </div>
-                        <div class="v-card p-4 rounded-2xl border">
-                            <div class="text-[11px] font-bold text-slate-400 uppercase">Son İşlem Tarihi</div>
-                            <div class="text-sm font-bold text-slate-700 dark:text-slate-200 mt-2" id="admin-summary-last-date">-</div>
-                        </div>
-                    </div>
-
-                    <!-- Manage Table -->
-                    <div class="v-card p-6 rounded-3xl border">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <i data-lucide="sliders" class="w-4 h-4 text-ventic-600"></i> İşlem Geçmişi Yönetimi
-                            </h3>
-                            <div class="flex items-center gap-2">
-                                <button onclick="openModal()" class="text-xs bg-ventic-600 hover:bg-ventic-700 text-white font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1">
-                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i> Yeni Ekle
-                                </button>
-                                <button onclick="clearAllTransactions()" class="text-xs text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 font-bold border border-rose-500/20 px-3.5 py-2 rounded-xl transition">
-                                    Tümünü Sıfırla
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="overflow-x-auto custom-scrollbar">
-                            <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-                                <thead class="v-table-head text-[10px] uppercase tracking-wider font-extrabold rounded-2xl">
-                                    <tr>
-                                        <th class="p-3.5 rounded-l-2xl">Tarih</th>
-                                        <th class="p-3.5">Tip</th>
-                                        <th class="p-3.5">Varlık</th>
-                                        <th class="p-3.5">Miktar</th>
-                                        <th class="p-3.5">Birim Fiyat</th>
-                                        <th class="p-3.5">Toplam Tutar</th>
-                                        <th class="p-3.5 rounded-r-2xl text-right">Eylem</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="manage-tx-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
-                                    <!-- Dynamic Rows -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-
-        </main>
-
-        <!-- Ventic Footer -->
-        <footer class="border-t border-slate-200 dark:border-slate-800/80 py-4 px-8 text-center text-xs text-slate-400 mt-auto">
-            CryptoDash Pro &copy; 2026 - Ventic Design Standard & Realtime Binance API
-        </footer>
-
-    </div>
-
-    <!-- ================= MODALS ================= -->
-
-    <!-- Modal 1: Add/Edit Transaction -->
-    <div id="tx-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden z-50 flex justify-center items-center p-4">
-        <div class="v-card w-full max-w-md rounded-3xl p-6 border shadow-2xl relative animate-in fade-in zoom-in duration-200">
-            <button onclick="closeModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            
-            <h3 class="text-base font-extrabold text-slate-900 dark:text-white mb-5 flex items-center gap-2" id="modal-title">
-                <i data-lucide="plus-circle" class="w-5 h-5 text-ventic-600"></i> Yeni İşlem Kaydı
-            </h3>
-
-            <form id="tx-form" onsubmit="handleFormSubmit(event)" class="space-y-4">
-                <input type="hidden" id="edit-tx-id" value="">
-                
-                <!-- Transaction Type Buttons -->
-                <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">İşlem Tipi</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button type="button" id="btn-type-buy" onclick="setTxType('BUY')" class="py-2.5 rounded-2xl border font-bold text-xs transition border-ventic-600 bg-ventic-50 dark:bg-ventic-950/50 text-ventic-600">ALIM (BUY)</button>
-                        <button type="button" id="btn-type-sell" onclick="setTxType('SELL')" class="py-2.5 rounded-2xl border font-bold text-xs transition border-slate-200 dark:border-slate-700 text-slate-400">SATIM (SELL)</button>
-                    </div>
-                </div>
-
-                <!-- Coin Search Autocomplete or Manual Input -->
-                <div class="relative">
-                    <div class="flex justify-between items-center mb-1.5">
-                        <label class="block text-[11px] font-bold uppercase text-slate-400">Kripto Para (Arama & Manuel)</label>
-                        <span class="text-[10px] text-ventic-600 font-semibold">Sembol yazıp seçebilirsiniz</span>
-                    </div>
-                    <div class="relative">
-                        <input type="text" id="input-coin-search" autocomplete="off" oninput="filterCoinSearch()" onfocus="filterCoinSearch()" placeholder="Örn: BTC, ETH, SOL, KAS..." class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 pl-9 font-bold uppercase">
-                        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
-                    </div>
-                    <input type="hidden" id="selected-coin-symbol" required>
-                    
-                    <div id="coin-dropdown" class="absolute left-0 right-0 top-full mt-1.5 v-input border rounded-2xl max-h-48 overflow-y-auto custom-scrollbar hidden z-50 shadow-2xl">
-                        <!-- Dynamic Options -->
-                    </div>
-                </div>
-
-                <!-- Total Spent -->
-                <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Toplam Tutar ($)</label>
-                    <input type="number" step="any" id="input-total-amount" oninput="calculateAmountFromTotal()" placeholder="Örn: 1000" class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 font-semibold">
-                </div>
-
-                <!-- Unit Price (Editable & Auto-filled) -->
-                <div>
-                    <div class="flex justify-between items-center mb-1.5">
-                        <label class="block text-[11px] font-bold uppercase text-slate-400">Birim Fiyat ($)</label>
-                        <span class="text-[10px] text-slate-400">Anlık çekilir, el ile düzenlenebilir</span>
-                    </div>
-                    <input type="number" step="any" id="input-price" required oninput="calculateAmountFromTotal()" placeholder="0.00" class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 font-semibold">
-                </div>
-
-                <!-- Calculated Amount -->
-                <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Hesaplanan Miktar</label>
-                    <input type="number" step="any" id="input-amount" required placeholder="0.00" class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 font-extrabold text-ventic-600">
-                </div>
-
-                <!-- Date -->
-                <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Tarih</label>
-                    <input type="datetime-local" id="input-date" required class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 font-medium">
-                </div>
-
-                <div class="pt-2">
-                    <button type="submit" class="w-full bg-ventic-600 hover:bg-ventic-700 text-white font-bold py-3 rounded-2xl transition text-xs shadow-lg shadow-ventic-600/30 active:scale-95">
-                        Kaydet
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal 2: Change PIN -->
-    <div id="pin-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden z-50 flex justify-center items-center p-4">
-        <div class="v-card w-full max-w-sm rounded-3xl p-6 border shadow-2xl relative">
-            <button onclick="closeChangePinModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            
-            <h3 class="text-base font-extrabold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                <i data-lucide="key-round" class="w-5 h-5 text-amber-500"></i> PIN Kodu Değiştir
-            </h3>
-
-            <form onsubmit="handleChangePinSubmit(event)" class="space-y-4">
-                <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Mevcut PIN</label>
-                    <input type="password" id="pin-current" maxlength="6" required placeholder="****" class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs text-center font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-ventic-500/30">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Yeni PIN</label>
-                    <input type="password" id="pin-new" maxlength="6" required placeholder="****" class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs text-center font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-ventic-500/30">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Yeni PIN (Tekrar)</label>
-                    <input type="password" id="pin-new-confirm" maxlength="6" required placeholder="****" class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs text-center font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-ventic-500/30">
-                </div>
-
-                <div class="pt-2">
-                    <button type="submit" class="w-full bg-ventic-600 hover:bg-ventic-700 text-white font-bold py-3 rounded-2xl transition text-xs shadow-lg shadow-ventic-600/30 active:scale-95">
-                        PIN Güncelle
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal 3: User & Admin Profile Manager Modal -->
-    <div id="profile-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden z-50 flex justify-center items-center p-4">
-        <div class="v-card w-full max-w-md rounded-3xl p-6 border shadow-2xl relative animate-in fade-in zoom-in duration-200">
-            <button onclick="closeProfileModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            
-            <h3 class="text-base font-extrabold text-slate-900 dark:text-white mb-5 flex items-center gap-2">
-                <i data-lucide="user" class="w-5 h-5 text-ventic-600"></i> Kullanıcı & Admin Profili
-            </h3>
-
-            <form onsubmit="handleProfileSubmit(event)" class="space-y-4">
-                
-                <!-- Current Avatar Preview -->
-                <div class="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
-                    <img id="modal-avatar-preview" src="" alt="Avatar" class="w-16 h-16 rounded-2xl object-cover ring-4 ring-ventic-500/30 mb-3 shadow-md">
-                    <span class="text-[11px] text-slate-400 font-semibold">Avatar Seçimi</span>
-                    
-                    <!-- Preset Avatars Row -->
-                    <div class="flex items-center gap-2 mt-2">
-                        <img onclick="selectPresetAvatar('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80')" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-xl object-cover cursor-pointer hover:scale-110 transition border border-ventic-500">
-                        <img onclick="selectPresetAvatar('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80')" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-xl object-cover cursor-pointer hover:scale-110 transition border border-ventic-500">
-                        <img onclick="selectPresetAvatar('https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&auto=format&fit=crop&q=80')" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-xl object-cover cursor-pointer hover:scale-110 transition border border-ventic-500">
-                        <img onclick="selectPresetAvatar('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80')" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-xl object-cover cursor-pointer hover:scale-110 transition border border-ventic-500">
-                    </div>
-                </div>
-
-                <!-- Custom Avatar URL -->
-                <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Avatar Görsel URL</label>
-                    <input type="text" id="input-user-avatar" oninput="updateAvatarPreview(this.value)" class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 font-medium">
-                </div>
-
-                <!-- Name & Surname -->
-                <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Ad Soyad / Kullanıcı Adı</label>
-                    <input type="text" id="input-user-name" required class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 font-bold">
-                </div>
-
-                <!-- Role / Title -->
-                <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Unvan / Rol</label>
-                    <input type="text" id="input-user-role" required placeholder="Örn: Portföy Yöneticisi, Senior Trader" class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 font-semibold">
-                </div>
-
-                <div class="pt-2">
-                    <button type="submit" class="w-full bg-ventic-600 hover:bg-ventic-700 text-white font-bold py-3 rounded-2xl transition text-xs shadow-lg shadow-ventic-600/30 active:scale-95">
-                        Bilgileri Güncelle
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-6 right-6 v-card border text-slate-900 dark:text-white px-4 py-3 rounded-2xl shadow-2xl transition transform translate-y-20 opacity-0 z-50 flex items-center gap-3">
-        <i data-lucide="check-circle" class="w-4 h-4 text-ventic-600"></i>
-        <span id="toast-message" class="text-xs font-bold">İşlem başarılı.</span>
-    </div>
-
+<!-- ... existing code -->
     <!-- ================= JAVASCRIPT LOGIC ================= -->
     <script>
         // --- State Management ---
@@ -730,690 +223,80 @@
         let usdToTryRate = 34.50;
         let currentTheme = 'light'; 
         let activeFilterView = 'all'; // 'all' | 'bought' | 'sold'
+        let activeDesignPreset = localStorage.getItem('cryptodash_preset') || 'ventic';
 
-        // Profile State (LocalStorage synced)
-        let userProfile = JSON.parse(localStorage.getItem('cryptodash_user_profile')) || {
-            name: "Ahmet Yılmaz",
-            role: "Portföy Yöneticisi",
-            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-        };
+        // ... existing state & data ...
 
-        // Supported Binance Coins Config & Fallbacks
-        const MARKET_DATA = {
-            BTC: { name: 'Bitcoin', symbol: 'BTC', price: 65420.00, change: 0.0, color: '#10B981', binanceSymbol: 'BTCUSDT' },
-            ETH: { name: 'Ethereum', symbol: 'ETH', price: 3450.50, change: 0.0, color: '#6366F1', binanceSymbol: 'ETHUSDT' },
-            SOL: { name: 'Solana', symbol: 'SOL', price: 142.80, change: 0.0, color: '#06B6D4', binanceSymbol: 'SOLUSDT' },
-            BNB: { name: 'BNB', symbol: 'BNB', price: 580.20, change: 0.0, color: '#F59E0B', binanceSymbol: 'BNBUSDT' },
-            AVAX: { name: 'Avalanche', symbol: 'AVAX', price: 28.40, change: 0.0, color: '#EF4444', binanceSymbol: 'AVAXUSDT' },
-            XRP: { name: 'XRP', symbol: 'XRP', price: 0.58, change: 0.0, color: '#64748B', binanceSymbol: 'XRPUSDT' },
-            ADA: { name: 'Cardano', symbol: 'ADA', price: 0.38, change: 0.0, color: '#3B82F6', binanceSymbol: 'ADAUSDT' },
-            DOGE: { name: 'Dogecoin', symbol: 'DOGE', price: 0.12, change: 0.0, color: '#EAB308', binanceSymbol: 'DOGEUSDT' }
-        };
-        // Persistent Transactions in LocalStorage with User's Example Scenario Pre-loaded
-        let transactions = JSON.parse(localStorage.getItem('cryptodash_transactions')) || [
-            { id: 1, type: 'BUY', coin: 'SOL', amount: 24.5098, price: 102.00, date: '2024-03-20T10:00' },
-            { id: 2, type: 'SELL', coin: 'SOL', amount: 8.4000, price: 125.00, date: '2024-03-21T14:30' },
-            { id: 3, type: 'BUY', coin: 'SOL', amount: 15.3061, price: 98.00, date: '2024-03-22T11:15' },
-            { id: 4, type: 'BUY', coin: 'BTC', amount: 0.15, price: 62000, date: '2024-03-15T10:30' },
-            { id: 5, type: 'BUY', coin: 'ETH', amount: 1.8, price: 3300, date: '2024-03-18T14:20' }
-        ];
-
-        let selectedTxType = 'BUY';
-        let pieChartInstance = null;
-        let trendChartInstance = null;
-
-        // --- Portfolio Calculation & Weighted Average Cost Engine ---
-        function calculatePortfolio() {
-            const holdings = {};
-            let totalRealizedPnL = 0;
-            let totalSellVolume = 0;
-            let totalBuyVolume = 0;
-
-            const buyTxs = transactions.filter(t => t.type === 'BUY');
-            const sellTxs = transactions.filter(t => t.type === 'SELL');
-
-            // Sort transactions chronologically to calculate weighted average & realized PnL correctly
-            const sortedTxs = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            sortedTxs.forEach(tx => {
-                const totalVal = tx.amount * tx.price;
-                if (!holdings[tx.coin]) {
-                    holdings[tx.coin] = { 
-                        amount: 0, 
-                        totalCost: 0, 
-                        avgCost: 0, 
-                        realizedPnL: 0, 
-                        soldAmount: 0, 
-                        soldRevenue: 0 
-                    };
-                }
-
-                const coinData = holdings[tx.coin];
-
-                if (tx.type === 'BUY') {
-                    totalBuyVolume += totalVal;
-                    // Weighted Average Cost Calculation on New Buy
-                    coinData.totalCost += totalVal;
-                    coinData.amount += tx.amount;
-                    coinData.avgCost = coinData.amount > 0 ? coinData.totalCost / coinData.amount : 0;
-                } else if (tx.type === 'SELL') {
-                    totalSellVolume += totalVal;
-                    const currentAvgCost = coinData.avgCost;
-                    const pnl = (tx.price - currentAvgCost) * tx.amount;
-
-                    totalRealizedPnL += pnl;
-                    coinData.realizedPnL += pnl;
-
-                    coinData.soldAmount += tx.amount;
-                    coinData.soldRevenue += totalVal;
-
-                    // Reduce position & remaining total cost proportionally based on fixed average cost
-                    coinData.amount -= tx.amount;
-                    if (coinData.amount <= 0.000001) {
-                        coinData.amount = 0;
-                        coinData.totalCost = 0;
-                        coinData.avgCost = 0;
-                    } else {
-                        coinData.totalCost = coinData.amount * currentAvgCost;
-                    }
-                }
-            });
-
-            let totalValue = 0;
-            let totalCost = 0;
-            const activeAssetDetails = [];
-            const soldAssetDetails = [];
-
-            Object.keys(holdings).forEach(symbol => {
-                const data = holdings[symbol];
-                const currentPrice = MARKET_DATA[symbol] ? MARKET_DATA[symbol].price : 0;
-
-                // Active Remaining Holdings
-                if (data.amount > 0.00001) {
-                    const currentValue = data.amount * currentPrice;
-                    const pnl = currentValue - data.totalCost;
-                    const pnlPercent = data.totalCost > 0 ? (pnl / data.totalCost) * 100 : 0;
-
-                    totalValue += currentValue;
-                    totalCost += data.totalCost;
-
-                    activeAssetDetails.push({
-                        symbol,
-                        amount: data.amount,
-                        avgCost: data.avgCost,
-                        currentPrice,
-                        currentValue,
-                        pnl,
-                        pnlPercent,
-                        realizedPnL: data.realizedPnL
-                    });
-                }
-
-                // Sold Holdings Summary
-                if (data.soldAmount > 0) {
-                    soldAssetDetails.push({
-                        symbol,
-                        soldAmount: data.soldAmount,
-                        soldRevenue: data.soldRevenue,
-                        realizedPnL: data.realizedPnL
-                    });
-                }
-            });
-
-            const unrealizedPnL = totalValue - totalCost;
-            const unrealizedPnLPercent = totalCost > 0 ? (unrealizedPnL / totalCost) * 100 : 0;
-
-            // Update Badge Counts
-            document.getElementById('badge-count-all').textContent = transactions.length;
-            document.getElementById('badge-count-bought').textContent = activeAssetDetails.length;
-            document.getElementById('badge-count-sold').textContent = sellTxs.length;
-
-            return {
-                totalValue,
-                totalCost,
-                unrealizedPnL,
-                unrealizedPnLPercent,
-                realizedPnL: totalRealizedPnL,
-                totalSellVolume,
-                totalBuyVolume,
-                activeAssetDetails,
-                soldAssetDetails,
-                buyTxs,
-                sellTxs
-            };
-        }
-
-        // Render Active Assets Table with Realized PnL Indicator
-        function renderAssetsTable(assets) {
-            document.getElementById('table-main-title').innerHTML = `<i data-lucide="layers" class="w-4 h-4 text-ventic-600"></i> Aktif Varlıklar & Detaylı Ortalama Maliyet`;
-            document.getElementById('table-head-element').innerHTML = `
-                <tr>
-                    <th class="p-3.5 rounded-l-2xl">Varlık</th>
-                    <th class="p-3.5">Kalan Miktar</th>
-                    <th class="p-3.5">Ağırlıklı Ort. Maliyet</th>
-                    <th class="p-3.5">Anlık Fiyat (Binance)</th>
-                    <th class="p-3.5">Güncel Değer</th>
-                    <th class="p-3.5 rounded-r-2xl">Anlık Kâr / Zarar</th>
-                </tr>
-            `;
-            const tbody = document.getElementById('assets-table-body');
-            document.getElementById('holdings-count-badge').textContent = `${assets.length} Aktif Varlık`;
-            tbody.innerHTML = '';
-
-            if (assets.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-medium text-xs">Aktif varlık bulunmamaktadır.</td></tr>`;
-                return;
-            }
-
-            assets.forEach(asset => {
-                const coinMeta = MARKET_DATA[asset.symbol] || { name: asset.symbol };
-                const isPos = asset.pnl >= 0;
-                const hasRealized = Math.abs(asset.realizedPnL) > 0.01;
-                const realizedIsPos = asset.realizedPnL >= 0;
-
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/40 transition';
-                tr.innerHTML = `
-                    <td class="p-3.5 font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                        ${getCoinIconHtml(asset.symbol, 'w-7 h-7')}
-                        <div>
-                            <span class="block leading-tight text-xs">${coinMeta.name}</span>
-                            <span class="text-[10px] text-slate-400 font-semibold">${asset.symbol}</span>
-                        </div>
-                    </td>
-                    <td class="p-3.5 font-semibold text-xs text-slate-800 dark:text-slate-200">${asset.amount.toFixed(4)}</td>
-                    <td class="p-3.5 text-xs font-bold text-ventic-600 dark:text-ventic-400">${formatCurrencyVal(asset.avgCost)}</td>
-                    <td class="p-3.5 font-semibold text-xs">${formatCurrencyVal(asset.currentPrice)}</td>
-                    <td class="p-3.5 font-extrabold text-xs text-slate-900 dark:text-white">${formatCurrencyVal(asset.currentValue)}</td>
-                    <td class="p-3.5 font-bold text-xs ${isPos ? 'text-emerald-500' : 'text-rose-500'}">
-                        ${isPos ? '+' : ''}${formatCurrencyVal(asset.pnl)}
-                        <span class="text-[10px] block opacity-80 font-normal">(${isPos ? '+' : ''}${asset.pnlPercent.toFixed(2)}%)</span>
-                        ${hasRealized ? `<span class="text-[9px] block font-semibold mt-0.5 ${realizedIsPos ? 'text-emerald-600' : 'text-rose-600'}">Satış Kazancı: ${realizedIsPos ? '+' : ''}${formatCurrencyVal(asset.realizedPnL)}</span>` : ''}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+        // --- Window Initialization ---
+        window.onload = function() {
             lucide.createIcons();
-        }
-
-        // Render Sold Transactions Table (When "Satılanlar" menu is active)
-        function renderSoldTable(sellTxs) {
-            document.getElementById('table-main-title').innerHTML = `<i data-lucide="arrow-up-right" class="w-4 h-4 text-rose-500"></i> Satış İşlemleri & Gerçekleşen Kâr/Zarar Geçmişi`;
-            document.getElementById('table-head-element').innerHTML = `
-                <tr>
-                    <th class="p-3.5 rounded-l-2xl">Satış Tarihi</th>
-                    <th class="p-3.5">Satılan Varlık</th>
-                    <th class="p-3.5">Satılan Miktar</th>
-                    <th class="p-3.5">Satış Fiyatı</th>
-                    <th class="p-3.5 rounded-r-2xl">Toplam Elde Edilen Tutar</th>
-                </tr>
-            `;
-            const tbody = document.getElementById('assets-table-body');
-            document.getElementById('holdings-count-badge').textContent = `${sellTxs.length} Satış Kaydı`;
-            tbody.innerHTML = '';
-
-            if (sellTxs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium text-xs">Satış kaydı bulunmamaktadır.</td></tr>`;
-                return;
-            }
-
-            sellTxs.forEach(tx => {
-                const total = tx.amount * tx.price;
-                const formattedDate = new Date(tx.date).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
-
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/40 transition';
-                tr.innerHTML = `
-                    <td class="p-3.5 text-xs text-slate-400 font-medium">${formattedDate}</td>
-                    <td class="p-3.5 font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                        ${getCoinIconHtml(tx.coin, 'w-6 h-6')}
-                        <span>${tx.coin}</span>
-                    </td>
-                    <td class="p-3.5 font-semibold text-xs">${tx.amount}</td>
-                    <td class="p-3.5 text-xs font-bold">${formatCurrencyVal(tx.price)}</td>
-                    <td class="p-3.5 font-extrabold text-xs text-emerald-500">${formatCurrencyVal(total)}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-            lucide.createIcons();
-        }
-
-        // Render Binance Live Watchlist
-        function renderMarketPrices() {
-            const container = document.getElementById('market-prices-list');
-            container.innerHTML = '';
-
-            Object.keys(MARKET_DATA).slice(0, 8).forEach(symbol => {
-                const coin = MARKET_DATA[symbol];
-                const isPos = coin.change >= 0;
-
-                const div = document.createElement('div');
-                div.className = 'flex justify-between items-center p-3 rounded-2xl v-input border hover:border-ventic-500/50 transition cursor-pointer shadow-sm';
-                div.onclick = () => { openModal(); selectCoinFromSearch(symbol); };
-                div.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        ${getCoinIconHtml(symbol, 'w-7 h-7')}
-                        <div>
-                            <div class="font-bold text-slate-900 dark:text-white text-xs leading-tight">${coin.name}</div>
-                            <div class="text-[10px] text-slate-400 font-semibold">${symbol}/USDT</div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-extrabold text-slate-900 dark:text-white text-xs">${formatCurrencyVal(coin.price)}</div>
-                        <div class="text-[10px] font-bold ${isPos ? 'text-emerald-500' : 'text-rose-500'}">
-                            ${isPos ? '+' : ''}${coin.change.toFixed(2)}%
-                        </div>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        // Render Transaction Management Table
-        function renderManageTable() {
-            const tbody = document.getElementById('manage-tx-table-body');
-            tbody.innerHTML = '';
-
-            let totalBuyVolume = 0;
-            let totalSellVolume = 0;
-
-            transactions.forEach(tx => {
-                const total = tx.amount * tx.price;
-                if (tx.type === 'BUY') totalBuyVolume += total;
-                else totalSellVolume += total;
-            });
-
-            document.getElementById('admin-summary-count').textContent = transactions.length;
-            document.getElementById('admin-summary-buy-volume').textContent = formatCurrencyVal(totalBuyVolume);
-            document.getElementById('admin-summary-sell-volume').textContent = formatCurrencyVal(totalSellVolume);
-
-            if (transactions.length > 0) {
-                const sorted = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-                document.getElementById('admin-summary-last-date').textContent = new Date(sorted[0].date).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
-            } else {
-                document.getElementById('admin-summary-last-date').textContent = '-';
-            }
-
-            if (transactions.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-400 text-xs font-medium">Kayıtlı işlem bulunmamaktadır.</td></tr>`;
-                return;
-            }
-
-            const sortedTx = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            sortedTx.forEach(tx => {
-                const total = tx.amount * tx.price;
-                const isBuy = tx.type === 'BUY';
-                const formattedDate = new Date(tx.date).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
-
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/40 transition';
-                tr.innerHTML = `
-                    <td class="p-3.5 text-xs text-slate-400 font-medium">${formattedDate}</td>
-                    <td class="p-3.5">
-                        <span class="px-2.5 py-1 text-[10px] rounded-xl font-bold ${isBuy ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}">
-                            ${isBuy ? 'ALIM' : 'SATIM'}
-                        </span>
-                    </td>
-                    <td class="p-3.5 font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        ${getCoinIconHtml(tx.coin, 'w-5 h-5')}
-                        <span>${tx.coin}</span>
-                    </td>
-                    <td class="p-3.5 font-semibold text-xs">${tx.amount}</td>
-                    <td class="p-3.5 text-xs">${formatCurrencyVal(tx.price)}</td>
-                    <td class="p-3.5 text-slate-900 dark:text-white font-bold text-xs">${formatCurrencyVal(total)}</td>
-                    <td class="p-3.5 text-right flex items-center justify-end gap-2">
-                        <button onclick="editTransaction(${tx.id})" class="p-1.5 text-slate-400 hover:text-ventic-600 transition" title="Düzenle">
-                            <i data-lucide="edit-3" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="deleteTransaction(${tx.id})" class="p-1.5 text-slate-400 hover:text-rose-500 transition" title="Sil">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-            lucide.createIcons();
-        }
-
-        // --- Charts Initialization ---
-        function initCharts() {
-            const ctxPie = document.getElementById('portfolioPieChart').getContext('2d');
-            pieChartInstance = new Chart(ctxPie, {
-                type: 'doughnut',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        data: [],
-                        backgroundColor: [],
-                        borderWidth: 0,
-                        hoverOffset: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    cutout: '76%'
-                }
-            });
-
-            const ctxTrend = document.getElementById('marketTrendChart').getContext('2d');
-            trendChartInstance = new Chart(ctxTrend, {
-                type: 'line',
-                data: {
-                    labels: ['10:00', '10:05', '10:10', '10:15', '10:20', '10:25', '10:30'],
-                    datasets: [
-                        {
-                            label: 'Bitcoin (BTC)',
-                            data: [64800, 65100, 64950, 65200, 65000, 65350, 65420],
-                            borderColor: '#10B981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            fill: true,
-                            tension: 0.35,
-                            borderWidth: 3
-                        },
-                        {
-                            label: 'Ethereum (ETH)',
-                            data: [3480, 3460, 3470, 3440, 3455, 3445, 3450],
-                            borderColor: '#6366F1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.08)',
-                            fill: true,
-                            tension: 0.35,
-                            borderWidth: 3
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#64748B', font: { family: 'Inter', size: 11, weight: '600' } } }
-                    },
-                    scales: {
-                        x: { grid: { color: 'rgba(148, 163, 184, 0.08)' }, ticks: { color: '#94A3B8', font: { size: 10 } } },
-                        y: { grid: { color: 'rgba(148, 163, 184, 0.08)' }, ticks: { color: '#94A3B8', font: { size: 10 } } }
-                    }
-                }
-            });
-        }
-
-        function updateCharts(assets) {
-            if (!pieChartInstance) return;
-
-            const labels = assets.map(a => a.symbol);
-            const data = assets.map(a => formatCurrencyVal(a.currentValue, true));
-            const colors = assets.map(a => MARKET_DATA[a.symbol]?.color || '#10B981');
-
-            pieChartInstance.data.labels = labels;
-            pieChartInstance.data.datasets[0].data = data;
-            pieChartInstance.data.datasets[0].backgroundColor = colors;
-            pieChartInstance.update();
-
-            const legendContainer = document.getElementById('chart-legend');
-            legendContainer.innerHTML = '';
-            assets.forEach(asset => {
-                const color = MARKET_DATA[asset.symbol]?.color || '#10B981';
-                const div = document.createElement('div');
-                div.className = 'flex items-center gap-2';
-                div.innerHTML = `
-                    <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${color}"></span>
-                    <span class="text-xs font-semibold">${asset.symbol}: <strong class="text-slate-900 dark:text-white">${formatCurrencyVal(asset.currentValue)}</strong></span>
-                `;
-                legendContainer.appendChild(div);
-            });
-        }
-
-        function updateChartsTheme() {
-            if (!trendChartInstance) return;
-            const textColor = currentTheme === 'dark' ? '#94A3B8' : '#64748B';
-            const gridColor = currentTheme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
-
-            trendChartInstance.options.scales.x.grid.color = gridColor;
-            trendChartInstance.options.scales.x.ticks.color = textColor;
-            trendChartInstance.options.scales.y.grid.color = gridColor;
-            trendChartInstance.options.scales.y.ticks.color = textColor;
-            trendChartInstance.options.plugins.legend.labels.color = textColor;
-            trendChartInstance.update();
-        }
-
-        // --- Autocomplete & Manual Coin Search ---
-        function filterCoinSearch() {
-            const query = document.getElementById('input-coin-search').value.toUpperCase().trim();
-            const dropdown = document.getElementById('coin-dropdown');
-            dropdown.innerHTML = '';
-
-            if (!query) {
-                dropdown.classList.add('hidden');
-                return;
-            }
-
-            const matches = Object.keys(MARKET_DATA).filter(symbol => {
-                const name = MARKET_DATA[symbol].name.toUpperCase();
-                return symbol.includes(query) || name.includes(query);
-            });
-
-            matches.forEach(symbol => {
-                const coin = MARKET_DATA[symbol];
-                const item = document.createElement('div');
-                item.className = 'flex items-center gap-3 p-3 hover:bg-ventic-50 dark:hover:bg-slate-800/60 cursor-pointer transition border-b border-slate-100 dark:border-slate-800/50 last:border-none';
-                item.onclick = () => selectCoinFromSearch(symbol);
-                item.innerHTML = `
-                    ${getCoinIconHtml(symbol, 'w-6 h-6')}
-                    <div class="flex-1">
-                        <span class="font-bold text-xs text-slate-900 dark:text-white">${symbol}</span>
-                        <span class="text-[10px] text-slate-400 ml-1">(${coin.name})</span>
-                    </div>
-                    <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200">$${coin.price}</span>
-                `;
-                dropdown.appendChild(item);
-            });
-
-            // Option to add custom/manual coin if not in matches
-            const manualItem = document.createElement('div');
-            manualItem.className = 'flex items-center justify-between p-3 bg-ventic-50 dark:bg-ventic-950/40 hover:bg-ventic-100 dark:hover:bg-ventic-900/60 cursor-pointer transition text-ventic-600 font-bold text-xs';
-            manualItem.onclick = () => selectManualCoin(query);
-            manualItem.innerHTML = `
-                <span>+ "${query}" Olarak Özel Coin Ekle</span>
-                <span class="text-[10px] text-slate-400 font-normal">Manuel Fiyat Girişi</span>
-            `;
-            dropdown.appendChild(manualItem);
-
-            dropdown.classList.remove('hidden');
-        }
-
-        function selectCoinFromSearch(symbol) {
-            const coin = MARKET_DATA[symbol];
-            document.getElementById('input-coin-search').value = symbol;
-            document.getElementById('selected-coin-symbol').value = symbol;
-            document.getElementById('coin-dropdown').classList.add('hidden');
-
-            if (coin && coin.price) {
-                document.getElementById('input-price').value = coin.price;
-                calculateAmountFromTotal();
-            }
-        }
-
-        function selectManualCoin(customSymbol) {
-            const cleanSymbol = customSymbol.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            if (!cleanSymbol) return;
-
-            document.getElementById('input-coin-search').value = cleanSymbol;
-            document.getElementById('selected-coin-symbol').value = cleanSymbol;
-            document.getElementById('coin-dropdown').classList.add('hidden');
-
-            if (!MARKET_DATA[cleanSymbol]) {
-                MARKET_DATA[cleanSymbol] = {
-                    name: cleanSymbol,
-                    symbol: cleanSymbol,
-                    price: 0,
-                    change: 0,
-                    color: '#10B981',
-                    binanceSymbol: `${cleanSymbol}USDT`
-                };
-            }
-
-            document.getElementById('input-price').focus();
-            showToast(`"${cleanSymbol}" özel sembol olarak seçildi. Lütfen birim fiyatı girin.`);
-        }
-
-        function calculateAmountFromTotal() {
-            const total = parseFloat(document.getElementById('input-total-amount').value);
-            const price = parseFloat(document.getElementById('input-price').value);
-            const amountInput = document.getElementById('input-amount');
-
-            if (total && price && price > 0) {
-                const calcAmount = total / price;
-                amountInput.value = calcAmount % 1 === 0 ? calcAmount : calcAmount.toFixed(6);
-            }
-        }
-
-        function quickSearchFilter(val) {
-            if (!val) return;
-            const matchedSymbol = Object.keys(MARKET_DATA).find(s => s.toLowerCase() === val.toLowerCase().trim());
-            if (matchedSymbol) {
-                openModal();
-                selectCoinFromSearch(matchedSymbol);
-            }
-        }
-
-        // --- Modals & Form Logic ---
-        function openModal() {
-            document.getElementById('edit-tx-id').value = '';
-            document.getElementById('input-coin-search').value = '';
-            document.getElementById('selected-coin-symbol').value = '';
-            document.getElementById('input-total-amount').value = '';
-            document.getElementById('input-amount').value = '';
-            document.getElementById('input-price').value = '';
+            initDateInput();
+            initCharts();
             
-            document.getElementById('modal-title').innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-ventic-600"></i> Yeni İşlem Kaydı`;
-            document.getElementById('tx-modal').classList.remove('hidden');
-            lucide.createIcons();
-        }
+            // Apply Saved Preset
+            document.getElementById('preset-selector').value = activeDesignPreset;
+            applyDesignPreset(activeDesignPreset, false);
 
-        function closeModal() {
-            document.getElementById('tx-modal').classList.add('hidden');
-        }
+            loadUserProfile();
 
-        function initDateInput() {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('input-date').value = now.toISOString().slice(0, 16);
-        }
+            fetchBinancePrices();
+            setInterval(fetchBinancePrices, 5000);
 
-        function setTxType(type) {
-            selectedTxType = type;
-            const btnBuy = document.getElementById('btn-type-buy');
-            const btnSell = document.getElementById('btn-type-sell');
+            updateDashboard();
+        };
 
-            if (type === 'BUY') {
-                btnBuy.className = 'py-2.5 rounded-2xl border font-bold text-xs transition border-ventic-600 bg-ventic-50 dark:bg-ventic-950/50 text-ventic-600';
-                btnSell.className = 'py-2.5 rounded-2xl border font-bold text-xs transition border-slate-200 dark:border-slate-700 text-slate-400';
-            } else {
-                btnSell.className = 'py-2.5 rounded-2xl border font-bold text-xs transition border-rose-500 bg-rose-50 dark:bg-rose-950/50 text-rose-500';
-                btnBuy.className = 'py-2.5 rounded-2xl border font-bold text-xs transition border-slate-200 dark:border-slate-700 text-slate-400';
-            }
-        }
-
-        function handleFormSubmit(event) {
-            event.preventDefault();
-
-            const editId = document.getElementById('edit-tx-id').value;
-            let coin = document.getElementById('selected-coin-symbol').value.toUpperCase().trim();
-
-            if (!coin) {
-                coin = document.getElementById('input-coin-search').value.toUpperCase().trim();
+        // --- Design Preset Switcher Engine ---
+        function applyDesignPreset(presetKey, save = true) {
+            activeDesignPreset = presetKey;
+            const html = document.documentElement;
+            
+            if (save) {
+                localStorage.setItem('cryptodash_preset', presetKey);
             }
 
-            const amount = parseFloat(document.getElementById('input-amount').value);
-            const price = parseFloat(document.getElementById('input-price').value);
-            const date = document.getElementById('input-date').value;
+            html.setAttribute('data-preset', presetKey);
 
-            if (!coin) {
-                showToast('Lütfen bir kripto para seçin veya yazın.', true);
-                return;
+            // Handle dark/light base class for presets
+            if (presetKey === 'cyber' || presetKey === 'sunset') {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                currentTheme = 'dark';
+            } else if (presetKey === 'royal' || presetKey === 'mono') {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                currentTheme = 'light';
             }
 
-            if (!amount || !price || amount <= 0 || price <= 0) {
-                showToast('Geçerli miktar ve birim fiyat girin.', true);
-                return;
-            }
-
-            // Register coin if manual
-            if (!MARKET_DATA[coin]) {
-                MARKET_DATA[coin] = {
-                    name: coin,
-                    symbol: coin,
-                    price: price,
-                    change: 0,
-                    color: '#10B981',
-                    binanceSymbol: `${coin}USDT`
-                };
-            }
-
-            if (editId) {
-                const index = transactions.findIndex(t => t.id == editId);
-                if (index !== -1) {
-                    transactions[index] = { id: parseInt(editId), type: selectedTxType, coin, amount, price, date };
-                    showToast('İşlem kaydı güncellendi.');
+            // Sync preset dynamic chart colors
+            if (trendChartInstance && trendChartInstance.data.datasets.length >= 2) {
+                if (presetKey === 'cyber') {
+                    trendChartInstance.data.datasets[0].borderColor = '#06B6D4';
+                    trendChartInstance.data.datasets[0].backgroundColor = 'rgba(6, 182, 212, 0.1)';
+                    trendChartInstance.data.datasets[1].borderColor = '#6366F1';
+                } else if (presetKey === 'sunset') {
+                    trendChartInstance.data.datasets[0].borderColor = '#F59E0B';
+                    trendChartInstance.data.datasets[0].backgroundColor = 'rgba(245, 158, 11, 0.1)';
+                    trendChartInstance.data.datasets[1].borderColor = '#F97316';
+                } else if (presetKey === 'royal') {
+                    trendChartInstance.data.datasets[0].borderColor = '#4F46E5';
+                    trendChartInstance.data.datasets[0].backgroundColor = 'rgba(79, 70, 229, 0.1)';
+                    trendChartInstance.data.datasets[1].borderColor = '#0EA5E9';
+                } else if (presetKey === 'mono') {
+                    trendChartInstance.data.datasets[0].borderColor = '#000000';
+                    trendChartInstance.data.datasets[0].backgroundColor = 'rgba(0, 0, 0, 0.05)';
+                    trendChartInstance.data.datasets[1].borderColor = '#666666';
+                } else {
+                    trendChartInstance.data.datasets[0].borderColor = '#10B981';
+                    trendChartInstance.data.datasets[0].backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                    trendChartInstance.data.datasets[1].borderColor = '#6366F1';
                 }
-            } else {
-                const newTx = { id: Date.now(), type: selectedTxType, coin, amount, price, date };
-                transactions.push(newTx);
-                showToast('Yeni işlem kaydedildi!');
+                trendChartInstance.update();
             }
 
-            saveTransactions();
-            closeModal();
-            updateDashboard();
+            updateChartsTheme();
+            showToast(`Tasarım "${presetKey.toUpperCase()}" temasına değiştirildi.`);
         }
 
-        function editTransaction(id) {
-            const tx = transactions.find(t => t.id === id);
-            if (!tx) return;
-
-            document.getElementById('edit-tx-id').value = tx.id;
-            selectCoinFromSearch(tx.coin);
-            document.getElementById('input-amount').value = tx.amount;
-            document.getElementById('input-price').value = tx.price;
-            document.getElementById('input-total-amount').value = (tx.amount * tx.price).toFixed(2);
-            document.getElementById('input-date').value = tx.date;
-            setTxType(tx.type);
-
-            document.getElementById('modal-title').innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-ventic-600"></i> İşlem Kaydını Düzenle`;
-            document.getElementById('tx-modal').classList.remove('hidden');
-            lucide.createIcons();
-        }
-
-        function deleteTransaction(id) {
-            transactions = transactions.filter(t => t.id !== id);
-            saveTransactions();
-            updateDashboard();
-            showToast('İşlem silindi.');
-        }
-
-        function clearAllTransactions() {
-            transactions = [];
-            saveTransactions();
-            updateDashboard();
-            showToast('Tüm kayıtlar temizlendi.');
-        }
-
-        // --- Notification Toast ---
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toast-message');
-
-            toastMsg.textContent = message;
-            toast.className = `fixed bottom-6 right-6 v-card border text-slate-900 dark:text-white px-4 py-3 rounded-2xl shadow-2xl transition transform z-50 flex items-center gap-3 ${
-                isError ? 'border-rose-500/50 text-rose-500' : ''
-            }`;
-
-            toast.classList.remove('translate-y-20', 'opacity-0');
-
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
-        }
+        // ... existing logic ...
     </script>
 <!-- ... existing code -->
