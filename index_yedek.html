@@ -386,6 +386,11 @@
 </section>
 
     <div id="app-root" class="hidden">
+    <div id="readonly-demo-banner" class="hidden mx-4 mt-3 rounded-xl border border-violet-400/25 bg-violet-500/10 px-4 py-3 text-sm text-violet-200 lg:mx-8">
+        <i data-lucide="eye" class="mr-2 inline h-4 w-4"></i>
+        <strong>Demo modu · Salt okunur</strong>
+        <span class="ml-1 text-violet-200/80">Piyasa verilerini inceleyebilirsiniz; portföy ve hesap bilgileri değiştirilemez.</span>
+    </div>
 
 
     <!-- Top Navigation Bar -->
@@ -423,7 +428,7 @@
                 <div id="profile-dropdown" class="hidden absolute right-0 top-full z-[90] mt-2 w-56 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 p-1.5 shadow-2xl">
                     <div class="px-3 py-2"><p class="text-[10px] uppercase tracking-wider text-slate-500">Hesap</p><p id="account-email" class="mt-1 truncate text-xs text-slate-300"></p></div>
                     <div class="my-1 border-t border-slate-800"></div>
-                    <button type="button" onclick="openProfileFromMenu()" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-200 hover:bg-slate-800"><i data-lucide="user-round-pen" class="h-4 w-4 text-indigo-400"></i><span>Profilimi düzenle</span></button>
+                    <button id="profile-edit-action" type="button" onclick="openProfileFromMenu()" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-200 hover:bg-slate-800"><i data-lucide="user-round-pen" class="h-4 w-4 text-indigo-400"></i><span>Profilimi düzenle</span></button>
                     <div class="my-1 border-t border-slate-800"></div>
                     <button type="button" onclick="signOut()" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-rose-400 hover:bg-rose-500/10"><i data-lucide="log-out" class="h-4 w-4"></i><span>Güvenli çıkış</span></button>
                 </div>
@@ -441,7 +446,7 @@
             </button>
 
             <!-- Quick Action Button -->
-            <button onclick="openModal()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-3.5 py-2.5 rounded-xl transition shadow-md shadow-indigo-600/20 active:scale-95">
+            <button data-demo-mutation onclick="openModal()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-3.5 py-2.5 rounded-xl transition shadow-md shadow-indigo-600/20 active:scale-95">
                 <i data-lucide="plus" class="w-4 h-4"></i>
                 <span class="hidden sm:inline">Hızlı İşlem</span>
             </button>
@@ -715,7 +720,7 @@
                             <i data-lucide="sliders" class="w-4 h-4 text-indigo-500"></i> Tüm Kayıtlı İşlemleri Düzenle
                         </h2>
                         <div class="flex items-center gap-2">
-                            <button onclick="openModal()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
+                            <button data-demo-mutation onclick="openModal()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
                                 <i data-lucide="plus" class="w-3.5 h-3.5"></i> Yeni Ekle
                             </button>
                             <button onclick="clearAllTransactions()" class="text-xs text-rose-500 hover:text-rose-600 transition border border-rose-500/20 px-3 py-1.5 rounded-lg">
@@ -910,6 +915,8 @@
 
         let dbClient = null;
         let activeUserId = null;
+        let activeAccessMode = 'full';
+        const READONLY_DEMO_MODE = 'readonly_demo';
         let appInitializedForUser = null;
         let currentPinCode = '1234'; // Yalnızca arayüz kilidi; gerçek erişim Supabase Auth + RLS ile korunur.
         let isManageUnlocked = false;
@@ -921,6 +928,40 @@
         let marketRetryMs = 2000;
 
         let authMode = 'signin';
+
+        function isReadOnlyDemo() {
+            return activeAccessMode === READONLY_DEMO_MODE;
+        }
+
+        function denyDemoMutation(action = 'Bu işlem') {
+            if (!isReadOnlyDemo()) return false;
+            showToast('Demo hesap salt okunurdur. ' + action + ' yapılamaz.', true);
+            return true;
+        }
+
+        function applyAccessModeUI() {
+            document.body.classList.toggle('readonly-demo', isReadOnlyDemo());
+            const banner = document.getElementById('readonly-demo-banner');
+            if (banner) banner.classList.toggle('hidden', !isReadOnlyDemo());
+            if (isReadOnlyDemo()) {
+                isManageUnlocked = false;
+                document.getElementById('page-manage')?.classList.add('hidden');
+                document.getElementById('page-dashboard')?.classList.remove('hidden');
+                document.getElementById('profile-modal')?.classList.add('hidden');
+                document.getElementById('tx-modal')?.classList.add('hidden');
+                document.getElementById('forgot-credentials-modal')?.classList.add('hidden');
+                document.getElementById('password-reset-modal')?.classList.add('hidden');
+                document.getElementById('nav-manage')?.classList.add('hidden');
+                document.getElementById('mobile-nav-manage')?.classList.add('hidden');
+                document.getElementById('profile-edit-action')?.classList.add('hidden');
+                document.querySelectorAll('[data-demo-mutation]').forEach(el => el.classList.add('hidden'));
+            } else {
+                document.getElementById('nav-manage')?.classList.remove('hidden');
+                document.getElementById('mobile-nav-manage')?.classList.remove('hidden');
+                document.getElementById('profile-edit-action')?.classList.remove('hidden');
+                document.querySelectorAll('[data-demo-mutation]').forEach(el => el.classList.remove('hidden'));
+            }
+        }
 
         // Binance Market Data Configuration & Icon SVGs
         const MARKET_DATA = {
@@ -1175,11 +1216,14 @@ async function activateApp(session) {
   if (!session?.user || !dbClient) return;
 
   const userId = session.user.id;
+  activeAccessMode = session.user.app_metadata?.access_mode === READONLY_DEMO_MODE ? READONLY_DEMO_MODE : 'full';
+  applyAccessModeUI();
   // Kullanıcı aynıysa ve dashboard hazırsa tekrar veri/grafik başlatma.
   if (appInitializedForUser === userId && activeUserId === userId) {
     document.getElementById('auth-screen').classList.add('hidden');
     document.getElementById('credential-setup-screen').classList.add('hidden');
     document.getElementById('app-root').classList.remove('hidden');
+    applyAccessModeUI();
     return;
   }
 
@@ -1211,10 +1255,17 @@ async function activateApp(session) {
       profile.username || session.user.email || '';
     document.getElementById('profile-display-username').textContent = profile.username || '';
     document.getElementById('profile-username-readonly').textContent = profile.username || '';
-    await loadProfileDetails(profile.username || '');
-    await loadTransactions();
+    if (isReadOnlyDemo()) {
+      currentProfileDetails = { first_name: '', last_name: '', avatar_url: '' };
+      transactions = [];
+      updateHeaderProfile();
+    } else {
+      await loadProfileDetails(profile.username || '');
+      await loadTransactions();
+    }
     initCharts();
     updateDashboard();
+    applyAccessModeUI();
     connectBinanceStream();
     void refreshUsdTryRate();
     lucide.createIcons();
@@ -1255,6 +1306,8 @@ async function activateApp(session) {
 }
 
         function deactivateApp() {
+            activeAccessMode = 'full';
+            applyAccessModeUI();
             activeUserId = null;
             appInitializedForUser = null;
             transactions = [];
@@ -1289,27 +1342,7 @@ async function activateApp(session) {
             if (error) throw error;
 
             let rows = data || [];
-            // Demo transactions are added only to a truly empty account. Existing user records are never overwritten.
-            if (rows.length === 0) {
-                const now = Date.now();
-                const demoRows = [
-                    { user_id: activeUserId, type: 'buy', coin: 'SOL', amount: 2500 / 102, price: 102, fee: 0, executed_at: new Date(now - 3 * 60 * 1000).toISOString() },
-                    { user_id: activeUserId, type: 'sell', coin: 'SOL', amount: 1050 / 125, price: 125, fee: 0, executed_at: new Date(now - 2 * 60 * 1000).toISOString() },
-                    { user_id: activeUserId, type: 'buy', coin: 'SOL', amount: 1500 / 98, price: 98, fee: 0, executed_at: new Date(now - 1 * 60 * 1000).toISOString() }
-                ];
-                try {
-                    const { data: seededRows, error: seedError } = await dbClient
-                        .from('transactions')
-                        .insert(demoRows)
-                        .select('id, type, coin, amount, price, executed_at, fee');
-                    if (seedError) throw seedError;
-                    rows = (seededRows || []).sort((a, b) => new Date(a.executed_at) - new Date(b.executed_at));
-                    showToast('Örnek SOL senaryosu yüklendi. İstersen işlem yönetiminden silebilirsin.');
-                } catch (seedError) {
-                    console.warn('Örnek SOL işlemleri otomatik yüklenemedi:', seedError);
-                    // Do not block app startup if demo data cannot be inserted.
-                }
-            }
+            // Empty accounts stay empty: never insert sample trades into a real or read-only account.
 
             transactions = rows.map(row => {
                 const symbol = String(row.coin || '').toUpperCase();
@@ -1480,6 +1513,10 @@ async function activateApp(session) {
 
         // --- Navigation Switcher ---
         function switchTab(tab) {
+            if (tab === 'manage' && isReadOnlyDemo()) {
+                denyDemoMutation('İşlem yönetimi ekranına erişim');
+                tab = 'dashboard';
+            }
             const pageDash = document.getElementById('page-dashboard');
             const pageManage = document.getElementById('page-manage');
             
@@ -2366,6 +2403,7 @@ async function activateApp(session) {
 
         // --- Modal & Form Actions ---
         function openModal() {
+            if (denyDemoMutation('İşlem ekleme')) return;
             document.getElementById('edit-tx-id').value = '';
             document.getElementById('input-coin-search').value = '';
             document.getElementById('selected-coin-symbol').value = '';
@@ -2517,6 +2555,7 @@ async function activateApp(session) {
         }
 
         function editTransaction(id) {
+            if (denyDemoMutation('İşlem düzenleme')) return;
             const tx = transactions.find(t => String(t.id) === String(id));
             if (!tx) return;
 
@@ -2542,6 +2581,7 @@ async function activateApp(session) {
         }
 
         async function deleteTransaction(id) {
+            if (denyDemoMutation('İşlem silme')) return;
             if (!dbClient || !activeUserId) return;
             if (!confirm('Bu işlem kaydını kalıcı olarak silmek istiyor musunuz?')) return;
             try {
@@ -2557,6 +2597,7 @@ async function activateApp(session) {
         }
 
         async function clearAllTransactions() {
+            if (denyDemoMutation('İşlemleri silme')) return;
             if (!dbClient || !activeUserId) return;
             if (!transactions.length) {
                 showToast('Silinecek işlem bulunmuyor.');
@@ -2627,6 +2668,7 @@ async function activateApp(session) {
             } finally { button.disabled = false; button.textContent = 'Kullanıcı adımı hatırlat'; }
         }
         async function saveRecoveredPassword(event) {
+            if (denyDemoMutation('Şifre değiştirme')) { event?.preventDefault?.(); return; }
             event.preventDefault();
             const password = document.getElementById('recovery-new-password').value;
             const confirm = document.getElementById('recovery-confirm-password').value;
@@ -2702,10 +2744,12 @@ async function activateApp(session) {
             if (button) button.setAttribute('aria-expanded', 'false');
         }
         function openProfileFromMenu() {
+            if (denyDemoMutation('Profil düzenleme')) return;
             closeProfileMenu();
             openProfileModal();
         }
         function openProfileModal() {
+            if (denyDemoMutation('Profil düzenleme')) return;
             closeProfileMenu();
             document.getElementById('profile-message').textContent = '';
             document.getElementById('profile-modal').classList.remove('hidden');
@@ -2713,6 +2757,7 @@ async function activateApp(session) {
         }
         function closeProfileModal() { document.getElementById('profile-modal').classList.add('hidden'); }
         async function saveProfile(event) {
+            if (denyDemoMutation('Profil kaydetme')) { event?.preventDefault?.(); return; }
             event.preventDefault();
             if (!dbClient || !activeUserId) return;
             const first_name = document.getElementById('profile-first-name').value.trim();
