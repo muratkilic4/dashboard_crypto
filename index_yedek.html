@@ -723,7 +723,7 @@
                             <button data-demo-mutation onclick="openModal()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
                                 <i data-lucide="plus" class="w-3.5 h-3.5"></i> Yeni Ekle
                             </button>
-                            <button onclick="clearAllTransactions()" class="text-xs text-rose-500 hover:text-rose-600 transition border border-rose-500/20 px-3 py-1.5 rounded-lg">
+                            <button data-demo-mutation onclick="clearAllTransactions()" class="text-xs text-rose-500 hover:text-rose-600 transition border border-rose-500/20 px-3 py-1.5 rounded-lg">
                                 Tümünü Temizle
                             </button>
                         </div>
@@ -1065,6 +1065,7 @@
 
 document.getElementById('credential-setup-form')
   .addEventListener('submit', async (event) => {
+    if (denyDemoMutation('İlk kurulum bilgilerini değiştirme')) { event.preventDefault(); return; }
     event.preventDefault();
 
     const username = document.getElementById('setup-username').value.trim();
@@ -1245,7 +1246,7 @@ async function activateApp(session) {
     if (profileError) throw profileError;
     if (!profile) throw new Error('Hesap profili bulunamadı.');
 
-    if (profile.must_change_credentials) {
+    if (profile.must_change_credentials && !isReadOnlyDemo()) {
       document.getElementById('app-root').classList.add('hidden');
       document.getElementById('credential-setup-screen').classList.remove('hidden');
       return;
@@ -2377,6 +2378,7 @@ async function activateApp(session) {
 
         // Admin panelindeki coin satırından doğrudan alış/satış formunu aç.
         function openCoinTrade(symbol, type) {
+            if (denyDemoMutation('Alım/satım formunu açma')) return;
             symbol = String(symbol || '').toUpperCase().trim();
             const meta = MARKET_DATA[symbol];
             if (!symbol || !meta) {
@@ -2451,6 +2453,7 @@ async function activateApp(session) {
         }
 
         async function handleFormSubmit(event) {
+            if (denyDemoMutation('İşlem kaydetme')) { event?.preventDefault?.(); return; }
             event.preventDefault();
             if (!dbClient || !activeUserId) {
                 showToast('İşlem kaydetmek için giriş yapmalısınız.', true);
@@ -2637,6 +2640,7 @@ async function activateApp(session) {
         }
         function closeRecoveryModal() { document.getElementById('forgot-credentials-modal').classList.add('hidden'); }
         async function sendPasswordReset() {
+            if (denyDemoMutation('Şifre sıfırlama')) return;
             const email = document.getElementById('recovery-email').value.trim();
             const message = document.getElementById('recovery-message');
             const button = document.getElementById('send-password-reset');
@@ -2653,6 +2657,7 @@ async function activateApp(session) {
             } finally { button.disabled = false; button.textContent = 'Şifremi sıfırla'; }
         }
         async function sendUsernameReminder() {
+            if (denyDemoMutation('Kullanıcı adı hatırlatma')) return;
             const email = document.getElementById('recovery-email').value.trim();
             const message = document.getElementById('recovery-message');
             const button = document.getElementById('send-username-reminder');
