@@ -2573,8 +2573,12 @@ async function activateApp(session) {
                 values.push(Number(cumulative.toFixed(8)));
             });
             const periodNote = document.getElementById('performance-chart-period-note');
-            if (periodNote) periodNote.textContent = performanceRange === '7d' ? 'Son 7 gündeki satışlar'
-                : performanceRange === '30d' ? 'Son 30 gündeki satışlar' : 'Tüm kayıtlı satışlar';
+            const winningSales = periodSales.filter(tx => Number(realizedById.get(String(tx.id)) || 0) > 0).length;
+            const winRate = periodSales.length ? Math.round(winningSales / periodSales.length * 100) : 0;
+            const periodLabel = performanceRange === '7d' ? 'Son 7 gün' : performanceRange === '30d' ? 'Son 30 gün' : 'Tüm dönem';
+            if (periodNote) periodNote.textContent = periodSales.length
+                ? `${periodLabel} · ${periodSales.length} satış · kârlı satış ${winRate}%`
+                : `${periodLabel} · Bu dönemde satış yok`;
             document.querySelectorAll('[data-performance-range]').forEach(button => {
                 const active = button.dataset.performanceRange === performanceRange;
                 button.classList.toggle('is-active', active);
