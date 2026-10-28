@@ -1538,7 +1538,7 @@ async function activateApp(session) {
             return { totalValue, totalCost, unrealizedPnL, unrealizedPnLPercent, realizedPnL, assetDetails };
         }
 
-        function validateTransactionSet(candidate) {
+        function validateTransactionSet(candidate, targetId) {
             const balances = new Map();
             const ordered = [...candidate].sort((a, b) => {
                 const dateDiff = new Date(a.date) - new Date(b.date);
@@ -1547,13 +1547,7 @@ async function activateApp(session) {
                 const bPriority = String(b.type).toUpperCase() === 'BUY' ? 0 : 1;
                 return aPriority - bPriority;
             });
-            // Validate the transaction being saved, rather than blocking every future save
-            // because an older historical record is already inconsistent.
-            const target = candidate.find(tx => String(tx.id).startsWith('new-')) || null;
-            // During edits the candidate row keeps the existing database id. The latest row
-            // in candidate is the submitted transaction, because handleFormSubmit appends/replaces it.
-            const submitted = candidate[candidate.length - 1];
-            const targetId = target ? target.id : submitted?.id;
+            // Validate only the submitted row so pre-existing historical inconsistencies do not block saves.
 
             for (const tx of ordered) {
                 const amount = Number(tx.amount);
@@ -2281,7 +2275,7 @@ async function activateApp(session) {
             const candidate = editId
                 ? transactions.map(tx => String(tx.id) === String(editId) ? candidateTx : tx)
                 : [...transactions, candidateTx];
-            const validationError = validateTransactionSet(candidate);
+            const validationError = validateTransactionSet(candidate, candidateTx.id);
             if (validationError) {
                 showToast(validationError, true);
                 return;
