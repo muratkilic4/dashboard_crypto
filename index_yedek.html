@@ -670,16 +670,10 @@
                 </div>
 
                 <!-- Total Spent / Received (Alım/Satım Tutarı) -->
-                <div>
-                    <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Toplam İşlem Tutarı ($)</label>
-                    <input type="number" step="any" id="input-total-amount" oninput="calculateAmountFromTotal()" placeholder="Örn: 500" class="w-full input-bg border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500">
-                </div>
-
-                <!-- Price Per Unit -->
-                <div>
-                    <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Birim Fiyat ($)</label>
-                    <input type="number" step="any" id="input-price" required oninput="calculateAmountFromTotal()" placeholder="0.00" class="w-full input-bg border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500">
-                </div>
+                <div class="flex items-center justify-between gap-2"><label id="total-amount-label" class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Toplam İşlem Tutarı (USDT)</label><span id="trade-market-badge" class="hidden text-[10px] font-bold rounded-md px-2 py-1 bg-sky-500/10 text-sky-500">Binance TR</span></div>
+                <input type="number" step="any" id="input-total-amount" oninput="calculateAmountFromTotal()" placeholder="Örn: 500" class="w-full input-bg border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500">
+                <div class="mt-3"><label class="block text-xs text-slate-500 dark:text-slate-400 mb-2">İşlem para birimi</label><div class="grid grid-cols-2 gap-2"><button type="button" id="quote-usdt" onclick="setTradeCurrency('USDT')" class="py-2 rounded-xl border font-semibold text-xs transition">USDT · Binance</button><button type="button" id="quote-try" onclick="setTradeCurrency('TRY')" class="py-2 rounded-xl border font-semibold text-xs transition">TL · Binance TR</button></div></div>
+                <div class="mt-3"><label id="unit-price-label" class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Birim Fiyat (USDT)</label><input type="number" step="any" id="input-price" required oninput="calculateAmountFromTotal()" placeholder="0.00" class="w-full input-bg border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500"></div>
 
                 <!-- Calculated Amount (Miktar) -->
                 <div>
@@ -806,6 +800,7 @@
         let transactions = [];
 
         let selectedTxType = 'BUY';
+        let selectedTradeCurrency = 'USDT';
         let pieChartInstance = null;
         let performanceChartInstance = null;
 
@@ -1141,10 +1136,10 @@ async function activateApp(session) {
         }
 
         async function loadTransactions() {
-            const columns = 'id, type, coin, amount, price, executed_at, fee, coin_id, coin_name, coin_image, binance_symbol';
+            const columns = 'id, type, coin, amount, price, executed_at, fee, coin_id, coin_name, coin_image, binance_symbol, trade_currency, trade_market';
             let data, error;
             ({ data, error } = await dbClient.from('transactions').select(columns).eq('user_id', activeUserId).order('executed_at', { ascending: true }));
-            if (error && /coin_id|coin_name|coin_image|binance_symbol|column/i.test(error.message || '')) {
+            if (error && /coin_id|coin_name|coin_image|binance_symbol|trade_currency|trade_market|column/i.test(error.message || '')) {
                 ({ data, error } = await dbClient.from('transactions').select('id, type, coin, amount, price, executed_at, fee').eq('user_id', activeUserId).order('executed_at', { ascending: true }));
             }
             if (error) throw error;
@@ -1177,7 +1172,7 @@ async function activateApp(session) {
                 if (row.coin_id || row.coin_image || row.coin_name) {
                     MARKET_DATA[symbol] = { ...(MARKET_DATA[symbol] || {}), symbol, name: row.coin_name || MARKET_DATA[symbol]?.name || symbol, coinGeckoId: row.coin_id || MARKET_DATA[symbol]?.coinGeckoId || '', icon: row.coin_image || MARKET_DATA[symbol]?.icon || '', binanceSymbol: row.binance_symbol || MARKET_DATA[symbol]?.binanceSymbol || '', price: MARKET_DATA[symbol]?.price || Number(row.price) || 0, change: MARKET_DATA[symbol]?.change || 0, color: MARKET_DATA[symbol]?.color || '#6366F1' };
                 }
-                return { id: row.id, type: String(row.type || '').toUpperCase(), coin: symbol, coinId: row.coin_id || MARKET_DATA[symbol]?.coinGeckoId || '', coinName: row.coin_name || MARKET_DATA[symbol]?.name || symbol, coinImage: row.coin_image || MARKET_DATA[symbol]?.icon || '', binanceSymbol: row.binance_symbol || MARKET_DATA[symbol]?.binanceSymbol || '', amount: Number(row.amount), price: Number(row.price), fee: Number(row.fee || 0), date: toLocalDateTimeInput(row.executed_at) };
+                return { id: row.id, type: String(row.type || '').toUpperCase(), coin: symbol, coinId: row.coin_id || MARKET_DATA[symbol]?.coinGeckoId || '', coinName: row.coin_name || MARKET_DATA[symbol]?.name || symbol, coinImage: row.coin_image || MARKET_DATA[symbol]?.icon || '', binanceSymbol: row.binance_symbol || MARKET_DATA[symbol]?.binanceSymbol || '', tradeCurrency: row.trade_currency || 'USDT', tradeMarket: row.trade_market || (row.trade_currency === 'TRY' ? 'Binance TR' : 'Binance'), amount: Number(row.amount), price: Number(row.price), fee: Number(row.fee || 0), date: toLocalDateTimeInput(row.executed_at) };
             });
         }
 
@@ -1923,6 +1918,30 @@ async function activateApp(session) {
 
         // BUY: total + unit price calculates coin amount.
         // SELL: coin amount + unit price calculates total proceeds.
+        function setTradeCurrency(currency, preserveValues = false) {
+            const oldCurrency = selectedTradeCurrency;
+            if (currency !== 'TRY' && currency !== 'USDT') currency = 'USDT';
+            if (!preserveValues && oldCurrency !== currency) {
+                const rate = Number(usdToTryRate);
+                if (Number.isFinite(rate) && rate > 0) {
+                    const factor = currency === 'TRY' ? rate : 1 / rate;
+                    ['input-price','input-total-amount'].forEach(id => { const el=document.getElementById(id); if(el.value) el.value=(Number(el.value)*factor).toPrecision(10); });
+                }
+            }
+            selectedTradeCurrency = currency; updateTradeCurrencyUI(); calculateAmountFromTotal();
+        }
+        function updateTradeCurrencyUI() {
+            const isTRY=selectedTradeCurrency==='TRY', a=document.getElementById('quote-usdt'), b=document.getElementById('quote-try');
+            if(a) a.className='py-2 rounded-xl border font-semibold text-xs transition '+(!isTRY?'border-indigo-500 bg-indigo-500/10 text-indigo-500':'border-slate-300 dark:border-slate-700 text-slate-500');
+            if(b) b.className='py-2 rounded-xl border font-semibold text-xs transition '+(isTRY?'border-indigo-500 bg-indigo-500/10 text-indigo-500':'border-slate-300 dark:border-slate-700 text-slate-500');
+            const unit=document.getElementById('unit-price-label'), total=document.getElementById('total-amount-label'), badge=document.getElementById('trade-market-badge');
+            if(unit) unit.textContent='Birim Fiyat ('+(isTRY?'TL':'USDT')+')';
+            if(total) total.textContent=(selectedTxType==='SELL'?'Toplam Satış Tutarı (':'Toplam İşlem Tutarı (')+(isTRY?'TL':'USDT')+')';
+            if(badge) badge.classList.toggle('hidden',!isTRY);
+        }
+        function tradePriceToUsd(value) { const n=Number(value); if(!Number.isFinite(n)) return NaN; if(selectedTradeCurrency==='USDT') return n; const r=Number(usdToTryRate); return Number.isFinite(r)&&r>0?n/r:NaN; }
+        function tradePriceFromUsd(value,currency) { const n=Number(value); if(!Number.isFinite(n)) return ''; if(currency==='TRY'){const r=Number(usdToTryRate);return Number.isFinite(r)&&r>0?n*r:'';} return n; }
+
         function calculateAmountFromTotal() {
             const totalInput = document.getElementById('input-total-amount');
             const total = parseFloat(totalInput.value);
@@ -1954,12 +1973,13 @@ async function activateApp(session) {
             const totalInput = document.getElementById('input-total-amount');
             const totalLabel = totalInput?.previousElementSibling;
             const amountLabel = document.getElementById('input-amount')?.previousElementSibling;
-            if (totalLabel) totalLabel.textContent = selectedTxType === 'SELL' ? 'Toplam Satış Tutarı ($) · Otomatik' : 'Toplam Alım Tutarı ($)';
+            if (totalLabel) totalLabel.textContent = selectedTxType === 'SELL' ? 'Toplam Satış Tutarı (' + (selectedTradeCurrency === 'TRY' ? 'TL' : 'USDT') + ') · Otomatik' : 'Toplam İşlem Tutarı (' + (selectedTradeCurrency === 'TRY' ? 'TL' : 'USDT') + ')';
             if (amountLabel) amountLabel.textContent = selectedTxType === 'SELL' ? 'Satılan Miktar (Coin Adedi)' : 'Coin Miktarı';
             if (totalInput) {
                 totalInput.readOnly = selectedTxType === 'SELL';
                 totalInput.classList.toggle('opacity-70', selectedTxType === 'SELL');
             }
+            updateTradeCurrencyUI();
             if (selectedTxType === 'SELL') calculateTotalFromAmount();
             else calculateAmountFromTotal();
         }
@@ -1973,6 +1993,7 @@ async function activateApp(session) {
             document.getElementById('input-total-amount').value = '';
             document.getElementById('input-amount').value = '';
             document.getElementById('input-price').value = '';
+            setTradeCurrency('USDT', true); updateTradeCurrencyUI();
             setTxType('BUY');
             initDateInput();
             
@@ -2017,7 +2038,8 @@ async function activateApp(session) {
             const coin = document.getElementById('selected-coin-symbol').value.toUpperCase().trim();
             const coinMeta = MARKET_DATA[coin];
             const amount = Number(document.getElementById('input-amount').value);
-            const price = Number(document.getElementById('input-price').value);
+            const enteredPrice = Number(document.getElementById('input-price').value);
+            const price = tradePriceToUsd(enteredPrice);
             const date = document.getElementById('input-date').value;
 
             if (!coin || !coinMeta) {
@@ -2060,7 +2082,8 @@ async function activateApp(session) {
                     coin_id: coinMeta.coinGeckoId || null,
                     coin_name: coinMeta.name || coin,
                     coin_image: coinMeta.icon || null,
-                    binance_symbol: coinMeta.binanceSymbol || null
+                    binance_symbol: coinMeta.binanceSymbol || null,
+                    trade_currency: selectedTradeCurrency, trade_market: selectedTradeCurrency === 'TRY' ? 'Binance TR' : 'Binance'
                 };
                 const saveRow = async (includeMetadata) => {
                     const payload = includeMetadata ? row : (({ coin_id, coin_name, coin_image, binance_symbol, ...legacy }) => legacy)(row);
@@ -2079,6 +2102,7 @@ async function activateApp(session) {
                     id: saved.id, type: String(saved.type || '').toUpperCase(), coin: saved.coin,
                     coinId: coinMeta.coinGeckoId || '', coinName: coinMeta.name || coin,
                     coinImage: coinMeta.icon || '', binanceSymbol: coinMeta.binanceSymbol || '',
+                    tradeCurrency: selectedTradeCurrency, tradeMarket: selectedTradeCurrency === 'TRY' ? 'Binance TR' : 'Binance',
                     amount: Number(saved.amount), price: Number(saved.price),
                     fee: Number(saved.fee || 0), date: toLocalDateTimeInput(saved.executed_at)
                 };
@@ -2102,8 +2126,10 @@ async function activateApp(session) {
             document.getElementById('edit-tx-id').value = tx.id;
             selectCoinFromSearch(tx.coin);
             document.getElementById('input-amount').value = tx.amount;
-            document.getElementById('input-price').value = tx.price;
-            document.getElementById('input-total-amount').value = (tx.amount * tx.price).toFixed(2);
+            setTradeCurrency(tx.tradeCurrency || 'USDT', true);
+            document.getElementById('input-price').value = tradePriceFromUsd(tx.price, selectedTradeCurrency);
+            document.getElementById('input-total-amount').value = tradePriceFromUsd(tx.amount * tx.price, selectedTradeCurrency);
+            updateTradeCurrencyUI();
             document.getElementById('input-date').value = tx.date;
             setTxType(tx.type);
             calculateTotalFromAmount();
