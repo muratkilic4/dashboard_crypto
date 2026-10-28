@@ -2531,17 +2531,29 @@ async function activateApp(session) {
         }
 
         function updateChartsTheme() {
+            const dark = currentTheme === 'dark';
+            const textColor = dark ? '#94A3B8' : '#475569';
+            const gridColor = dark ? 'rgba(148,163,184,.10)' : 'rgba(100,116,139,.12)';
+            if (pieChartInstance) {
+                const barOptions = pieChartInstance.options;
+                barOptions.scales.x.ticks.color = dark ? '#9ca3af' : '#8792a5';
+                barOptions.scales.x.grid.color = gridColor;
+                barOptions.scales.y.ticks.color = dark ? '#cbd5e1' : '#526176';
+                barOptions.plugins.tooltip.backgroundColor = dark ? '#111827' : '#ffffff';
+                barOptions.plugins.tooltip.titleColor = dark ? '#f8fafc' : '#243247';
+                barOptions.plugins.tooltip.bodyColor = dark ? '#cbd5e1' : '#526176';
+                barOptions.plugins.tooltip.borderColor = dark ? '#374151' : '#e6eaf1';
+                pieChartInstance.update();
+            }
             if (!performanceChartInstance) return;
-            const textColor = currentTheme==='dark'?'#94A3B8':'#475569';
-            const gridColor = currentTheme==='dark'?'rgba(255,255,255,.05)':'rgba(0,0,0,.05)';
             performanceChartInstance.options.scales.x.ticks.color = textColor;
             performanceChartInstance.options.scales.y.grid.color = gridColor;
             performanceChartInstance.options.scales.y.ticks.color = textColor;
             if (performanceChartInstance.options.plugins.tooltip) {
-                performanceChartInstance.options.plugins.tooltip.backgroundColor = currentTheme==='dark'?'#0f172a':'#ffffff';
-                performanceChartInstance.options.plugins.tooltip.titleColor = currentTheme==='dark'?'#e2e8f0':'#0f172a';
-                performanceChartInstance.options.plugins.tooltip.bodyColor = currentTheme==='dark'?'#cbd5e1':'#334155';
-                performanceChartInstance.options.plugins.tooltip.borderColor = currentTheme==='dark'?'#334155':'#e2e8f0';
+                performanceChartInstance.options.plugins.tooltip.backgroundColor = dark ? '#111827' : '#ffffff';
+                performanceChartInstance.options.plugins.tooltip.titleColor = dark ? '#f8fafc' : '#243247';
+                performanceChartInstance.options.plugins.tooltip.bodyColor = dark ? '#cbd5e1' : '#526176';
+                performanceChartInstance.options.plugins.tooltip.borderColor = dark ? '#374151' : '#e6eaf1';
             }
             performanceChartInstance.update();
         }
