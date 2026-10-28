@@ -739,8 +739,11 @@
             if (data?.session) await activateApp(data.session);
 
             dbClient.auth.onAuthStateChange((event, session) => {
+                // Token yenileme, uygulamayı baştan başlatıp geçerli oturumu ekrandan düşürmemeli.
                 if (session && ['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED'].includes(event)) {
-                    void activateApp(session);
+                    if (event === 'TOKEN_REFRESHED' && activeUserId === session.user.id) return;
+                    // Supabase auth callback'i içinde başka async Supabase çağrıları başlatma.
+                    setTimeout(() => { void activateApp(session); }, 0);
                 } else if (event === 'PASSWORD_RECOVERY') {
                     document.getElementById('password-reset-modal').classList.remove('hidden');
                 } else if (event === 'SIGNED_OUT') {
