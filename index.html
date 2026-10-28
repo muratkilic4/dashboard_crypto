@@ -100,6 +100,74 @@
             background-color: rgba(51, 65, 85, 0.3);
         }
 
+        /* CryptoDash Pro — premium dashboard polish */
+        html.dark body {
+            background:
+              radial-gradient(ellipse at 12% 0%, rgba(79,70,229,.13), transparent 34%),
+              radial-gradient(ellipse at 88% 8%, rgba(99,102,241,.08), transparent 28%),
+              #080d1a;
+            color: #eef2ff;
+        }
+        html.dark .header-bg {
+            background: rgba(9, 14, 29, .86);
+            border-color: rgba(99, 102, 241, .16);
+            box-shadow: 0 8px 30px rgba(0,0,0,.12);
+        }
+        html.dark .card-bg {
+            background: linear-gradient(145deg, rgba(20, 28, 49, .94), rgba(13, 20, 37, .92));
+            border-color: rgba(129, 140, 248, .16);
+            box-shadow: 0 10px 28px rgba(0,0,0,.12);
+            transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+        }
+        html.dark #page-dashboard > .grid:first-of-type > .card-bg {
+            min-height: 142px;
+            background: linear-gradient(145deg, rgba(24, 33, 58, .98), rgba(13, 20, 37, .96));
+        }
+        html.dark #page-dashboard > .grid:first-of-type > .card-bg:hover,
+        html.dark #page-dashboard .card-bg:hover {
+            border-color: rgba(129, 140, 248, .34);
+            box-shadow: 0 14px 34px rgba(0,0,0,.2);
+        }
+        html.dark .input-bg {
+            background-color: rgba(8, 13, 26, .82);
+            border-color: rgba(129, 140, 248, .2);
+        }
+        html.dark .table-head-bg {
+            background: rgba(99, 102, 241, .09);
+            color: #a5b4fc;
+        }
+        html.dark .table-row-hover:hover { background-color: rgba(99, 102, 241, .08); }
+        .dashboard-intro {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(129,140,248,.2);
+            border-radius: 1.25rem;
+            padding: 1.35rem 1.5rem;
+            background: linear-gradient(110deg, rgba(79,70,229,.15), rgba(15,23,42,.12) 58%, rgba(99,102,241,.05));
+        }
+        .dashboard-intro:after {
+            content: "";
+            position: absolute;
+            width: 180px; height: 180px; right: -55px; top: -95px;
+            border-radius: 999px;
+            background: rgba(99,102,241,.13);
+            filter: blur(2px);
+            pointer-events: none;
+        }
+        .dashboard-eyebrow {
+            color: #a5b4fc; font-size: .68rem; font-weight: 700;
+            letter-spacing: .16em; text-transform: uppercase;
+        }
+        html.light .dashboard-intro {
+            background: linear-gradient(110deg, rgba(99,102,241,.09), #fff 72%);
+            border-color: #e0e7ff;
+        }
+        html.light .dashboard-eyebrow { color: #4f46e5; }
+        @media (max-width: 640px) {
+            .dashboard-intro { padding: 1.1rem; }
+            #page-dashboard > .grid:first-of-type > .card-bg { min-height: 130px; }
+        }
+
         /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
@@ -290,7 +358,20 @@
 
         <!-- ================= PAGE 1: DASHBOARD VIEW ================= -->
         <div id="page-dashboard" class="space-y-6">
-            
+
+            <!-- Dashboard Intro -->
+            <section class="dashboard-intro flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="relative z-10">
+                    <div class="dashboard-eyebrow mb-2">Piyasa merkezi · CryptoDash Pro</div>
+                    <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Portföyüne tek bakışta hakim ol.</h2>
+                    <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Varlıklarını, performansını ve canlı piyasa hareketlerini takip et.</p>
+                </div>
+                <div class="relative z-10 flex items-center gap-2 self-start sm:self-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-3 py-2">
+                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-xs font-semibold text-indigo-600 dark:text-indigo-200">Canlı piyasa takibi</span>
+                </div>
+            </section>
+
             <!-- Top Metrics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Total Portfolio Value -->
