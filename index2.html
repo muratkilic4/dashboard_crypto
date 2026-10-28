@@ -146,10 +146,31 @@
             <nav id="sidebar-menu" class="p-4 space-y-1 hidden lg:block">
                 <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">ANA MENÜ</div>
                 
-                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition-all bg-ventic-600 text-white shadow-md shadow-ventic-600/20">
-                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                    <span>Genel Bakış</span>
+                <button onclick="setFilterView('all')" id="nav-filter-all" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold transition-all bg-ventic-600 text-white shadow-md shadow-ventic-600/20">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                        <span>Genel Görünüm</span>
+                    </div>
+                    <span id="badge-count-all" class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">0</span>
                 </button>
+
+                <button onclick="setFilterView('bought')" id="nav-filter-bought" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="arrow-down-left" class="w-4 h-4 text-emerald-500"></i>
+                        <span>Alınanlar</span>
+                    </div>
+                    <span id="badge-count-bought" class="text-[10px] bg-emerald-500/10 text-emerald-500 font-bold px-2 py-0.5 rounded-full">0</span>
+                </button>
+
+                <button onclick="setFilterView('sold')" id="nav-filter-sold" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="arrow-up-right" class="w-4 h-4 text-rose-500"></i>
+                        <span>Satılanlar</span>
+                    </div>
+                    <span id="badge-count-sold" class="text-[10px] bg-rose-500/10 text-rose-500 font-bold px-2 py-0.5 rounded-full">0</span>
+                </button>
+
+                <div class="pt-4 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">YÖNETİM & AYARLAR</div>
 
                 <button onclick="switchTab('manage')" id="nav-manage" class="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
                     <div class="flex items-center gap-3">
@@ -159,16 +180,9 @@
                     <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-500"></i>
                 </button>
 
-                <div class="pt-4 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">PİYASA & ANALİZ</div>
-
                 <a href="#market-section" onclick="switchTab('dashboard')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
                     <i data-lucide="globe" class="w-4 h-4"></i>
                     <span>Canlı Piyasa</span>
-                </a>
-
-                <a href="#analytics-section" onclick="switchTab('dashboard')" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all">
-                    <i data-lucide="pie-chart" class="w-4 h-4"></i>
-                    <span>Portföy Analizi</span>
                 </a>
             </nav>
         </div>
@@ -180,10 +194,10 @@
                 <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center mb-3">
                     <i data-lucide="trending-up" class="w-4 h-4 text-white"></i>
                 </div>
-                <h4 class="font-bold text-xs mb-1">Portföy Raporu</h4>
-                <p class="text-[11px] text-emerald-100 leading-snug mb-3">Günlük alım-satım özetlerinizi hemen inceleyin.</p>
-                <button onclick="switchTab('dashboard')" class="w-full py-2 bg-white text-ventic-800 rounded-xl text-[11px] font-bold hover:bg-emerald-50 transition shadow-sm">
-                    Raporu Aç
+                <h4 class="font-bold text-xs mb-1">Aktif Filtre</h4>
+                <p class="text-[11px] text-emerald-100 leading-snug mb-3" id="sidebar-filter-desc">Genel Portföy Görünümü</p>
+                <button onclick="openProfileModal()" class="w-full py-2 bg-white text-ventic-800 rounded-xl text-[11px] font-bold hover:bg-emerald-50 transition shadow-sm">
+                    Profil Düzenle
                 </button>
             </div>
         </div>
@@ -221,12 +235,12 @@
                     <span class="hidden sm:inline">Hızlı İşlem</span>
                 </button>
 
-                <!-- Ventic User Profile Avatar Pill -->
-                <div class="pl-2 border-l border-slate-200 dark:border-slate-800 flex items-center gap-2.5">
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="User Avatar" class="w-9 h-9 rounded-2xl object-cover ring-2 ring-ventic-500/20">
+                <!-- Ventic User Profile Avatar Pill (Click opens Profile Modal) -->
+                <div onclick="openProfileModal()" class="pl-2 border-l border-slate-200 dark:border-slate-800 flex items-center gap-2.5 cursor-pointer group">
+                    <img id="header-avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="User Avatar" class="w-9 h-9 rounded-2xl object-cover ring-2 ring-ventic-500/20 group-hover:ring-ventic-500 transition">
                     <div class="hidden xl:block text-left">
-                        <div class="text-xs font-bold leading-tight text-slate-900 dark:text-white">Ahmet Yılmaz</div>
-                        <div class="text-[10px] text-slate-400 font-medium">Portföy Yöneticisi</div>
+                        <div id="header-user-name" class="text-xs font-bold leading-tight text-slate-900 dark:text-white group-hover:text-ventic-600 transition">Ahmet Yılmaz</div>
+                        <div id="header-user-role" class="text-[10px] text-slate-400 font-medium">Portföy Yöneticisi</div>
                     </div>
                 </div>
             </div>
@@ -238,34 +252,33 @@
             <!-- ================= PAGE 1: DASHBOARD VIEW ================= -->
             <div id="page-dashboard" class="space-y-6">
 
-                <!-- 1. VENTIC TOP STAT CARDS (WITH SPARKLINE SVG) -->
+                <!-- 1. DYNAMIC VENTIC TOP STAT CARDS (UPDATES BASED ON MENU FILTER) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     
-                    <!-- Portföy Değeri -->
+                    <!-- Card 1: Value / Volume -->
                     <div class="v-card p-5 rounded-3xl border relative overflow-hidden flex flex-col justify-between">
                         <div class="flex justify-between items-start mb-2">
                             <div>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Portföy Değeri</span>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400" id="card1-title">Portföy Değeri</span>
                                 <div class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1" id="metric-total-value">$0.00</div>
                             </div>
                             <div class="p-2.5 rounded-2xl bg-ventic-50 dark:bg-ventic-900/40 text-ventic-600">
-                                <i data-lucide="wallet" class="w-5 h-5"></i>
+                                <i data-lucide="wallet" id="card1-icon" class="w-5 h-5"></i>
                             </div>
                         </div>
                         <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/60">
-                            <span class="text-xs text-slate-400">Maliyet: <strong id="metric-total-cost" class="text-slate-700 dark:text-slate-200">$0.00</strong></span>
-                            <!-- SVG Mini Sparkline -->
+                            <span class="text-xs text-slate-400"><span id="card1-sublabel">Maliyet:</span> <strong id="metric-total-cost" class="text-slate-700 dark:text-slate-200">$0.00</strong></span>
                             <svg class="w-16 h-6 text-ventic-500" viewBox="0 0 100 30" fill="none" stroke="currentColor" stroke-width="3">
                                 <path d="M0 25 Q25 5 50 18 T100 5" stroke-linecap="round"/>
                             </svg>
                         </div>
                     </div>
 
-                    <!-- Unrealized PnL -->
+                    <!-- Card 2: PnL / Realized Profit -->
                     <div class="v-card p-5 rounded-3xl border relative overflow-hidden flex flex-col justify-between">
                         <div class="flex justify-between items-start mb-2">
                             <div>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Bekleyen Kâr / Zarar</span>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400" id="card2-title">Bekleyen Kâr / Zarar</span>
                                 <div class="text-2xl font-extrabold text-emerald-500 mt-1" id="metric-pnl">$0.00</div>
                             </div>
                             <div class="p-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500">
@@ -280,11 +293,11 @@
                         </div>
                     </div>
 
-                    <!-- En Yüksek Getiri -->
+                    <!-- Card 3: Best Asset / Best Trade -->
                     <div class="v-card p-5 rounded-3xl border relative overflow-hidden flex flex-col justify-between">
                         <div class="flex justify-between items-start mb-2">
                             <div>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">En Yüksek Getiri</span>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400" id="card3-title">En Yüksek Getiri</span>
                                 <div class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1" id="metric-best-asset">-</div>
                             </div>
                             <div class="p-2.5 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-500">
@@ -297,11 +310,11 @@
                         </div>
                     </div>
 
-                    <!-- Realized Sales Profit -->
+                    <!-- Card 4: Sales Profit / Active Coin Count -->
                     <div class="v-card p-5 rounded-3xl border relative overflow-hidden flex flex-col justify-between">
                         <div class="flex justify-between items-start mb-2">
                             <div>
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Satış Kazancı</span>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400" id="card4-title">Satış Kazancı</span>
                                 <div class="text-2xl font-extrabold text-slate-900 dark:text-white mt-1" id="metric-realized-pnl">$0.00</div>
                             </div>
                             <div class="p-2.5 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500">
@@ -323,17 +336,17 @@
                         <div class="absolute -right-10 -top-10 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
                         <div class="relative z-10 max-w-md">
                             <span class="px-3 py-1 rounded-full bg-white/20 text-white font-bold text-[10px] uppercase tracking-wider backdrop-blur-md">Canlı Piyasa Özeti</span>
-                            <h3 class="text-2xl lg:text-3xl font-black mt-3 mb-2 leading-tight">Portföyünüzü Canlı Binance Fiyatlarıyla Yönetin</h3>
-                            <p class="text-xs text-emerald-100 leading-relaxed mb-6">
-                                Anlık kâr/zarar oranlarınızı takip edin, alım-satım geçmişinizi güvenli PIN ile koruyun ve yatırımlarınızı kolayca optimize edin.
+                            <h3 class="text-2xl lg:text-3xl font-black mt-3 mb-2 leading-tight" id="banner-welcome-heading">Hoş Geldiniz, Ahmet Yılmaz</h3>
+                            <p class="text-xs text-emerald-100 leading-relaxed mb-6" id="banner-welcome-sub">
+                                Portföyünüzü "Genel Görünüm", "Alınanlar" ve "Satılanlar" sekmelerinden detaylı filtreleyebilir ve yönetebilirsiniz.
                             </p>
                         </div>
                         <div class="relative z-10 flex flex-wrap items-center gap-3">
                             <button onclick="openModal()" class="bg-white text-ventic-800 font-bold px-5 py-3 rounded-2xl text-xs hover:bg-emerald-50 transition shadow-md active:scale-95 flex items-center gap-2">
                                 <i data-lucide="plus" class="w-4 h-4"></i> İşlem Kaydı Ekle
                             </button>
-                            <button onclick="switchTab('manage')" class="bg-emerald-800/40 hover:bg-emerald-800/60 border border-white/20 text-white font-semibold px-5 py-3 rounded-2xl text-xs backdrop-blur-md transition flex items-center gap-2">
-                                <i data-lucide="shield-check" class="w-4 h-4 text-amber-300"></i> Güvenli Yönetim
+                            <button onclick="openProfileModal()" class="bg-emerald-800/40 hover:bg-emerald-800/60 border border-white/20 text-white font-semibold px-5 py-3 rounded-2xl text-xs backdrop-blur-md transition flex items-center gap-2">
+                                <i data-lucide="user-check" class="w-4 h-4 text-amber-300"></i> Profil / Admin Paneli
                             </button>
                         </div>
                     </div>
@@ -345,13 +358,13 @@
                                 <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                     <i data-lucide="pie-chart" class="w-4 h-4 text-ventic-600"></i> Varlık Dağılımı
                                 </h3>
-                                <span class="text-[10px] text-slate-400 font-semibold">Oransal Dağılım</span>
+                                <span class="text-[10px] text-slate-400 font-semibold" id="chart-filter-label">Filtreli Görünüm</span>
                             </div>
                             <div class="relative flex justify-center items-center h-[180px]">
                                 <canvas id="portfolioPieChart"></canvas>
                             </div>
                         </div>
-                        <div id="chart-legend" class="grid grid-cols-2 gap-2 mt-4 text-xs font-medium text-slate-600 dark:text-slate-300"></div>
+                        <div id="chart-legend" class="grid grid-cols-2 gap-2 mt-4 text-xs font-medium text-slate-600 dark:text-slate-300 max-h-24 overflow-y-auto custom-scrollbar"></div>
                     </div>
                 </div>
 
@@ -392,18 +405,18 @@
 
                 </div>
 
-                <!-- 4. ACTIVE HOLDINGS TABLE -->
+                <!-- 4. DYNAMIC HOLDINGS / TRANSACTIONS TABLE -->
                 <div class="v-card p-6 rounded-3xl border">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2" id="table-main-title">
                             <i data-lucide="layers" class="w-4 h-4 text-ventic-600"></i> Aktif Varlıklar & Detaylı Performans
                         </h3>
-                        <span class="text-xs text-slate-400 font-medium" id="holdings-count-badge">0 Varlık</span>
+                        <span class="text-xs text-slate-400 font-semibold" id="holdings-count-badge">0 Varlık</span>
                     </div>
 
                     <div class="overflow-x-auto custom-scrollbar">
                         <table class="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-                            <thead class="v-table-head text-[10px] uppercase tracking-wider font-extrabold rounded-2xl">
+                            <thead class="v-table-head text-[10px] uppercase tracking-wider font-extrabold rounded-2xl" id="table-head-element">
                                 <tr>
                                     <th class="p-3.5 rounded-l-2xl">Varlık</th>
                                     <th class="p-3.5">Miktar</th>
@@ -561,11 +574,14 @@
                     </div>
                 </div>
 
-                <!-- Coin Search Autocomplete -->
+                <!-- Coin Search Autocomplete or Manual Input -->
                 <div class="relative">
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Kripto Para (Arayın)</label>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-[11px] font-bold uppercase text-slate-400">Kripto Para (Arama & Manuel)</label>
+                        <span class="text-[10px] text-ventic-600 font-semibold">Sembol yazıp seçebilirsiniz</span>
+                    </div>
                     <div class="relative">
-                        <input type="text" id="input-coin-search" autocomplete="off" oninput="filterCoinSearch()" onfocus="filterCoinSearch()" placeholder="Örn: BTC, ETH, SOL..." class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 pl-9 font-medium">
+                        <input type="text" id="input-coin-search" autocomplete="off" oninput="filterCoinSearch()" onfocus="filterCoinSearch()" placeholder="Örn: BTC, ETH, SOL, KAS..." class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 pl-9 font-bold uppercase">
                         <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
                     </div>
                     <input type="hidden" id="selected-coin-symbol" required>
@@ -581,9 +597,12 @@
                     <input type="number" step="any" id="input-total-amount" oninput="calculateAmountFromTotal()" placeholder="Örn: 1000" class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 font-semibold">
                 </div>
 
-                <!-- Unit Price -->
+                <!-- Unit Price (Editable & Auto-filled) -->
                 <div>
-                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Birim Fiyat ($)</label>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-[11px] font-bold uppercase text-slate-400">Birim Fiyat ($)</label>
+                        <span class="text-[10px] text-slate-400">Anlık çekilir, el ile düzenlenebilir</span>
+                    </div>
                     <input type="number" step="any" id="input-price" required oninput="calculateAmountFromTotal()" placeholder="0.00" class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 font-semibold">
                 </div>
 
@@ -642,6 +661,60 @@
         </div>
     </div>
 
+    <!-- Modal 3: User & Admin Profile Manager Modal -->
+    <div id="profile-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden z-50 flex justify-center items-center p-4">
+        <div class="v-card w-full max-w-md rounded-3xl p-6 border shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <button onclick="closeProfileModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <h3 class="text-base font-extrabold text-slate-900 dark:text-white mb-5 flex items-center gap-2">
+                <i data-lucide="user" class="w-5 h-5 text-ventic-600"></i> Kullanıcı & Admin Profili
+            </h3>
+
+            <form onsubmit="handleProfileSubmit(event)" class="space-y-4">
+                
+                <!-- Current Avatar Preview -->
+                <div class="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
+                    <img id="modal-avatar-preview" src="" alt="Avatar" class="w-16 h-16 rounded-2xl object-cover ring-4 ring-ventic-500/30 mb-3 shadow-md">
+                    <span class="text-[11px] text-slate-400 font-semibold">Avatar Seçimi</span>
+                    
+                    <!-- Preset Avatars Row -->
+                    <div class="flex items-center gap-2 mt-2">
+                        <img onclick="selectPresetAvatar('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80')" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-xl object-cover cursor-pointer hover:scale-110 transition border border-ventic-500">
+                        <img onclick="selectPresetAvatar('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80')" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-xl object-cover cursor-pointer hover:scale-110 transition border border-ventic-500">
+                        <img onclick="selectPresetAvatar('https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&auto=format&fit=crop&q=80')" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-xl object-cover cursor-pointer hover:scale-110 transition border border-ventic-500">
+                        <img onclick="selectPresetAvatar('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80')" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-xl object-cover cursor-pointer hover:scale-110 transition border border-ventic-500">
+                    </div>
+                </div>
+
+                <!-- Custom Avatar URL -->
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Avatar Görsel URL</label>
+                    <input type="text" id="input-user-avatar" oninput="updateAvatarPreview(this.value)" class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 font-medium">
+                </div>
+
+                <!-- Name & Surname -->
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Ad Soyad / Kullanıcı Adı</label>
+                    <input type="text" id="input-user-name" required class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 font-bold">
+                </div>
+
+                <!-- Role / Title -->
+                <div>
+                    <label class="block text-[11px] font-bold uppercase text-slate-400 mb-1">Unvan / Rol</label>
+                    <input type="text" id="input-user-role" required placeholder="Örn: Portföy Yöneticisi, Senior Trader" class="w-full v-input border rounded-2xl px-3.5 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 font-semibold">
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-ventic-600 hover:bg-ventic-700 text-white font-bold py-3 rounded-2xl transition text-xs shadow-lg shadow-ventic-600/30 active:scale-95">
+                        Bilgileri Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Notification Toast -->
     <div id="toast" class="fixed bottom-6 right-6 v-card border text-slate-900 dark:text-white px-4 py-3 rounded-2xl shadow-2xl transition transform translate-y-20 opacity-0 z-50 flex items-center gap-3">
         <i data-lucide="check-circle" class="w-4 h-4 text-ventic-600"></i>
@@ -655,7 +728,15 @@
         let isManageUnlocked = false;
         let currentCurrency = 'USD'; // 'USD' | 'TRY'
         let usdToTryRate = 34.50;
-        let currentTheme = 'light'; // Default to Ventic Light Mode
+        let currentTheme = 'light'; 
+        let activeFilterView = 'all'; // 'all' | 'bought' | 'sold'
+
+        // Profile State (LocalStorage synced)
+        let userProfile = JSON.parse(localStorage.getItem('cryptodash_user_profile')) || {
+            name: "Ahmet Yılmaz",
+            role: "Portföy Yöneticisi",
+            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+        };
 
         // Supported Binance Coins Config & Fallbacks
         const MARKET_DATA = {
@@ -686,6 +767,7 @@
             lucide.createIcons();
             initDateInput();
             initCharts();
+            renderUserProfileUI();
             
             // Binance Live API Updates
             fetchBinancePrices();
@@ -708,6 +790,74 @@
             localStorage.setItem('cryptodash_transactions', JSON.stringify(transactions));
         }
 
+        // --- User Profile Management ---
+        function renderUserProfileUI() {
+            document.getElementById('header-user-name').textContent = userProfile.name;
+            document.getElementById('header-user-role').textContent = userProfile.role;
+            document.getElementById('header-avatar-img').src = userProfile.avatar;
+            document.getElementById('banner-welcome-heading').textContent = `Hoş Geldiniz, ${userProfile.name}`;
+        }
+
+        function openProfileModal() {
+            document.getElementById('input-user-name').value = userProfile.name;
+            document.getElementById('input-user-role').value = userProfile.role;
+            document.getElementById('input-user-avatar').value = userProfile.avatar;
+            document.getElementById('modal-avatar-preview').src = userProfile.avatar;
+            document.getElementById('profile-modal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profile-modal').classList.add('hidden');
+        }
+
+        function updateAvatarPreview(url) {
+            if (url && url.length > 5) {
+                document.getElementById('modal-avatar-preview').src = url;
+            }
+        }
+
+        function selectPresetAvatar(url) {
+            document.getElementById('input-user-avatar').value = url;
+            document.getElementById('modal-avatar-preview').src = url;
+        }
+
+        function handleProfileSubmit(e) {
+            e.preventDefault();
+            userProfile.name = document.getElementById('input-user-name').value;
+            userProfile.role = document.getElementById('input-user-role').value;
+            userProfile.avatar = document.getElementById('input-user-avatar').value;
+
+            localStorage.setItem('cryptodash_user_profile', JSON.stringify(userProfile));
+            renderUserProfileUI();
+            closeProfileModal();
+            showToast('Profil bilgileri güncellendi.');
+        }
+
+        // --- Sidebar View Filter Handler ---
+        function setFilterView(view) {
+            activeFilterView = view;
+            
+            // Toggle active sidebar styles
+            const btnAll = document.getElementById('nav-filter-all');
+            const btnBought = document.getElementById('nav-filter-bought');
+            const btnSold = document.getElementById('nav-filter-sold');
+            const desc = document.getElementById('sidebar-filter-desc');
+
+            const activeClass = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold transition-all bg-ventic-600 text-white shadow-md shadow-ventic-600/20";
+            const inactiveClass = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all";
+
+            btnAll.className = view === 'all' ? activeClass : inactiveClass;
+            btnBought.className = view === 'bought' ? activeClass : inactiveClass;
+            btnSold.className = view === 'sold' ? activeClass : inactiveClass;
+
+            if (view === 'all') desc.textContent = "Genel Portföy Görünümü";
+            else if (view === 'bought') desc.textContent = "Sadece Alınan & Aktif Varlıklar";
+            else if (view === 'sold') desc.textContent = "Realize Edilmiş Satışlar";
+
+            switchTab('dashboard');
+            updateDashboard();
+        }
+
         // --- Fetch Live Binance Prices ---
         async function fetchBinancePrices() {
             try {
@@ -724,6 +874,16 @@
                             if (MARKET_DATA[coinSymbol]) {
                                 MARKET_DATA[coinSymbol].price = price;
                                 MARKET_DATA[coinSymbol].change = change;
+                            } else {
+                                // Add non-default coins dynamically
+                                MARKET_DATA[coinSymbol] = {
+                                    name: coinSymbol,
+                                    symbol: coinSymbol,
+                                    price: price,
+                                    change: change,
+                                    color: '#10B981',
+                                    binanceSymbol: item.symbol
+                                };
                             }
                         }
                     });
@@ -746,7 +906,7 @@
                     updateDashboard();
                 }
             } catch (error) {
-                console.warn("Binance API bağlantısı kurulamadı, yerel simülasyon kullanılıyor.", error);
+                console.warn("Binance API bağlantısı kurulamadı, yerel veriler kullanılıyor.", error);
             }
         }
 
@@ -801,22 +961,16 @@
         function switchTab(tab) {
             const pageDash = document.getElementById('page-dashboard');
             const pageManage = document.getElementById('page-manage');
-            
-            const navDash = document.getElementById('nav-dashboard');
             const navManage = document.getElementById('nav-manage');
 
             if (tab === 'dashboard') {
                 pageDash.classList.remove('hidden');
                 pageManage.classList.add('hidden');
-
-                navDash.className = "w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold transition-all bg-ventic-600 text-white shadow-md shadow-ventic-600/20";
                 navManage.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all";
             } else {
                 pageDash.classList.add('hidden');
                 pageManage.classList.remove('hidden');
-
                 navManage.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold transition-all bg-ventic-600 text-white shadow-md shadow-ventic-600/20";
-                navDash.className = "w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all";
 
                 if (!isManageUnlocked) {
                     document.getElementById('lock-screen').classList.remove('hidden');
@@ -892,23 +1046,34 @@
             showToast('PIN kodu başarıyla güncellendi.');
         }
 
-        // --- Portfolio Calculation Logic ---
+        // --- Portfolio Calculation & Menu Filtering Logic ---
         function calculatePortfolio() {
             const holdings = {};
-            let realizedPnL = 0;
+            let totalRealizedPnL = 0;
+            let totalSellVolume = 0;
+            let totalBuyVolume = 0;
+
+            const buyTxs = transactions.filter(t => t.type === 'BUY');
+            const sellTxs = transactions.filter(t => t.type === 'SELL');
 
             transactions.forEach(tx => {
+                const totalVal = tx.amount * tx.price;
                 if (!holdings[tx.coin]) {
-                    holdings[tx.coin] = { amount: 0, totalCost: 0 };
+                    holdings[tx.coin] = { amount: 0, totalCost: 0, soldAmount: 0, soldRevenue: 0 };
                 }
 
                 if (tx.type === 'BUY') {
+                    totalBuyVolume += totalVal;
                     holdings[tx.coin].amount += tx.amount;
-                    holdings[tx.coin].totalCost += tx.amount * tx.price;
+                    holdings[tx.coin].totalCost += totalVal;
                 } else if (tx.type === 'SELL') {
+                    totalSellVolume += totalVal;
                     const avgCost = holdings[tx.coin].amount > 0 ? holdings[tx.coin].totalCost / holdings[tx.coin].amount : 0;
-                    realizedPnL += (tx.price - avgCost) * tx.amount;
+                    const pnl = (tx.price - avgCost) * tx.amount;
+                    totalRealizedPnL += pnl;
 
+                    holdings[tx.coin].soldAmount += tx.amount;
+                    holdings[tx.coin].soldRevenue += totalVal;
                     holdings[tx.coin].amount -= tx.amount;
                     holdings[tx.coin].totalCost -= avgCost * tx.amount;
                 }
@@ -916,12 +1081,15 @@
 
             let totalValue = 0;
             let totalCost = 0;
-            const assetDetails = [];
+            const activeAssetDetails = [];
+            const soldAssetDetails = [];
 
             Object.keys(holdings).forEach(symbol => {
                 const data = holdings[symbol];
+                const currentPrice = MARKET_DATA[symbol] ? MARKET_DATA[symbol].price : 0;
+
+                // Active Holdings
                 if (data.amount > 0.00001) {
-                    const currentPrice = MARKET_DATA[symbol] ? MARKET_DATA[symbol].price : 0;
                     const currentValue = data.amount * currentPrice;
                     const avgCost = data.totalCost / data.amount;
                     const pnl = currentValue - data.totalCost;
@@ -930,7 +1098,7 @@
                     totalValue += currentValue;
                     totalCost += data.totalCost;
 
-                    assetDetails.push({
+                    activeAssetDetails.push({
                         symbol,
                         amount: data.amount,
                         avgCost,
@@ -940,67 +1108,173 @@
                         pnlPercent
                     });
                 }
+
+                // Sold Holdings
+                if (data.soldAmount > 0) {
+                    soldAssetDetails.push({
+                        symbol,
+                        soldAmount: data.soldAmount,
+                        soldRevenue: data.soldRevenue
+                    });
+                }
             });
 
             const unrealizedPnL = totalValue - totalCost;
             const unrealizedPnLPercent = totalCost > 0 ? (unrealizedPnL / totalCost) * 100 : 0;
+
+            // Update Badge Counts
+            document.getElementById('badge-count-all').textContent = transactions.length;
+            document.getElementById('badge-count-bought').textContent = activeAssetDetails.length;
+            document.getElementById('badge-count-sold').textContent = sellTxs.length;
 
             return {
                 totalValue,
                 totalCost,
                 unrealizedPnL,
                 unrealizedPnLPercent,
-                realizedPnL,
-                assetDetails
+                realizedPnL: totalRealizedPnL,
+                totalSellVolume,
+                totalBuyVolume,
+                activeAssetDetails,
+                soldAssetDetails,
+                buyTxs,
+                sellTxs
             };
         }
 
-        // --- Render UI Dashboard ---
+        // --- Render UI Dashboard Based on Sidebar View ---
         function updateDashboard() {
             const summary = calculatePortfolio();
 
-            // 1. Metric Header Cards
-            document.getElementById('metric-total-value').textContent = formatCurrencyVal(summary.totalValue);
-            document.getElementById('metric-total-cost').textContent = formatCurrencyVal(summary.totalCost);
+            // Dynamic Metric Cards Adaptation
+            const card1Title = document.getElementById('card1-title');
+            const card1Val = document.getElementById('metric-total-value');
+            const card1Cost = document.getElementById('metric-total-cost');
+            const card1Sub = document.getElementById('card1-sublabel');
 
-            const pnlEl = document.getElementById('metric-pnl');
-            const pnlBadge = document.getElementById('metric-pnl-percent-badge');
-            const isPos = summary.unrealizedPnL >= 0;
+            const card2Title = document.getElementById('card2-title');
+            const card2Val = document.getElementById('metric-pnl');
+            const card2Badge = document.getElementById('metric-pnl-percent-badge');
 
-            pnlEl.textContent = `${isPos ? '+' : ''}${formatCurrencyVal(summary.unrealizedPnL)}`;
-            pnlEl.className = `text-2xl font-extrabold mt-1 ${isPos ? 'text-emerald-500' : 'text-rose-500'}`;
+            const card3Title = document.getElementById('card3-title');
+            const card3Val = document.getElementById('metric-best-asset');
+            const card3Sub = document.getElementById('metric-best-asset-pnl');
 
-            pnlBadge.textContent = `${isPos ? '+' : ''}${summary.unrealizedPnLPercent.toFixed(2)}%`;
-            pnlBadge.className = `px-2.5 py-1 rounded-xl text-xs font-bold ${isPos ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`;
+            const card4Title = document.getElementById('card4-title');
+            const card4Val = document.getElementById('metric-realized-pnl');
+            const card4Sub = document.getElementById('metric-tx-count');
 
-            document.getElementById('metric-realized-pnl').textContent = `${summary.realizedPnL >= 0 ? '+' : ''}${formatCurrencyVal(summary.realizedPnL)}`;
-            document.getElementById('metric-tx-count').textContent = `${transactions.length} Kayıtlı İşlem`;
+            if (activeFilterView === 'all') {
+                card1Title.textContent = "PORTFÖY DEĞERİ";
+                card1Val.textContent = formatCurrencyVal(summary.totalValue);
+                card1Sub.textContent = "Maliyet:";
+                card1Cost.textContent = formatCurrencyVal(summary.totalCost);
 
-            if (summary.assetDetails.length > 0) {
-                const sorted = [...summary.assetDetails].sort((a, b) => b.pnlPercent - a.pnlPercent);
-                const best = sorted[0];
-                document.getElementById('metric-best-asset').textContent = `${best.symbol}`;
-                document.getElementById('metric-best-asset-pnl').textContent = `Performans: +${best.pnlPercent.toFixed(2)}%`;
-            } else {
-                document.getElementById('metric-best-asset').textContent = `-`;
-                document.getElementById('metric-best-asset-pnl').textContent = `Performans: 0.00%`;
+                card2Title.textContent = "BEKLEYEN KÂR / ZARAR";
+                const isPos = summary.unrealizedPnL >= 0;
+                card2Val.textContent = `${isPos ? '+' : ''}${formatCurrencyVal(summary.unrealizedPnL)}`;
+                card2Val.className = `text-2xl font-extrabold mt-1 ${isPos ? 'text-emerald-500' : 'text-rose-500'}`;
+                card2Badge.textContent = `${isPos ? '+' : ''}${summary.unrealizedPnLPercent.toFixed(2)}%`;
+
+                card3Title.textContent = "EN YÜKSEK GETİRİ";
+                if (summary.activeAssetDetails.length > 0) {
+                    const sorted = [...summary.activeAssetDetails].sort((a, b) => b.pnlPercent - a.pnlPercent);
+                    card3Val.textContent = sorted[0].symbol;
+                    card3Sub.textContent = `Performans: +${sorted[0].pnlPercent.toFixed(2)}%`;
+                } else {
+                    card3Val.textContent = "-";
+                    card3Sub.textContent = "Performans: 0.00%";
+                }
+
+                card4Title.textContent = "SATIŞ KAZANCI";
+                card4Val.textContent = `${summary.realizedPnL >= 0 ? '+' : ''}${formatCurrencyVal(summary.realizedPnL)}`;
+                card4Sub.textContent = `${transactions.length} Toplam İşlem`;
+
+                renderAssetsTable(summary.activeAssetDetails);
+                updateCharts(summary.activeAssetDetails);
+
+            } else if (activeFilterView === 'bought') {
+                card1Title.textContent = "AKTİF ALIM DEĞERİ";
+                card1Val.textContent = formatCurrencyVal(summary.totalValue);
+                card1Sub.textContent = "Toplam Maliyet:";
+                card1Cost.textContent = formatCurrencyVal(summary.totalCost);
+
+                card2Title.textContent = "POTANSİYEL GETİRİ";
+                const isPos = summary.unrealizedPnL >= 0;
+                card2Val.textContent = `${isPos ? '+' : ''}${formatCurrencyVal(summary.unrealizedPnL)}`;
+                card2Val.className = `text-2xl font-extrabold mt-1 ${isPos ? 'text-emerald-500' : 'text-rose-500'}`;
+                card2Badge.textContent = `${isPos ? '+' : ''}${summary.unrealizedPnLPercent.toFixed(2)}%`;
+
+                card3Title.textContent = "EN DEĞERLİ VARLIK";
+                if (summary.activeAssetDetails.length > 0) {
+                    const sorted = [...summary.activeAssetDetails].sort((a, b) => b.currentValue - a.currentValue);
+                    card3Val.textContent = sorted[0].symbol;
+                    card3Sub.textContent = `Değer: ${formatCurrencyVal(sorted[0].currentValue)}`;
+                } else {
+                    card3Val.textContent = "-";
+                    card3Sub.textContent = "Değer: $0.00";
+                }
+
+                card4Title.textContent = "TOPLAM ALIM HACMİ";
+                card4Val.textContent = formatCurrencyVal(summary.totalBuyVolume);
+                card4Sub.textContent = `${summary.buyTxs.length} Alım Kaydı`;
+
+                renderAssetsTable(summary.activeAssetDetails);
+                updateCharts(summary.activeAssetDetails);
+
+            } else if (activeFilterView === 'sold') {
+                card1Title.textContent = "TOPLAM SATIŞ HACMİ";
+                card1Val.textContent = formatCurrencyVal(summary.totalSellVolume);
+                card1Sub.textContent = "Satış Sayısı:";
+                card1Cost.textContent = `${summary.sellTxs.length} Satış`;
+
+                card2Title.textContent = "REALİZE EDİLEN KÂR";
+                const isPos = summary.realizedPnL >= 0;
+                card2Val.textContent = `${isPos ? '+' : ''}${formatCurrencyVal(summary.realizedPnL)}`;
+                card2Val.className = `text-2xl font-extrabold mt-1 ${isPos ? 'text-emerald-500' : 'text-rose-500'}`;
+                card2Badge.textContent = isPos ? 'KÂRDA' : 'ZARARDA';
+
+                card3Title.textContent = "EN KÂRLI SATIŞ";
+                if (summary.sellTxs.length > 0) {
+                    const sorted = [...summary.sellTxs].sort((a, b) => (b.amount * b.price) - (a.amount * a.price));
+                    card3Val.textContent = sorted[0].coin;
+                    card3Sub.textContent = `Tutar: ${formatCurrencyVal(sorted[0].amount * sorted[0].price)}`;
+                } else {
+                    card3Val.textContent = "-";
+                    card3Sub.textContent = "Tutar: $0.00";
+                }
+
+                card4Title.textContent = "SATILAN FARKLI COIN";
+                card4Val.textContent = summary.soldAssetDetails.length;
+                card4Sub.textContent = "Tamamlanan Satışlar";
+
+                renderSoldTable(summary.sellTxs);
+                updateCharts(summary.soldAssetDetails.map(s => ({ symbol: s.symbol, currentValue: s.soldRevenue })));
             }
 
-            // 2. Render Tables & Charts
-            renderAssetsTable(summary.assetDetails);
             renderMarketPrices();
-            updateCharts(summary.assetDetails);
             if (isManageUnlocked) renderManageTable();
         }
 
         // Render Active Assets Table
         function renderAssetsTable(assets) {
+            document.getElementById('table-main-title').innerHTML = `<i data-lucide="layers" class="w-4 h-4 text-ventic-600"></i> Aktif Varlıklar & Detaylı Performans`;
+            document.getElementById('table-head-element').innerHTML = `
+                <tr>
+                    <th class="p-3.5 rounded-l-2xl">Varlık</th>
+                    <th class="p-3.5">Miktar</th>
+                    <th class="p-3.5">Ort. Maliyet</th>
+                    <th class="p-3.5">Anlık Fiyat (Binance)</th>
+                    <th class="p-3.5">Toplam Değer</th>
+                    <th class="p-3.5 rounded-r-2xl">Kâr / Zarar</th>
+                </tr>
+            `;
             const tbody = document.getElementById('assets-table-body');
             document.getElementById('holdings-count-badge').textContent = `${assets.length} Aktif Varlık`;
             tbody.innerHTML = '';
 
             if (assets.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-medium text-xs">Portföyünüzde aktif varlık bulunmamaktadır.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-medium text-xs">Aktif varlık bulunmamaktadır.</td></tr>`;
                 return;
             }
 
@@ -1029,14 +1303,57 @@
                 `;
                 tbody.appendChild(tr);
             });
+            lucide.createIcons();
         }
 
-        // Render Binance Live Market Watchlist
+        // Render Sold Transactions Table (When "Satılanlar" menu is active)
+        function renderSoldTable(sellTxs) {
+            document.getElementById('table-main-title').innerHTML = `<i data-lucide="arrow-up-right" class="w-4 h-4 text-rose-500"></i> Satış Yapılmış İşlemler Geçmişi`;
+            document.getElementById('table-head-element').innerHTML = `
+                <tr>
+                    <th class="p-3.5 rounded-l-2xl">Satış Tarihi</th>
+                    <th class="p-3.5">Satılan Varlık</th>
+                    <th class="p-3.5">Miktar</th>
+                    <th class="p-3.5">Satış Fiyatı</th>
+                    <th class="p-3.5 rounded-r-2xl">Toplam Gelir</th>
+                </tr>
+            `;
+            const tbody = document.getElementById('assets-table-body');
+            document.getElementById('holdings-count-badge').textContent = `${sellTxs.length} Satış Kaydı`;
+            tbody.innerHTML = '';
+
+            if (sellTxs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 font-medium text-xs">Satış kaydı bulunmamaktadır.</td></tr>`;
+                return;
+            }
+
+            sellTxs.forEach(tx => {
+                const total = tx.amount * tx.price;
+                const formattedDate = new Date(tx.date).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/40 transition';
+                tr.innerHTML = `
+                    <td class="p-3.5 text-xs text-slate-400 font-medium">${formattedDate}</td>
+                    <td class="p-3.5 font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                        ${getCoinIconHtml(tx.coin, 'w-6 h-6')}
+                        <span>${tx.coin}</span>
+                    </td>
+                    <td class="p-3.5 font-semibold text-xs">${tx.amount}</td>
+                    <td class="p-3.5 text-xs">${formatCurrencyVal(tx.price)}</td>
+                    <td class="p-3.5 font-extrabold text-xs text-emerald-500">${formatCurrencyVal(total)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        // Render Binance Live Watchlist
         function renderMarketPrices() {
             const container = document.getElementById('market-prices-list');
             container.innerHTML = '';
 
-            Object.keys(MARKET_DATA).forEach(symbol => {
+            Object.keys(MARKET_DATA).slice(0, 8).forEach(symbol => {
                 const coin = MARKET_DATA[symbol];
                 const isPos = coin.change >= 0;
 
@@ -1131,7 +1448,6 @@
 
         // --- Charts Initialization ---
         function initCharts() {
-            // Ventic Doughnut Chart
             const ctxPie = document.getElementById('portfolioPieChart').getContext('2d');
             pieChartInstance = new Chart(ctxPie, {
                 type: 'doughnut',
@@ -1152,7 +1468,6 @@
                 }
             });
 
-            // Ventic Realtime Line Chart
             const ctxTrend = document.getElementById('marketTrendChart').getContext('2d');
             trendChartInstance = new Chart(ctxTrend, {
                 type: 'line',
@@ -1232,42 +1547,54 @@
             trendChartInstance.update();
         }
 
-        // --- Autocomplete Coin Search ---
+        // --- Autocomplete & Manual Coin Search ---
         function filterCoinSearch() {
-            const query = document.getElementById('input-coin-search').value.toLowerCase();
+            const query = document.getElementById('input-coin-search').value.toUpperCase().trim();
             const dropdown = document.getElementById('coin-dropdown');
             dropdown.innerHTML = '';
 
+            if (!query) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+
             const matches = Object.keys(MARKET_DATA).filter(symbol => {
-                const name = MARKET_DATA[symbol].name.toLowerCase();
-                return symbol.toLowerCase().includes(query) || name.includes(query);
+                const name = MARKET_DATA[symbol].name.toUpperCase();
+                return symbol.includes(query) || name.includes(query);
             });
 
-            if (matches.length === 0) {
-                dropdown.innerHTML = `<div class="p-3 text-xs text-slate-400 text-center font-medium">Coin bulunamadı</div>`;
-            } else {
-                matches.forEach(symbol => {
-                    const coin = MARKET_DATA[symbol];
-                    const item = document.createElement('div');
-                    item.className = 'flex items-center gap-3 p-3 hover:bg-ventic-50 dark:hover:bg-slate-800/60 cursor-pointer transition border-b border-slate-100 dark:border-slate-800/50 last:border-none';
-                    item.onclick = () => selectCoinFromSearch(symbol);
-                    item.innerHTML = `
-                        ${getCoinIconHtml(symbol, 'w-6 h-6')}
-                        <div class="flex-1">
-                            <span class="font-bold text-xs text-slate-900 dark:text-white">${symbol}</span>
-                            <span class="text-[10px] text-slate-400 ml-1">(${coin.name})</span>
-                        </div>
-                        <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200">$${coin.price}</span>
-                    `;
-                    dropdown.appendChild(item);
-                });
-            }
+            matches.forEach(symbol => {
+                const coin = MARKET_DATA[symbol];
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-3 p-3 hover:bg-ventic-50 dark:hover:bg-slate-800/60 cursor-pointer transition border-b border-slate-100 dark:border-slate-800/50 last:border-none';
+                item.onclick = () => selectCoinFromSearch(symbol);
+                item.innerHTML = `
+                    ${getCoinIconHtml(symbol, 'w-6 h-6')}
+                    <div class="flex-1">
+                        <span class="font-bold text-xs text-slate-900 dark:text-white">${symbol}</span>
+                        <span class="text-[10px] text-slate-400 ml-1">(${coin.name})</span>
+                    </div>
+                    <span class="text-xs font-mono font-bold text-slate-700 dark:text-slate-200">$${coin.price}</span>
+                `;
+                dropdown.appendChild(item);
+            });
+
+            // Option to add custom/manual coin if not in matches
+            const manualItem = document.createElement('div');
+            manualItem.className = 'flex items-center justify-between p-3 bg-ventic-50 dark:bg-ventic-950/40 hover:bg-ventic-100 dark:hover:bg-ventic-900/60 cursor-pointer transition text-ventic-600 font-bold text-xs';
+            manualItem.onclick = () => selectManualCoin(query);
+            manualItem.innerHTML = `
+                <span>+ "${query}" Olarak Özel Coin Ekle</span>
+                <span class="text-[10px] text-slate-400 font-normal">Manuel Fiyat Girişi</span>
+            `;
+            dropdown.appendChild(manualItem);
+
             dropdown.classList.remove('hidden');
         }
 
         function selectCoinFromSearch(symbol) {
             const coin = MARKET_DATA[symbol];
-            document.getElementById('input-coin-search').value = `${symbol} - ${coin ? coin.name : ''}`;
+            document.getElementById('input-coin-search').value = symbol;
             document.getElementById('selected-coin-symbol').value = symbol;
             document.getElementById('coin-dropdown').classList.add('hidden');
 
@@ -1275,6 +1602,29 @@
                 document.getElementById('input-price').value = coin.price;
                 calculateAmountFromTotal();
             }
+        }
+
+        function selectManualCoin(customSymbol) {
+            const cleanSymbol = customSymbol.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (!cleanSymbol) return;
+
+            document.getElementById('input-coin-search').value = cleanSymbol;
+            document.getElementById('selected-coin-symbol').value = cleanSymbol;
+            document.getElementById('coin-dropdown').classList.add('hidden');
+
+            if (!MARKET_DATA[cleanSymbol]) {
+                MARKET_DATA[cleanSymbol] = {
+                    name: cleanSymbol,
+                    symbol: cleanSymbol,
+                    price: 0,
+                    change: 0,
+                    color: '#10B981',
+                    binanceSymbol: `${cleanSymbol}USDT`
+                };
+            }
+
+            document.getElementById('input-price').focus();
+            showToast(`"${cleanSymbol}" özel sembol olarak seçildi. Lütfen birim fiyatı girin.`);
         }
 
         function calculateAmountFromTotal() {
@@ -1342,8 +1692,7 @@
             let coin = document.getElementById('selected-coin-symbol').value.toUpperCase().trim();
 
             if (!coin) {
-                const rawSearch = document.getElementById('input-coin-search').value.split('-')[0].trim().toUpperCase();
-                coin = rawSearch;
+                coin = document.getElementById('input-coin-search').value.toUpperCase().trim();
             }
 
             const amount = parseFloat(document.getElementById('input-amount').value);
@@ -1351,13 +1700,25 @@
             const date = document.getElementById('input-date').value;
 
             if (!coin) {
-                showToast('Lütfen bir kripto para seçin.', true);
+                showToast('Lütfen bir kripto para seçin veya yazın.', true);
                 return;
             }
 
             if (!amount || !price || amount <= 0 || price <= 0) {
                 showToast('Geçerli miktar ve birim fiyat girin.', true);
                 return;
+            }
+
+            // Register coin if manual
+            if (!MARKET_DATA[coin]) {
+                MARKET_DATA[coin] = {
+                    name: coin,
+                    symbol: coin,
+                    price: price,
+                    change: 0,
+                    color: '#10B981',
+                    binanceSymbol: `${coin}USDT`
+                };
             }
 
             if (editId) {
