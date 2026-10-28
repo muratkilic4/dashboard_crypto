@@ -466,10 +466,12 @@
                                 <tr>
                                     <th class="p-3 rounded-l-lg">Varlık</th>
                                     <th class="p-3">Miktar</th>
+                                    <th class="p-3">Alım Tutarı</th>
                                     <th class="p-3">Ort. Maliyet</th>
                                     <th class="p-3">Anlık Fiyat (Binance)</th>
                                     <th class="p-3">Toplam Değer</th>
-                                    <th class="p-3 rounded-r-lg">Kâr / Zarar</th>
+                                    <th class="p-3">Kâr / Zarar</th>
+                                    <th class="p-3 rounded-r-lg">Mini Performans</th>
                                 </tr>
                             </thead>
                             <tbody id="assets-table-body" class="divide-y divide-slate-200 dark:divide-slate-800">
@@ -1470,7 +1472,7 @@ async function activateApp(session) {
                     const pnlPercent = data.totalCost > 0 ? (pnl / data.totalCost) * 100 : 0;
                     totalValue += currentValue;
                     totalCost += data.totalCost;
-                    assetDetails.push({ symbol, amount: data.amount, avgCost, currentPrice, currentValue, pnl, pnlPercent });
+                    assetDetails.push({ symbol, amount: data.amount, investedAmount: data.totalCost, avgCost, currentPrice, currentValue, pnl, pnlPercent });
                 }
             });
 
@@ -1544,7 +1546,7 @@ async function activateApp(session) {
             tbody.innerHTML = '';
 
             if (assets.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 text-xs">Portföyünüzde henüz aktif varlık bulunmuyor.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500 text-xs">Portföyünüzde henüz aktif varlık bulunmuyor.</td></tr>`;
                 return;
             }
 
@@ -1563,12 +1565,22 @@ async function activateApp(session) {
                         </div>
                     </td>
                     <td class="p-3 font-medium">${asset.amount.toFixed(4)}</td>
+                    <td class="p-3 font-semibold text-slate-900 dark:text-white">${formatCurrencyVal(asset.investedAmount || 0)}</td>
                     <td class="p-3">${formatCurrencyVal(asset.avgCost)}</td>
                     <td class="p-3 font-medium">${formatCurrencyVal(asset.currentPrice)}</td>
                     <td class="p-3 font-semibold text-slate-900 dark:text-white">${formatCurrencyVal(asset.currentValue)}</td>
                     <td class="p-3 font-semibold ${isPos ? 'text-emerald-500' : 'text-rose-500'}">
                         ${isPos ? '+' : ''}${formatCurrencyVal(asset.pnl)}
                         <span class="text-xs block font-normal opacity-80">(${isPos ? '+' : ''}${asset.pnlPercent.toFixed(2)}%)</span>
+                    </td>
+                    <td class="p-3 min-w-[130px]">
+                        <div class="flex items-center gap-2">
+                            <div class="relative h-2 w-16 shrink-0 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                                <div class="absolute top-0 h-full rounded-full ${isPos ? 'bg-emerald-500' : 'bg-rose-500'}" style="width:${Math.min(50, Math.max(3, Math.abs(asset.pnlPercent) / 2))}%; ${isPos ? 'left:50%;' : 'right:50%;'}"></div>
+                            </div>
+                            <span class="text-xs font-bold whitespace-nowrap ${isPos ? 'text-emerald-500' : 'text-rose-500'}">${isPos ? '+' : ''}${asset.pnlPercent.toFixed(1)}%</span>
+                        </div>
+                        <span class="text-[10px] text-slate-500 block mt-1">${isPos ? 'Kârda' : 'Zararda'}</span>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1740,8 +1752,21 @@ async function activateApp(session) {
             }
             pieChartInstance = new Chart(pieCanvas.getContext('2d'), {
                 type:'doughnut',
-                data:{labels:[],datasets:[{data:[],backgroundColor:[],borderWidth:0,hoverOffset:6}]},
-                options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'72%'}
+                data:{labels:[],datasets:[{data:[],backgroundColor:[],borderColor:currentTheme==='dark'?'#0f172a':'#ffffff',borderWidth:3,hoverOffset:10,spacing:2,borderRadius:5}]},
+                options:{
+                    responsive:true,maintainAspectRatio:false,cutout:'66%',
+                    animation:{animateRotate:true,animateScale:true,duration:650},
+                    plugins:{
+                        legend:{display:false},
+                        tooltip:{callbacks:{label:context=>{
+                            const values=context.dataset.data||[];
+                            const total=values.reduce((sum,value)=>sum+(Number(value)||0),0);
+                            const value=Number(context.raw)||0;
+                            const percent=total>0?(value/total*100):0;
+                            return ` ${context.label}: ${formatCurrencyVal(value)} (${percent.toFixed(1)}%)`;
+                        }}}
+                    }
+                }
             });
             performanceChartInstance = new Chart(performanceCanvas.getContext('2d'), {
                 type:'line',
@@ -1759,19 +1784,27 @@ async function activateApp(session) {
 
         function updateCharts(assets) {
             if (!pieChartInstance || !performanceChartInstance) return;
-            pieChartInstance.data.labels = assets.map(a=>a.symbol);
-            pieChartInstance.data.datasets[0].data = assets.map(a=>Number(a.currentValue)||0);
-            pieChartInstance.data.datasets[0].backgroundColor = assets.map(a=>MARKET_DATA[a.symbol]?.color||'#6366F1');
+            // Slice size reflects total invested buy amount; display at most eight assets.
+            const palette = ['#6366F1','#06B6D4','#10B981','#F59E0B','#F43F5E','#8B5CF6','#3B82F6','#EC4899'];
+            const topAssets = [...assets].filter(a=>Number(a.investedAmount)>0)
+                .sort((a,b)=>Number(b.investedAmount)-Number(a.investedAmount)).slice(0,8);
+            pieChartInstance.data.labels = topAssets.map(a=>a.symbol);
+            pieChartInstance.data.datasets[0].data = topAssets.map(a=>Number(a.investedAmount)||0);
+            pieChartInstance.data.datasets[0].backgroundColor = topAssets.map((a,i)=>palette[i]);
+            pieChartInstance.data.datasets[0].borderColor = currentTheme==='dark'?'#0f172a':'#ffffff';
             pieChartInstance.update();
 
             const legendContainer = document.getElementById('chart-legend');
             legendContainer.innerHTML = '';
-            assets.forEach(asset => {
+            const investedTotal = topAssets.reduce((sum,a)=>sum+(Number(a.investedAmount)||0),0);
+            topAssets.forEach((asset,i) => {
+                const percent = investedTotal>0?(Number(asset.investedAmount)||0)/investedTotal*100:0;
                 const div = document.createElement('div');
-                div.className = 'flex items-center gap-1.5';
-                div.innerHTML = `<span class="w-2 h-2 rounded-full" style="background-color:${MARKET_DATA[asset.symbol]?.color||'#6366F1'}"></span><span>${asset.symbol}: <strong class="text-slate-900 dark:text-white">${formatCurrencyVal(asset.currentValue)}</strong></span>`;
+                div.className = 'flex items-center gap-1.5 min-w-0';
+                div.innerHTML = `<span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color:${palette[i]}"></span><span class="truncate">${asset.symbol}: <strong class="text-slate-900 dark:text-white">${formatCurrencyVal(asset.investedAmount||0)}</strong> <span class="text-slate-500">(${percent.toFixed(1)}%)</span></span>`;
                 legendContainer.appendChild(div);
             });
+            if (!topAssets.length) legendContainer.innerHTML='<span class="col-span-2 text-slate-500">Dağılım için alım verisi bulunmuyor.</span>';
 
             // Show cumulative realized profit/loss by sale date; do not invent historical portfolio prices.
             const realizedById = calculateRealizedPnLByTransaction();
