@@ -2144,8 +2144,10 @@ async function activateApp(session) {
         function renderMiniPerformance(percent, label = '') {
             const value = Number(percent) || 0;
             const positive = value >= 0;
-            // Normalize the bar so small changes remain visible without letting extreme values dominate.
-            const magnitude = Math.min(50, Math.max(3, (Math.log1p(Math.abs(value)) / Math.log(11)) * 50));
+            // Linear percentage scale: bar length follows the actual P/L percentage.
+            // The track is centered at 0%; each 1 percentage point uses 1% of the full track,
+            // with values capped at +/-50% so the fill never crosses the zero marker.
+            const magnitude = Math.min(50, Math.abs(value));
             const color = positive ? '#10b981' : '#f43f5e';
             const sign = positive ? '+' : '';
             const direction = positive ? 'Pozitif performans' : 'Negatif performans';
