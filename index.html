@@ -1921,7 +1921,7 @@ async function activateApp(session) {
 
                 const saved = result.data;
                 const mapped = {
-                    id: saved.id, type: saved.type, coin: saved.coin,
+                    id: saved.id, type: String(saved.type || '').toUpperCase(), coin: saved.coin,
                     amount: Number(saved.amount), price: Number(saved.price),
                     fee: Number(saved.fee || 0), date: toLocalDateTimeInput(saved.executed_at)
                 };
