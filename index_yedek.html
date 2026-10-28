@@ -334,6 +334,108 @@
             .mofi-design #design-toggle-label { display: none; }
         }
 
+        /* Mofi-inspired polish pass: typography, navigation, metrics, charts and tables. */
+        body.mofi-design {
+            background: #f5f7fb;
+            color: #273449;
+            letter-spacing: -.008em;
+        }
+        .mofi-design .header-bg {
+            min-height: 78px;
+            border-bottom: 1px solid #e8edf4 !important;
+        }
+        .mofi-design header h1 { letter-spacing: -.035em; }
+        .mofi-design header nav::before {
+            content: "ÇALIŞMA ALANI";
+            display: block;
+            padding: .25rem .8rem .65rem;
+            color: #98a3b5;
+            font-size: .62rem;
+            font-weight: 800;
+            letter-spacing: .14em;
+        }
+        .mofi-design #nav-dashboard,
+        .mofi-design #nav-manage {
+            min-height: 44px;
+            color: #64748b !important;
+            border: 1px solid transparent;
+            transition: background .18s ease, color .18s ease, border-color .18s ease;
+        }
+        .mofi-design #nav-dashboard.bg-indigo-600,
+        .mofi-design #nav-manage.bg-indigo-600 {
+            color: #5145cd !important;
+            background: #f0efff !important;
+            border-color: #e6e3ff !important;
+            box-shadow: none !important;
+        }
+        .mofi-design #nav-dashboard:hover,
+        .mofi-design #nav-manage:hover {
+            color: #5145cd !important;
+            background: #f6f5ff !important;
+        }
+        .mofi-design .dashboard-eyebrow {
+            color: #6d62d9;
+            letter-spacing: .12em;
+        }
+        .mofi-design .dashboard-intro h2 {
+            color: #202b3e !important;
+            letter-spacing: -.04em;
+            line-height: 1.18;
+        }
+        .mofi-design .dashboard-intro p { color: #7a879a !important; }
+        .mofi-design .card-bg {
+            border: 1px solid #e8edf4 !important;
+            box-shadow: 0 4px 18px rgba(34,48,73,.035);
+            transition: box-shadow .18s ease, transform .18s ease;
+        }
+        .mofi-design .card-bg:hover {
+            box-shadow: 0 9px 26px rgba(34,48,73,.07);
+        }
+        .mofi-design main { padding-top: 1.75rem; }
+        .mofi-design main h3 { letter-spacing: -.025em; }
+        .mofi-design input,
+        .mofi-design select,
+        .mofi-design textarea {
+            border-radius: .7rem;
+        }
+        .mofi-design button:not(#nav-dashboard):not(#nav-manage):not(#mobile-nav-dashboard):not(#mobile-nav-manage) {
+            transition: box-shadow .18s ease, border-color .18s ease, background-color .18s ease, transform .18s ease;
+        }
+        .mofi-design table { border-collapse: separate; border-spacing: 0; }
+        .mofi-design thead th {
+            color: #8490a3 !important;
+            background: #f8f9fc;
+            font-size: .67rem;
+            font-weight: 800;
+            letter-spacing: .055em;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e8edf4;
+        }
+        .mofi-design tbody tr { border-color: #edf0f5 !important; }
+        .mofi-design tbody tr:hover { background: #fafaff !important; }
+        .mofi-design .table-row-hover:hover { transform: none; }
+        .mofi-design #design-toggle {
+            color: #5145cd !important;
+            background: #f4f2ff !important;
+            border-color: #e7e3ff !important;
+        }
+        .mofi-design #btn-currency,
+        .mofi-design #profile-open { box-shadow: 0 2px 6px rgba(31,45,61,.025); }
+        .mofi-design .custom-scrollbar::-webkit-scrollbar-thumb { background: #d5dbea; }
+        @media (min-width: 768px) {
+            .mofi-design header nav {
+                top: 78px;
+                height: calc(100vh - 78px);
+                padding: 1.25rem .85rem;
+            }
+            .mofi-design main { padding-left: 2rem; padding-right: 2rem; }
+        }
+        @media (max-width: 767px) {
+            .mofi-design .header-bg { min-height: 68px; }
+            .mofi-design main { padding-top: 1rem; }
+            .mofi-design .dashboard-intro h2 { font-size: 1.5rem; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
         }
