@@ -558,6 +558,10 @@
         }
 
             /* Clean, modern mini performance chart shared by dashboard and admin tables */
+        .performance-range-btn { color: #64748b; background: transparent; }
+        .performance-range-btn:hover { color: #4f46e5; }
+        .performance-range-btn.is-active { color: #4338ca; background: #fff; box-shadow: 0 1px 3px rgba(15,23,42,.10); }
+        .dark .performance-range-btn.is-active { color: #e0e7ff; background: #334155; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
         .mini-performance { width: 136px; display: flex; flex-direction: column; gap: 7px; padding: 2px 0; }
         .mini-performance-track { position: relative; height: 10px; width: 100%; overflow: hidden; border-radius: 999px; background: linear-gradient(90deg,rgba(244,63,94,.13) 0%,rgba(148,163,184,.09) 48%,rgba(148,163,184,.09) 52%,rgba(16,185,129,.13) 100%); box-shadow: inset 0 1px 2px rgba(15,23,42,.08); }
         .mini-performance-track::after { content: ''; position: absolute; inset: 0; border: 1px solid rgba(148,163,184,.15); border-radius: inherit; pointer-events: none; }
@@ -903,6 +907,14 @@
                         <span class="inline-flex items-center gap-1.5 self-start text-[11px] font-medium px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300">
                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Gerçekleşen getiri
                         </span>
+                    </div>
+                    <div class="relative flex flex-wrap items-center justify-between gap-3 mb-3">
+                        <div class="inline-flex items-center gap-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 p-1" role="group" aria-label="Performans dönemi">
+                            <button type="button" data-performance-range="7d" onclick="setPerformanceRange('7d')" class="performance-range-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold transition">7 gün</button>
+                            <button type="button" data-performance-range="30d" onclick="setPerformanceRange('30d')" class="performance-range-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold transition">30 gün</button>
+                            <button type="button" data-performance-range="all" onclick="setPerformanceRange('all')" class="performance-range-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold transition">Tümü</button>
+                        </div>
+                        <span id="performance-chart-period-note" class="text-[10px] text-slate-500 dark:text-slate-400">Tüm kayıtlı satışlar</span>
                     </div>
                     <div class="relative h-[230px] w-full">
                         <canvas id="portfolioPerformanceChart"></canvas>
@@ -2132,6 +2144,7 @@ async function activateApp(session) {
             }
 
             // 2. Tables & Charts
+            currentAssetDetails = summary.assetDetails;
             renderAssetsTable(summary.assetDetails);
             renderMarketPrices();
             updateCharts(summary.assetDetails);
@@ -2505,6 +2518,20 @@ async function activateApp(session) {
             });
         }
 
+        let performanceRange = 'all';
+        let currentAssetDetails = [];
+
+        function setPerformanceRange(range) {
+            if (!['7d', '30d', 'all'].includes(range)) return;
+            performanceRange = range;
+            document.querySelectorAll('[data-performance-range]').forEach(button => {
+                const active = button.dataset.performanceRange === range;
+                button.classList.toggle('is-active', active);
+                button.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+            updateCharts(currentAssetDetails || []);
+        }
+
         function updateCharts(assets) {
             if (!pieChartInstance || !performanceChartInstance) return;
             // Slice size reflects total invested buy amount; display at most eight assets.
@@ -2530,15 +2557,28 @@ async function activateApp(session) {
             });
             if (!topAssets.length) legendContainer.innerHTML='<span class="col-span-2 text-slate-500">Dağılım için alım verisi bulunmuyor.</span>';
 
-            // Show cumulative realized profit/loss by sale date; do not invent historical portfolio prices.
+            // Realized profit/loss series filtered by selected period.
             const realizedById = calculateRealizedPnLByTransaction();
             const labels = [], values = [];
             let cumulative = 0;
-            [...transactions].sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(tx => {
-                if (tx.type !== 'SELL') return;
+            const now = Date.now();
+            const cutoff = performanceRange === '7d' ? now - 7 * 86400000
+                : performanceRange === '30d' ? now - 30 * 86400000 : -Infinity;
+            const periodSales = [...transactions]
+                .filter(tx => tx.type === 'SELL' && new Date(tx.date).getTime() >= cutoff)
+                .sort((a,b)=>new Date(a.date)-new Date(b.date));
+            periodSales.forEach(tx => {
                 cumulative += Number(realizedById.get(String(tx.id))||0);
                 labels.push(new Date(tx.date).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'}));
                 values.push(Number(cumulative.toFixed(8)));
+            });
+            const periodNote = document.getElementById('performance-chart-period-note');
+            if (periodNote) periodNote.textContent = performanceRange === '7d' ? 'Son 7 gündeki satışlar'
+                : performanceRange === '30d' ? 'Son 30 gündeki satışlar' : 'Tüm kayıtlı satışlar';
+            document.querySelectorAll('[data-performance-range]').forEach(button => {
+                const active = button.dataset.performanceRange === performanceRange;
+                button.classList.toggle('is-active', active);
+                button.setAttribute('aria-pressed', active ? 'true' : 'false');
             });
             performanceChartInstance.data.labels = labels;
             performanceChartInstance.data.datasets[0].data = values;
