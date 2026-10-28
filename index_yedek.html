@@ -1542,18 +1542,26 @@ async function activateApp(session) {
         function validateTransactionSet(candidate, targetId) {
             const balances = new Map();
             const ordered = [...candidate].sort((a, b) => {
-                // Tarihi boş bırakılan işlemler, tarihli işlemlerden sonra değerlendirilir.
-                if (!a.date && b.date) return 1;
-                if (a.date && !b.date) return -1;
-                if (!a.date && !b.date) {
-                    const aPriority = String(a.type).toUpperCase() === 'BUY' ? 0 : 1;
-                    const bPriority = String(b.type).toUpperCase() === 'BUY' ? 0 : 1;
-                    return aPriority - bPriority;
-                }
+                const aType = String(a.type).toUpperCase();
+                const bType = String(b.type).toUpperCase();
+                const aUndatedBuy = !a.date && aType === 'BUY';
+                const bUndatedBuy = !b.date && bType === 'BUY';
+                const aUndatedSell = !a.date && aType === 'SELL';
+                const bUndatedSell = !b.date && bType === 'SELL';
+
+                // Tarihsiz alışlar mevcut bakiyenin parçasıdır; satış doğrulamasında
+                // tarihli işlemlerden önce hesaba katılır. Tarihsiz satışlar en sona kalır.
+                if (aUndatedBuy !== bUndatedBuy) return aUndatedBuy ? -1 : 1;
+                if (aUndatedSell !== bUndatedSell) return aUndatedSell ? 1 : -1;
+
+                if (!a.date && !b.date) return 0;
+                if (!a.date) return 1;
+                if (!b.date) return -1;
+
                 const dateDiff = new Date(a.date + 'T12:00:00') - new Date(b.date + 'T12:00:00');
                 if (dateDiff !== 0) return dateDiff;
-                const aPriority = String(a.type).toUpperCase() === 'BUY' ? 0 : 1;
-                const bPriority = String(b.type).toUpperCase() === 'BUY' ? 0 : 1;
+                const aPriority = aType === 'BUY' ? 0 : 1;
+                const bPriority = bType === 'BUY' ? 0 : 1;
                 return aPriority - bPriority;
             });
             // Validate only the submitted row so pre-existing historical inconsistencies do not block saves.
