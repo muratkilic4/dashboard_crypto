@@ -658,7 +658,7 @@
         <div class="mb-5 flex items-start justify-between gap-4"><div><h2 id="profile-title" class="text-xl font-bold text-white">Admin profilim</h2><p class="mt-1 text-sm text-slate-400">Kişisel bilgilerini düzenle. Kullanıcı adın bu bölümden değiştirilemez.</p></div><button type="button" onclick="closeProfileModal()" class="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white" aria-label="Kapat">✕</button></div>
         <div class="mb-5 flex items-center gap-4"><img id="profile-avatar-preview" src="" alt="Avatar önizlemesi" class="hidden h-16 w-16 rounded-full border border-slate-700 object-cover"><div id="profile-avatar-fallback" class="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600/20 text-indigo-300"><i data-lucide="user-round" class="h-7 w-7"></i></div><div><p id="profile-display-name" class="font-semibold text-white">Admin</p><p id="profile-display-username" class="text-xs text-slate-400"></p></div></div>
         <form id="profile-form" class="space-y-4"><div class="grid gap-4 sm:grid-cols-2"><div><label for="profile-first-name" class="mb-2 block text-sm text-slate-300">Ad</label><input id="profile-first-name" maxlength="80" autocomplete="given-name" class="input-bg w-full rounded-xl border px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Adın"></div><div><label for="profile-last-name" class="mb-2 block text-sm text-slate-300">Soyad</label><input id="profile-last-name" maxlength="80" autocomplete="family-name" class="input-bg w-full rounded-xl border px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="Soyadın"></div></div>
-          <div><label for="profile-avatar-url" class="mb-2 block text-sm text-slate-300">Avatar görseli bağlantısı</label><input id="profile-avatar-url" type="url" maxlength="1000" class="input-bg w-full rounded-xl border px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="https://.../avatar.jpg"><p class="mt-1 text-xs text-slate-500">Doğrudan görsel bağlantısı kullanabilirsin. Boş bırakırsan varsayılan avatar görünür.</p></div>
+          <div><label for="profile-avatar-file" class="mb-2 block text-sm text-slate-300">Bilgisayardan avatar yükle</label><input id="profile-avatar-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="input-bg w-full rounded-xl border px-3 py-2.5 text-sm outline-none focus:border-indigo-500"><p class="mt-1 text-xs text-slate-500">PNG, JPG, WEBP veya GIF; en fazla 3 MB. Dosya seçersen bağlantı alanının yerine bu görsel kullanılır.</p></div><div><label for="profile-avatar-url" class="mb-2 block text-sm text-slate-300">Veya avatar görseli bağlantısı</label><input id="profile-avatar-url" type="url" maxlength="1000" class="input-bg w-full rounded-xl border px-4 py-3 text-sm outline-none focus:border-indigo-500" placeholder="https://.../avatar.jpg"><p class="mt-1 text-xs text-slate-500">Her ikisini de boş bırakırsan varsayılan avatar görünür.</p></div>
           <p class="text-xs text-slate-500">Kullanıcı adı: <span id="profile-username-readonly" class="font-semibold text-slate-300">—</span> (değiştirilemez)</p><button id="save-profile-button" type="submit" class="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500">Bilgilerimi kaydet</button><p id="profile-message" role="status" class="text-sm text-slate-300"></p>
         </form>
       </div>
@@ -757,6 +757,7 @@
             document.getElementById('password-reset-form').addEventListener('submit', saveRecoveredPassword);
             document.getElementById('profile-form').addEventListener('submit', saveProfile);
             document.getElementById('profile-avatar-url').addEventListener('input', updateAvatarPreview);
+            document.getElementById('profile-avatar-file').addEventListener('change', updateAvatarPreview);
             document.getElementById('auth-mode-toggle').addEventListener('click', () => {
                 authMode = authMode === 'signin' ? 'signup' : 'signin';
                 document.getElementById('auth-title').textContent = authMode === 'signin' ? 'Hesabına giriş yap' : 'Yeni hesap oluştur';
@@ -1864,6 +1865,7 @@ async function activateApp(session) {
         // --- Login bubbles, account recovery, and editable admin profile ---
         let currentProfileDetails = { first_name: '', last_name: '', avatar_url: '' };
         let authBubbleTimer = null;
+        let avatarPreviewObjectUrl = null;
         function showAuthBubble(message, isError = false) {
             const bubble = document.getElementById('auth-message');
             bubble.textContent = message;
@@ -1961,8 +1963,15 @@ async function activateApp(session) {
             } else { img.removeAttribute('src'); img.classList.add('hidden'); fallback.classList.remove('hidden'); }
         }
         function updateAvatarPreview() {
+            const file = document.getElementById('profile-avatar-file').files?.[0];
             const url = document.getElementById('profile-avatar-url').value.trim();
             const img = document.getElementById('profile-avatar-preview'), fallback = document.getElementById('profile-avatar-fallback');
+            if (avatarPreviewObjectUrl) { URL.revokeObjectURL(avatarPreviewObjectUrl); avatarPreviewObjectUrl = null; }
+            if (file) {
+                avatarPreviewObjectUrl = URL.createObjectURL(file);
+                img.src = avatarPreviewObjectUrl; img.classList.remove('hidden'); fallback.classList.add('hidden');
+                return;
+            }
             if (url) { img.src = url; img.classList.remove('hidden'); fallback.classList.add('hidden'); img.onerror = () => { img.classList.add('hidden'); fallback.classList.remove('hidden'); }; }
             else { img.removeAttribute('src'); img.classList.add('hidden'); fallback.classList.remove('hidden'); }
         }
@@ -1977,14 +1986,25 @@ async function activateApp(session) {
             if (!dbClient || !activeUserId) return;
             const first_name = document.getElementById('profile-first-name').value.trim();
             const last_name = document.getElementById('profile-last-name').value.trim();
-            const avatar_url = document.getElementById('profile-avatar-url').value.trim();
+            let avatar_url = document.getElementById('profile-avatar-url').value.trim();
+            const avatarFile = document.getElementById('profile-avatar-file').files?.[0];
             const message = document.getElementById('profile-message'), button = document.getElementById('save-profile-button');
             if (avatar_url && !/^https?:\/\//i.test(avatar_url)) { message.textContent = 'Avatar bağlantısı http:// veya https:// ile başlamalı.'; return; }
+            if (avatarFile && !['image/png','image/jpeg','image/webp','image/gif'].includes(avatarFile.type)) { message.textContent = 'Avatar dosyası PNG, JPG, WEBP veya GIF olmalı.'; return; }
+            if (avatarFile && avatarFile.size > 3 * 1024 * 1024) { message.textContent = 'Avatar dosyası 3 MB sınırını aşmamalı.'; return; }
             button.disabled = true; button.textContent = 'Kaydediliyor…'; message.textContent = '';
             try {
+                if (avatarFile) {
+                    const ext = ({'image/png':'png','image/jpeg':'jpg','image/webp':'webp','image/gif':'gif'})[avatarFile.type];
+                    const path = activeUserId + '/avatar-' + Date.now() + '.' + ext;
+                    const { error: uploadError } = await dbClient.storage.from('avatars').upload(path, avatarFile, { upsert: true, contentType: avatarFile.type });
+                    if (uploadError) throw new Error('Avatar yüklenemedi. Supabase avatars depolama ayarını kontrol et: ' + uploadError.message);
+                    avatar_url = dbClient.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+                }
                 const { error } = await dbClient.from('profiles').update({ first_name, last_name, avatar_url }).eq('user_id', activeUserId);
                 if (error) throw error;
                 currentProfileDetails = { first_name, last_name, avatar_url };
+                document.getElementById('profile-avatar-file').value = '';
                 document.getElementById('profile-display-name').textContent = [first_name, last_name].filter(Boolean).join(' ') || 'Admin';
                 updateHeaderProfile(); message.textContent = 'Profil bilgilerin kaydedildi.'; showToast('Profil bilgileri güncellendi.');
             } catch (error) {
