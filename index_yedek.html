@@ -334,6 +334,62 @@
             .mofi-design #design-toggle-label { display: none; }
         }
 
+        /* Chart and control contrast pass for both themes, especially Mofi mode. */
+        #portfolioPieChart, #portfolioPerformanceChart {
+            display: block;
+            max-width: 100%;
+            outline: 0 !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+        .mofi-design #chart-legend { padding-top: 10px; border-top: 1px solid #edf0f5; }
+        .mofi-design #chart-legend > div { padding: 5px 7px; border-radius: 7px; background: #f8f9fc; color: #536177; }
+        .mofi-design #chart-legend strong { color: #29364a !important; font-weight: 700; }
+        .mofi-design #design-toggle {
+            color: #5145c8 !important;
+            background: #efedff !important;
+            border: 1px solid #d9d4ff !important;
+            font-weight: 700 !important;
+        }
+        .mofi-design #design-toggle:hover { color: #4034b5 !important; background: #e6e2ff !important; }
+        .mofi-design #design-toggle svg { color: currentColor !important; }
+        .mofi-design #btn-currency {
+            color: #344258 !important;
+            background: #fff !important;
+            border-color: #e3e8f0 !important;
+        }
+        .mofi-design #btn-currency span { color: #5145c8 !important; }
+        .mofi-design #profile-open {
+            color: #344258 !important;
+            background: #fff !important;
+            border-color: #e3e8f0 !important;
+        }
+        .mofi-design button.bg-indigo-600,
+        .mofi-design button.bg-indigo-600:hover,
+        .mofi-design button.bg-emerald-600,
+        .mofi-design button.bg-emerald-600:hover,
+        .mofi-design button.bg-rose-600,
+        .mofi-design button.bg-rose-600:hover,
+        .mofi-design button.bg-red-600,
+        .mofi-design button.bg-red-600:hover {
+            color: #fff !important;
+        }
+        .mofi-design button.text-indigo-600,
+        .mofi-design button.text-indigo-500,
+        .mofi-design button.text-violet-600 { color: #5145c8 !important; }
+        .mofi-design button.border { border-color: #e2e7f0; }
+        .mofi-design button:focus-visible,
+        .mofi-design a:focus-visible {
+            outline: 3px solid rgba(115,102,232,.38) !important;
+            outline-offset: 2px;
+        }
+        .mofi-design #theme-icon-sun,
+        .mofi-design #theme-icon-moon { color: #59677c !important; }
+        .mofi-design #design-toggle-label { color: inherit !important; }
+        @media (max-width: 767px) {
+            .mofi-design #design-toggle { min-width: 40px; justify-content: center; }
+        }
+
         /* Mofi layout rebuild: dedicated admin shell and working contextual sidebar. */
         body.mofi-design {
             --mofi-bg: #f6f7fb;
@@ -799,7 +855,7 @@
                 <div class="card-bg p-5 rounded-2xl border flex flex-col justify-between">
                     <div>
                         <h2 class="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                            <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-500"></i> Portföy Varlık Dağılımı
+                            <i data-lucide="chart-bar-increasing" class="w-4 h-4 text-indigo-500"></i> Portföy Dağılımı
                         </h2>
                         <div class="relative flex justify-center items-center h-[220px]">
                             <canvas id="portfolioPieChart"></canvas>
@@ -2321,20 +2377,56 @@ async function activateApp(session) {
                 if (oldPerformance) oldPerformance.destroy();
             }
             pieChartInstance = new Chart(pieCanvas.getContext('2d'), {
-                type:'doughnut',
-                data:{labels:[],datasets:[{data:[],backgroundColor:[],borderColor:currentTheme==='dark'?'#0f172a':'#ffffff',borderWidth:3,hoverOffset:10,spacing:2,borderRadius:5}]},
+                type:'bar',
+                data:{labels:[],datasets:[{
+                    label:'Yatırım dağılımı',
+                    data:[],
+                    backgroundColor:[],
+                    borderColor:'transparent',
+                    borderWidth:0,
+                    borderRadius:6,
+                    borderSkipped:false,
+                    barPercentage:.72,
+                    categoryPercentage:.78,
+                    maxBarThickness:24
+                }]},
                 options:{
-                    responsive:true,maintainAspectRatio:false,cutout:'66%',
-                    animation:{animateRotate:true,animateScale:true,duration:650},
+                    indexAxis:'y',
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    animation:{duration:550,easing:'easeOutQuart'},
+                    layout:{padding:{left:2,right:12,top:2,bottom:2}},
                     plugins:{
                         legend:{display:false},
-                        tooltip:{callbacks:{label:context=>{
-                            const values=context.dataset.data||[];
-                            const total=values.reduce((sum,value)=>sum+(Number(value)||0),0);
-                            const value=Number(context.raw)||0;
-                            const percent=total>0?(value/total*100):0;
-                            return ` ${context.label}: ${formatCurrencyVal(value)} (${percent.toFixed(1)}%)`;
-                        }}}
+                        tooltip:{
+                            backgroundColor:currentTheme==='dark'?'#111827':'#ffffff',
+                            titleColor:currentTheme==='dark'?'#f8fafc':'#243247',
+                            bodyColor:currentTheme==='dark'?'#cbd5e1':'#526176',
+                            borderColor:currentTheme==='dark'?'#374151':'#e6eaf1',
+                            borderWidth:1,
+                            padding:11,
+                            displayColors:false,
+                            callbacks:{label:context=>{
+                                const values=context.dataset.data||[];
+                                const total=values.reduce((sum,value)=>sum+(Number(value)||0),0);
+                                const value=Number(context.raw)||0;
+                                const percent=total>0?(value/total*100):0;
+                                return ` ${formatCurrencyVal(value)} · ${percent.toFixed(1)}% of portfolio`;
+                            }}
+                        }
+                    },
+                    scales:{
+                        x:{
+                            beginAtZero:true,
+                            grid:{color:currentTheme==='dark'?'rgba(148,163,184,.10)':'rgba(100,116,139,.12)',drawTicks:false},
+                            border:{display:false},
+                            ticks:{color:currentTheme==='dark'?'#9ca3af':'#8792a5',maxTicksLimit:4,padding:7,font:{family:'Inter',size:10},callback:value=>formatCurrencyVal(value)}
+                        },
+                        y:{
+                            grid:{display:false},
+                            border:{display:false},
+                            ticks:{color:currentTheme==='dark'?'#cbd5e1':'#526176',padding:8,font:{family:'Inter',size:11,weight:'600'}}
+                        }
                     }
                 }
             });
@@ -2382,13 +2474,14 @@ async function activateApp(session) {
         function updateCharts(assets) {
             if (!pieChartInstance || !performanceChartInstance) return;
             // Slice size reflects total invested buy amount; display at most eight assets.
-            const palette = ['#6366F1','#06B6D4','#10B981','#F59E0B','#F43F5E','#8B5CF6','#3B82F6','#EC4899'];
+            const palette = ['#6C63E8','#22A6A1','#4C8BF5','#E6A23C','#E56B8A','#8B78D9','#4F9D78','#8A9AAF'];
             const topAssets = [...assets].filter(a=>Number(a.investedAmount)>0)
                 .sort((a,b)=>Number(b.investedAmount)-Number(a.investedAmount)).slice(0,8);
             pieChartInstance.data.labels = topAssets.map(a=>a.symbol);
             pieChartInstance.data.datasets[0].data = topAssets.map(a=>Number(a.investedAmount)||0);
             pieChartInstance.data.datasets[0].backgroundColor = topAssets.map((a,i)=>palette[i]);
-            pieChartInstance.data.datasets[0].borderColor = currentTheme==='dark'?'#0f172a':'#ffffff';
+            pieChartInstance.data.datasets[0].borderColor = 'transparent';
+            pieChartInstance.data.datasets[0].borderWidth = 0;
             pieChartInstance.update();
 
             const legendContainer = document.getElementById('chart-legend');
