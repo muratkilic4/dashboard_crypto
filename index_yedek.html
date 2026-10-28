@@ -1485,7 +1485,14 @@ async function activateApp(session) {
         function calculatePortfolio() {
             const holdings = {};
             let realizedPnL = 0;
-            const ordered = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const ordered = [...transactions].sort((a, b) => {
+                const dateDiff = new Date(a.date) - new Date(b.date);
+                if (dateDiff !== 0) return dateDiff;
+                // Aynı zaman damgasında alış önce işlensin; satış bakiyesi doğru hesaplansın.
+                const aPriority = String(a.type).toUpperCase() === 'BUY' ? 0 : 1;
+                const bPriority = String(b.type).toUpperCase() === 'BUY' ? 0 : 1;
+                return aPriority - bPriority;
+            });
 
             for (const tx of ordered) {
                 if (!holdings[tx.coin]) holdings[tx.coin] = { amount: 0, totalCost: 0 };
@@ -1533,7 +1540,14 @@ async function activateApp(session) {
 
         function validateTransactionSet(candidate) {
             const balances = new Map();
-            const ordered = [...candidate].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const ordered = [...candidate].sort((a, b) => {
+                const dateDiff = new Date(a.date) - new Date(b.date);
+                if (dateDiff !== 0) return dateDiff;
+                // Aynı zaman damgasında alış önce işlensin; satış bakiyesi doğru hesaplansın.
+                const aPriority = String(a.type).toUpperCase() === 'BUY' ? 0 : 1;
+                const bPriority = String(b.type).toUpperCase() === 'BUY' ? 0 : 1;
+                return aPriority - bPriority;
+            });
             for (const tx of ordered) {
                 const amount = Number(tx.amount);
                 const price = Number(tx.price);
