@@ -1125,7 +1125,7 @@ async function activateApp(session) {
             if (error) throw error;
             transactions = (data || []).map(row => ({
                 id: row.id,
-                type: row.type,
+                type: String(row.type || '').toUpperCase(),
                 coin: row.coin,
                 amount: Number(row.amount),
                 price: Number(row.price),
@@ -1901,7 +1901,7 @@ async function activateApp(session) {
             if (saveButton) { saveButton.disabled = true; saveButton.classList.add('opacity-60'); }
             try {
                 const row = {
-                    type: selectedTxType,
+                    type: selectedTxType.toLowerCase(),
                     coin,
                     amount,
                     price,
