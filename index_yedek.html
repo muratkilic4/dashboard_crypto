@@ -2310,11 +2310,6 @@ async function activateApp(session) {
                     return;
                 }
             }
-            if (validationError) {
-                showToast(validationError, true);
-                return;
-            }
-
             const saveButton = document.querySelector('#tx-form button[type="submit"]');
             if (saveButton) { saveButton.disabled = true; saveButton.classList.add('opacity-60'); }
             try {
