@@ -1543,11 +1543,18 @@ async function activateApp(session) {
             const ordered = [...candidate].sort((a, b) => {
                 const dateDiff = new Date(a.date) - new Date(b.date);
                 if (dateDiff !== 0) return dateDiff;
-                // Aynı zaman damgasında alış önce işlensin; satış bakiyesi doğru hesaplansın.
                 const aPriority = String(a.type).toUpperCase() === 'BUY' ? 0 : 1;
                 const bPriority = String(b.type).toUpperCase() === 'BUY' ? 0 : 1;
                 return aPriority - bPriority;
             });
+            // Validate the transaction being saved, rather than blocking every future save
+            // because an older historical record is already inconsistent.
+            const target = candidate.find(tx => String(tx.id).startsWith('new-')) || null;
+            // During edits the candidate row keeps the existing database id. The latest row
+            // in candidate is the submitted transaction, because handleFormSubmit appends/replaces it.
+            const submitted = candidate[candidate.length - 1];
+            const targetId = target ? target.id : submitted?.id;
+
             for (const tx of ordered) {
                 const amount = Number(tx.amount);
                 const price = Number(tx.price);
@@ -1556,11 +1563,18 @@ async function activateApp(session) {
                 if (!Number.isFinite(amount) || amount <= 0) return 'Miktar sıfırdan büyük ve geçerli olmalı.';
                 if (!Number.isFinite(price) || price <= 0) return 'Birim fiyat sıfırdan büyük ve geçerli olmalı.';
                 if (Number.isNaN(date.getTime())) return 'Geçerli bir işlem tarihi girin.';
+
                 const balance = balances.get(tx.coin) || 0;
-                if (tx.type === 'SELL' && amount > balance + 1e-10) {
-                    return `${tx.coin} satışı mevcut bakiyeyi aşıyor. İşlem tarihindeki kullanılabilir miktar: ${balance.toPrecision(8)}.`;
+                const isSubmitted = String(tx.id) === String(targetId);
+                if (isSubmitted && String(tx.type).toUpperCase() === 'SELL' && amount > balance + Math.max(1e-8, Math.abs(balance) * 1e-10)) {
+                    return `${tx.coin} satışı mevcut bakiyeyi aşıyor. İşlem tarihindeki kullanılabilir miktar: ${balance.toLocaleString('tr-TR', {maximumFractionDigits: 8})}.`;
                 }
-                balances.set(tx.coin, tx.type === 'BUY' ? balance + amount : balance - amount);
+                if (String(tx.type).toUpperCase() === 'BUY') {
+                    balances.set(tx.coin, balance + amount);
+                } else {
+                    // Older invalid sells should not create a negative balance and block new records.
+                    balances.set(tx.coin, Math.max(0, balance - amount));
+                }
             }
             return null;
         }
