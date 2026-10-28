@@ -12,7 +12,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Google Font: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <!-- Persistent Transactions in LocalStorage -->
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -749,304 +749,20 @@
             ADA: { name: 'Cardano', symbol: 'ADA', price: 0.38, change: 0.0, color: '#3B82F6', binanceSymbol: 'ADAUSDT' },
             DOGE: { name: 'Dogecoin', symbol: 'DOGE', price: 0.12, change: 0.0, color: '#EAB308', binanceSymbol: 'DOGEUSDT' }
         };
-
-        // Persistent Transactions in LocalStorage
+        // Persistent Transactions in LocalStorage with User's Example Scenario Pre-loaded
         let transactions = JSON.parse(localStorage.getItem('cryptodash_transactions')) || [
-            { id: 1, type: 'BUY', coin: 'BTC', amount: 0.25, price: 61000, date: '2024-03-15T10:30' },
-            { id: 2, type: 'BUY', coin: 'ETH', amount: 2.5, price: 3200, date: '2024-03-18T14:20' },
-            { id: 3, type: 'BUY', coin: 'SOL', amount: 15, price: 120, date: '2024-03-20T09:15' },
-            { id: 4, type: 'SELL', coin: 'SOL', amount: 5, price: 145, date: '2024-03-22T16:45' }
+            { id: 1, type: 'BUY', coin: 'SOL', amount: 24.5098, price: 102.00, date: '2024-03-20T10:00' },
+            { id: 2, type: 'SELL', coin: 'SOL', amount: 8.4000, price: 125.00, date: '2024-03-21T14:30' },
+            { id: 3, type: 'BUY', coin: 'SOL', amount: 15.3061, price: 98.00, date: '2024-03-22T11:15' },
+            { id: 4, type: 'BUY', coin: 'BTC', amount: 0.15, price: 62000, date: '2024-03-15T10:30' },
+            { id: 5, type: 'BUY', coin: 'ETH', amount: 1.8, price: 3300, date: '2024-03-18T14:20' }
         ];
 
         let selectedTxType = 'BUY';
         let pieChartInstance = null;
         let trendChartInstance = null;
 
-        // --- Window Onload Initialization ---
-        window.onload = function() {
-            lucide.createIcons();
-            initDateInput();
-            initCharts();
-            renderUserProfileUI();
-            
-            // Binance Live API Updates
-            fetchBinancePrices();
-            setInterval(fetchBinancePrices, 5000);
-
-            updateDashboard();
-
-            // Outside click handler for autocomplete search dropdown
-            document.addEventListener('click', function(e) {
-                const dropdown = document.getElementById('coin-dropdown');
-                const searchInput = document.getElementById('input-coin-search');
-                if (dropdown && !dropdown.contains(e.target) && e.target !== searchInput) {
-                    dropdown.classList.add('hidden');
-                }
-            });
-        };
-
-        // --- Save Data Helper ---
-        function saveTransactions() {
-            localStorage.setItem('cryptodash_transactions', JSON.stringify(transactions));
-        }
-
-        // --- User Profile Management ---
-        function renderUserProfileUI() {
-            document.getElementById('header-user-name').textContent = userProfile.name;
-            document.getElementById('header-user-role').textContent = userProfile.role;
-            document.getElementById('header-avatar-img').src = userProfile.avatar;
-            document.getElementById('banner-welcome-heading').textContent = `Hoş Geldiniz, ${userProfile.name}`;
-        }
-
-        function openProfileModal() {
-            document.getElementById('input-user-name').value = userProfile.name;
-            document.getElementById('input-user-role').value = userProfile.role;
-            document.getElementById('input-user-avatar').value = userProfile.avatar;
-            document.getElementById('modal-avatar-preview').src = userProfile.avatar;
-            document.getElementById('profile-modal').classList.remove('hidden');
-        }
-
-        function closeProfileModal() {
-            document.getElementById('profile-modal').classList.add('hidden');
-        }
-
-        function updateAvatarPreview(url) {
-            if (url && url.length > 5) {
-                document.getElementById('modal-avatar-preview').src = url;
-            }
-        }
-
-        function selectPresetAvatar(url) {
-            document.getElementById('input-user-avatar').value = url;
-            document.getElementById('modal-avatar-preview').src = url;
-        }
-
-        function handleProfileSubmit(e) {
-            e.preventDefault();
-            userProfile.name = document.getElementById('input-user-name').value;
-            userProfile.role = document.getElementById('input-user-role').value;
-            userProfile.avatar = document.getElementById('input-user-avatar').value;
-
-            localStorage.setItem('cryptodash_user_profile', JSON.stringify(userProfile));
-            renderUserProfileUI();
-            closeProfileModal();
-            showToast('Profil bilgileri güncellendi.');
-        }
-
-        // --- Sidebar View Filter Handler ---
-        function setFilterView(view) {
-            activeFilterView = view;
-            
-            // Toggle active sidebar styles
-            const btnAll = document.getElementById('nav-filter-all');
-            const btnBought = document.getElementById('nav-filter-bought');
-            const btnSold = document.getElementById('nav-filter-sold');
-            const desc = document.getElementById('sidebar-filter-desc');
-
-            const activeClass = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold transition-all bg-ventic-600 text-white shadow-md shadow-ventic-600/20";
-            const inactiveClass = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all";
-
-            btnAll.className = view === 'all' ? activeClass : inactiveClass;
-            btnBought.className = view === 'bought' ? activeClass : inactiveClass;
-            btnSold.className = view === 'sold' ? activeClass : inactiveClass;
-
-            if (view === 'all') desc.textContent = "Genel Portföy Görünümü";
-            else if (view === 'bought') desc.textContent = "Sadece Alınan & Aktif Varlıklar";
-            else if (view === 'sold') desc.textContent = "Realize Edilmiş Satışlar";
-
-            switchTab('dashboard');
-            updateDashboard();
-        }
-
-        // --- Fetch Live Binance Prices ---
-        async function fetchBinancePrices() {
-            try {
-                const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    data.forEach(item => {
-                        if (item.symbol.endsWith('USDT')) {
-                            const coinSymbol = item.symbol.replace('USDT', '');
-                            const price = parseFloat(item.lastPrice);
-                            const change = parseFloat(item.priceChangePercent);
-
-                            if (MARKET_DATA[coinSymbol]) {
-                                MARKET_DATA[coinSymbol].price = price;
-                                MARKET_DATA[coinSymbol].change = change;
-                            } else {
-                                // Add non-default coins dynamically
-                                MARKET_DATA[coinSymbol] = {
-                                    name: coinSymbol,
-                                    symbol: coinSymbol,
-                                    price: price,
-                                    change: change,
-                                    color: '#10B981',
-                                    binanceSymbol: item.symbol
-                                };
-                            }
-                        }
-                    });
-
-                    // Update live trend chart with real BTC/ETH prices
-                    if (trendChartInstance && MARKET_DATA.BTC && MARKET_DATA.BTC.price > 0) {
-                        const now = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                        trendChartInstance.data.labels.shift();
-                        trendChartInstance.data.labels.push(now);
-
-                        trendChartInstance.data.datasets[0].data.shift();
-                        trendChartInstance.data.datasets[0].data.push(formatCurrencyVal(MARKET_DATA.BTC.price, true));
-
-                        trendChartInstance.data.datasets[1].data.shift();
-                        trendChartInstance.data.datasets[1].data.push(formatCurrencyVal(MARKET_DATA.ETH.price, true));
-
-                        trendChartInstance.update('none');
-                    }
-
-                    updateDashboard();
-                }
-            } catch (error) {
-                console.warn("Binance API bağlantısı kurulamadı, yerel veriler kullanılıyor.", error);
-            }
-        }
-
-        // Helper: Generate Coin Icon HTML
-        function getCoinIconHtml(symbol, size = 'w-6 h-6') {
-            const iconUrl = `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${symbol.toLowerCase()}.png`;
-            return `
-                <img src="${iconUrl}" alt="${symbol}" class="${size} rounded-full object-cover shadow-sm" 
-                     onerror="this.onerror=null; this.parentElement.innerHTML='<span class=\'${size} rounded-full bg-ventic-600 text-white flex items-center justify-center font-bold text-[10px]\'>${symbol.substring(0, 2)}</span>';">
-            `;
-        }
-
-        // --- Currency Conversion Helper ---
-        function formatCurrencyVal(valInUsd, numericOnly = false) {
-            const converted = currentCurrency === 'TRY' ? valInUsd * usdToTryRate : valInUsd;
-            if (numericOnly) return converted;
-
-            const symbol = currentCurrency === 'TRY' ? '₺' : '$';
-            return `${symbol}${converted.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        }
-
-        function toggleCurrency() {
-            currentCurrency = currentCurrency === 'USD' ? 'TRY' : 'USD';
-            document.getElementById('currency-label').textContent = currentCurrency;
-            updateDashboard();
-            showToast(`Para birimi ${currentCurrency} olarak güncellendi.`);
-        }
-
-        // --- Theme Toggle ---
-        function toggleTheme() {
-            const html = document.documentElement;
-            const iconSun = document.getElementById('theme-icon-sun');
-            const iconMoon = document.getElementById('theme-icon-moon');
-
-            if (currentTheme === 'dark') {
-                currentTheme = 'light';
-                html.classList.remove('dark');
-                html.classList.add('light');
-                iconSun.classList.add('hidden');
-                iconMoon.classList.remove('hidden');
-            } else {
-                currentTheme = 'dark';
-                html.classList.remove('light');
-                html.classList.add('dark');
-                iconSun.classList.remove('hidden');
-                iconMoon.classList.add('hidden');
-            }
-            updateChartsTheme();
-        }
-
-        // --- Navigation Controller ---
-        function switchTab(tab) {
-            const pageDash = document.getElementById('page-dashboard');
-            const pageManage = document.getElementById('page-manage');
-            const navManage = document.getElementById('nav-manage');
-
-            if (tab === 'dashboard') {
-                pageDash.classList.remove('hidden');
-                pageManage.classList.add('hidden');
-                navManage.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-all";
-            } else {
-                pageDash.classList.add('hidden');
-                pageManage.classList.remove('hidden');
-                navManage.className = "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold transition-all bg-ventic-600 text-white shadow-md shadow-ventic-600/20";
-
-                if (!isManageUnlocked) {
-                    document.getElementById('lock-screen').classList.remove('hidden');
-                    document.getElementById('manage-content').classList.add('hidden');
-                } else {
-                    document.getElementById('lock-screen').classList.add('hidden');
-                    document.getElementById('manage-content').classList.remove('hidden');
-                    renderManageTable();
-                }
-            }
-        }
-
-        function toggleMobileSidebar() {
-            const menu = document.getElementById('sidebar-menu');
-            menu.classList.toggle('hidden');
-        }
-
-        // --- Security PIN & Lock System ---
-        function verifyPin() {
-            const inputPin = document.getElementById('pin-input').value;
-            if (inputPin === currentPinCode) {
-                isManageUnlocked = true;
-                document.getElementById('lock-screen').classList.add('hidden');
-                document.getElementById('manage-content').classList.remove('hidden');
-                document.getElementById('pin-input').value = '';
-                renderManageTable();
-                showToast('Kilit başarıyla açıldı.');
-            } else {
-                showToast('Hatalı PIN Kodu!', true);
-            }
-        }
-
-        function lockManagePage() {
-            isManageUnlocked = false;
-            document.getElementById('lock-screen').classList.remove('hidden');
-            document.getElementById('manage-content').classList.add('hidden');
-            showToast('Yönetim paneli kilitlendi.');
-        }
-
-        function openChangePinModal() {
-            document.getElementById('pin-current').value = '';
-            document.getElementById('pin-new').value = '';
-            document.getElementById('pin-new-confirm').value = '';
-            document.getElementById('pin-modal').classList.remove('hidden');
-        }
-
-        function closeChangePinModal() {
-            document.getElementById('pin-modal').classList.add('hidden');
-        }
-
-        function handleChangePinSubmit(e) {
-            e.preventDefault();
-            const curr = document.getElementById('pin-current').value;
-            const newPin = document.getElementById('pin-new').value;
-            const confirmPin = document.getElementById('pin-new-confirm').value;
-
-            if (curr !== currentPinCode) {
-                showToast('Mevcut PIN hatalı!', true);
-                return;
-            }
-            if (newPin.length < 4) {
-                showToast('Yeni PIN en az 4 haneli olmalı.', true);
-                return;
-            }
-            if (newPin !== confirmPin) {
-                showToast('Yeni PIN kodları eşleşmiyor!', true);
-                return;
-            }
-
-            currentPinCode = newPin;
-            localStorage.setItem('cryptodash_pin', newPin);
-            closeChangePinModal();
-            showToast('PIN kodu başarıyla güncellendi.');
-        }
-
-        // --- Portfolio Calculation & Menu Filtering Logic ---
+        // --- Portfolio Calculation & Weighted Average Cost Engine ---
         function calculatePortfolio() {
             const holdings = {};
             let totalRealizedPnL = 0;
@@ -1056,26 +772,50 @@
             const buyTxs = transactions.filter(t => t.type === 'BUY');
             const sellTxs = transactions.filter(t => t.type === 'SELL');
 
-            transactions.forEach(tx => {
+            // Sort transactions chronologically to calculate weighted average & realized PnL correctly
+            const sortedTxs = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            sortedTxs.forEach(tx => {
                 const totalVal = tx.amount * tx.price;
                 if (!holdings[tx.coin]) {
-                    holdings[tx.coin] = { amount: 0, totalCost: 0, soldAmount: 0, soldRevenue: 0 };
+                    holdings[tx.coin] = { 
+                        amount: 0, 
+                        totalCost: 0, 
+                        avgCost: 0, 
+                        realizedPnL: 0, 
+                        soldAmount: 0, 
+                        soldRevenue: 0 
+                    };
                 }
+
+                const coinData = holdings[tx.coin];
 
                 if (tx.type === 'BUY') {
                     totalBuyVolume += totalVal;
-                    holdings[tx.coin].amount += tx.amount;
-                    holdings[tx.coin].totalCost += totalVal;
+                    // Weighted Average Cost Calculation on New Buy
+                    coinData.totalCost += totalVal;
+                    coinData.amount += tx.amount;
+                    coinData.avgCost = coinData.amount > 0 ? coinData.totalCost / coinData.amount : 0;
                 } else if (tx.type === 'SELL') {
                     totalSellVolume += totalVal;
-                    const avgCost = holdings[tx.coin].amount > 0 ? holdings[tx.coin].totalCost / holdings[tx.coin].amount : 0;
-                    const pnl = (tx.price - avgCost) * tx.amount;
-                    totalRealizedPnL += pnl;
+                    const currentAvgCost = coinData.avgCost;
+                    const pnl = (tx.price - currentAvgCost) * tx.amount;
 
-                    holdings[tx.coin].soldAmount += tx.amount;
-                    holdings[tx.coin].soldRevenue += totalVal;
-                    holdings[tx.coin].amount -= tx.amount;
-                    holdings[tx.coin].totalCost -= avgCost * tx.amount;
+                    totalRealizedPnL += pnl;
+                    coinData.realizedPnL += pnl;
+
+                    coinData.soldAmount += tx.amount;
+                    coinData.soldRevenue += totalVal;
+
+                    // Reduce position & remaining total cost proportionally based on fixed average cost
+                    coinData.amount -= tx.amount;
+                    if (coinData.amount <= 0.000001) {
+                        coinData.amount = 0;
+                        coinData.totalCost = 0;
+                        coinData.avgCost = 0;
+                    } else {
+                        coinData.totalCost = coinData.amount * currentAvgCost;
+                    }
                 }
             });
 
@@ -1088,10 +828,9 @@
                 const data = holdings[symbol];
                 const currentPrice = MARKET_DATA[symbol] ? MARKET_DATA[symbol].price : 0;
 
-                // Active Holdings
+                // Active Remaining Holdings
                 if (data.amount > 0.00001) {
                     const currentValue = data.amount * currentPrice;
-                    const avgCost = data.totalCost / data.amount;
                     const pnl = currentValue - data.totalCost;
                     const pnlPercent = data.totalCost > 0 ? (pnl / data.totalCost) * 100 : 0;
 
@@ -1101,20 +840,22 @@
                     activeAssetDetails.push({
                         symbol,
                         amount: data.amount,
-                        avgCost,
+                        avgCost: data.avgCost,
                         currentPrice,
                         currentValue,
                         pnl,
-                        pnlPercent
+                        pnlPercent,
+                        realizedPnL: data.realizedPnL
                     });
                 }
 
-                // Sold Holdings
+                // Sold Holdings Summary
                 if (data.soldAmount > 0) {
                     soldAssetDetails.push({
                         symbol,
                         soldAmount: data.soldAmount,
-                        soldRevenue: data.soldRevenue
+                        soldRevenue: data.soldRevenue,
+                        realizedPnL: data.realizedPnL
                     });
                 }
             });
@@ -1142,131 +883,17 @@
             };
         }
 
-        // --- Render UI Dashboard Based on Sidebar View ---
-        function updateDashboard() {
-            const summary = calculatePortfolio();
-
-            // Dynamic Metric Cards Adaptation
-            const card1Title = document.getElementById('card1-title');
-            const card1Val = document.getElementById('metric-total-value');
-            const card1Cost = document.getElementById('metric-total-cost');
-            const card1Sub = document.getElementById('card1-sublabel');
-
-            const card2Title = document.getElementById('card2-title');
-            const card2Val = document.getElementById('metric-pnl');
-            const card2Badge = document.getElementById('metric-pnl-percent-badge');
-
-            const card3Title = document.getElementById('card3-title');
-            const card3Val = document.getElementById('metric-best-asset');
-            const card3Sub = document.getElementById('metric-best-asset-pnl');
-
-            const card4Title = document.getElementById('card4-title');
-            const card4Val = document.getElementById('metric-realized-pnl');
-            const card4Sub = document.getElementById('metric-tx-count');
-
-            if (activeFilterView === 'all') {
-                card1Title.textContent = "PORTFÖY DEĞERİ";
-                card1Val.textContent = formatCurrencyVal(summary.totalValue);
-                card1Sub.textContent = "Maliyet:";
-                card1Cost.textContent = formatCurrencyVal(summary.totalCost);
-
-                card2Title.textContent = "BEKLEYEN KÂR / ZARAR";
-                const isPos = summary.unrealizedPnL >= 0;
-                card2Val.textContent = `${isPos ? '+' : ''}${formatCurrencyVal(summary.unrealizedPnL)}`;
-                card2Val.className = `text-2xl font-extrabold mt-1 ${isPos ? 'text-emerald-500' : 'text-rose-500'}`;
-                card2Badge.textContent = `${isPos ? '+' : ''}${summary.unrealizedPnLPercent.toFixed(2)}%`;
-
-                card3Title.textContent = "EN YÜKSEK GETİRİ";
-                if (summary.activeAssetDetails.length > 0) {
-                    const sorted = [...summary.activeAssetDetails].sort((a, b) => b.pnlPercent - a.pnlPercent);
-                    card3Val.textContent = sorted[0].symbol;
-                    card3Sub.textContent = `Performans: +${sorted[0].pnlPercent.toFixed(2)}%`;
-                } else {
-                    card3Val.textContent = "-";
-                    card3Sub.textContent = "Performans: 0.00%";
-                }
-
-                card4Title.textContent = "SATIŞ KAZANCI";
-                card4Val.textContent = `${summary.realizedPnL >= 0 ? '+' : ''}${formatCurrencyVal(summary.realizedPnL)}`;
-                card4Sub.textContent = `${transactions.length} Toplam İşlem`;
-
-                renderAssetsTable(summary.activeAssetDetails);
-                updateCharts(summary.activeAssetDetails);
-
-            } else if (activeFilterView === 'bought') {
-                card1Title.textContent = "AKTİF ALIM DEĞERİ";
-                card1Val.textContent = formatCurrencyVal(summary.totalValue);
-                card1Sub.textContent = "Toplam Maliyet:";
-                card1Cost.textContent = formatCurrencyVal(summary.totalCost);
-
-                card2Title.textContent = "POTANSİYEL GETİRİ";
-                const isPos = summary.unrealizedPnL >= 0;
-                card2Val.textContent = `${isPos ? '+' : ''}${formatCurrencyVal(summary.unrealizedPnL)}`;
-                card2Val.className = `text-2xl font-extrabold mt-1 ${isPos ? 'text-emerald-500' : 'text-rose-500'}`;
-                card2Badge.textContent = `${isPos ? '+' : ''}${summary.unrealizedPnLPercent.toFixed(2)}%`;
-
-                card3Title.textContent = "EN DEĞERLİ VARLIK";
-                if (summary.activeAssetDetails.length > 0) {
-                    const sorted = [...summary.activeAssetDetails].sort((a, b) => b.currentValue - a.currentValue);
-                    card3Val.textContent = sorted[0].symbol;
-                    card3Sub.textContent = `Değer: ${formatCurrencyVal(sorted[0].currentValue)}`;
-                } else {
-                    card3Val.textContent = "-";
-                    card3Sub.textContent = "Değer: $0.00";
-                }
-
-                card4Title.textContent = "TOPLAM ALIM HACMİ";
-                card4Val.textContent = formatCurrencyVal(summary.totalBuyVolume);
-                card4Sub.textContent = `${summary.buyTxs.length} Alım Kaydı`;
-
-                renderAssetsTable(summary.activeAssetDetails);
-                updateCharts(summary.activeAssetDetails);
-
-            } else if (activeFilterView === 'sold') {
-                card1Title.textContent = "TOPLAM SATIŞ HACMİ";
-                card1Val.textContent = formatCurrencyVal(summary.totalSellVolume);
-                card1Sub.textContent = "Satış Sayısı:";
-                card1Cost.textContent = `${summary.sellTxs.length} Satış`;
-
-                card2Title.textContent = "REALİZE EDİLEN KÂR";
-                const isPos = summary.realizedPnL >= 0;
-                card2Val.textContent = `${isPos ? '+' : ''}${formatCurrencyVal(summary.realizedPnL)}`;
-                card2Val.className = `text-2xl font-extrabold mt-1 ${isPos ? 'text-emerald-500' : 'text-rose-500'}`;
-                card2Badge.textContent = isPos ? 'KÂRDA' : 'ZARARDA';
-
-                card3Title.textContent = "EN KÂRLI SATIŞ";
-                if (summary.sellTxs.length > 0) {
-                    const sorted = [...summary.sellTxs].sort((a, b) => (b.amount * b.price) - (a.amount * a.price));
-                    card3Val.textContent = sorted[0].coin;
-                    card3Sub.textContent = `Tutar: ${formatCurrencyVal(sorted[0].amount * sorted[0].price)}`;
-                } else {
-                    card3Val.textContent = "-";
-                    card3Sub.textContent = "Tutar: $0.00";
-                }
-
-                card4Title.textContent = "SATILAN FARKLI COIN";
-                card4Val.textContent = summary.soldAssetDetails.length;
-                card4Sub.textContent = "Tamamlanan Satışlar";
-
-                renderSoldTable(summary.sellTxs);
-                updateCharts(summary.soldAssetDetails.map(s => ({ symbol: s.symbol, currentValue: s.soldRevenue })));
-            }
-
-            renderMarketPrices();
-            if (isManageUnlocked) renderManageTable();
-        }
-
-        // Render Active Assets Table
+        // Render Active Assets Table with Realized PnL Indicator
         function renderAssetsTable(assets) {
-            document.getElementById('table-main-title').innerHTML = `<i data-lucide="layers" class="w-4 h-4 text-ventic-600"></i> Aktif Varlıklar & Detaylı Performans`;
+            document.getElementById('table-main-title').innerHTML = `<i data-lucide="layers" class="w-4 h-4 text-ventic-600"></i> Aktif Varlıklar & Detaylı Ortalama Maliyet`;
             document.getElementById('table-head-element').innerHTML = `
                 <tr>
                     <th class="p-3.5 rounded-l-2xl">Varlık</th>
-                    <th class="p-3.5">Miktar</th>
-                    <th class="p-3.5">Ort. Maliyet</th>
+                    <th class="p-3.5">Kalan Miktar</th>
+                    <th class="p-3.5">Ağırlıklı Ort. Maliyet</th>
                     <th class="p-3.5">Anlık Fiyat (Binance)</th>
-                    <th class="p-3.5">Toplam Değer</th>
-                    <th class="p-3.5 rounded-r-2xl">Kâr / Zarar</th>
+                    <th class="p-3.5">Güncel Değer</th>
+                    <th class="p-3.5 rounded-r-2xl">Anlık Kâr / Zarar</th>
                 </tr>
             `;
             const tbody = document.getElementById('assets-table-body');
@@ -1281,6 +908,8 @@
             assets.forEach(asset => {
                 const coinMeta = MARKET_DATA[asset.symbol] || { name: asset.symbol };
                 const isPos = asset.pnl >= 0;
+                const hasRealized = Math.abs(asset.realizedPnL) > 0.01;
+                const realizedIsPos = asset.realizedPnL >= 0;
 
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/40 transition';
@@ -1292,13 +921,14 @@
                             <span class="text-[10px] text-slate-400 font-semibold">${asset.symbol}</span>
                         </div>
                     </td>
-                    <td class="p-3.5 font-semibold text-xs">${asset.amount.toFixed(4)}</td>
-                    <td class="p-3.5 text-xs">${formatCurrencyVal(asset.avgCost)}</td>
+                    <td class="p-3.5 font-semibold text-xs text-slate-800 dark:text-slate-200">${asset.amount.toFixed(4)}</td>
+                    <td class="p-3.5 text-xs font-bold text-ventic-600 dark:text-ventic-400">${formatCurrencyVal(asset.avgCost)}</td>
                     <td class="p-3.5 font-semibold text-xs">${formatCurrencyVal(asset.currentPrice)}</td>
                     <td class="p-3.5 font-extrabold text-xs text-slate-900 dark:text-white">${formatCurrencyVal(asset.currentValue)}</td>
                     <td class="p-3.5 font-bold text-xs ${isPos ? 'text-emerald-500' : 'text-rose-500'}">
                         ${isPos ? '+' : ''}${formatCurrencyVal(asset.pnl)}
                         <span class="text-[10px] block opacity-80 font-normal">(${isPos ? '+' : ''}${asset.pnlPercent.toFixed(2)}%)</span>
+                        ${hasRealized ? `<span class="text-[9px] block font-semibold mt-0.5 ${realizedIsPos ? 'text-emerald-600' : 'text-rose-600'}">Satış Kazancı: ${realizedIsPos ? '+' : ''}${formatCurrencyVal(asset.realizedPnL)}</span>` : ''}
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1308,14 +938,14 @@
 
         // Render Sold Transactions Table (When "Satılanlar" menu is active)
         function renderSoldTable(sellTxs) {
-            document.getElementById('table-main-title').innerHTML = `<i data-lucide="arrow-up-right" class="w-4 h-4 text-rose-500"></i> Satış Yapılmış İşlemler Geçmişi`;
+            document.getElementById('table-main-title').innerHTML = `<i data-lucide="arrow-up-right" class="w-4 h-4 text-rose-500"></i> Satış İşlemleri & Gerçekleşen Kâr/Zarar Geçmişi`;
             document.getElementById('table-head-element').innerHTML = `
                 <tr>
                     <th class="p-3.5 rounded-l-2xl">Satış Tarihi</th>
                     <th class="p-3.5">Satılan Varlık</th>
-                    <th class="p-3.5">Miktar</th>
+                    <th class="p-3.5">Satılan Miktar</th>
                     <th class="p-3.5">Satış Fiyatı</th>
-                    <th class="p-3.5 rounded-r-2xl">Toplam Gelir</th>
+                    <th class="p-3.5 rounded-r-2xl">Toplam Elde Edilen Tutar</th>
                 </tr>
             `;
             const tbody = document.getElementById('assets-table-body');
@@ -1340,7 +970,7 @@
                         <span>${tx.coin}</span>
                     </td>
                     <td class="p-3.5 font-semibold text-xs">${tx.amount}</td>
-                    <td class="p-3.5 text-xs">${formatCurrencyVal(tx.price)}</td>
+                    <td class="p-3.5 text-xs font-bold">${formatCurrencyVal(tx.price)}</td>
                     <td class="p-3.5 font-extrabold text-xs text-emerald-500">${formatCurrencyVal(total)}</td>
                 `;
                 tbody.appendChild(tr);
@@ -1786,5 +1416,4 @@
             }, 3000);
         }
     </script>
-</body>
-</html>
+<!-- ... existing code -->
