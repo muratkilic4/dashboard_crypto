@@ -316,15 +316,19 @@
         </nav>
 
         <div class="flex items-center gap-2.5">
-            <button id="profile-open" type="button" onclick="openProfileModal()" class="flex items-center gap-2 rounded-xl border input-bg px-2.5 py-1.5 hover:border-indigo-500 transition" title="Profil bilgilerimi düzenle">
-                <img id="header-avatar" src="" alt="" class="hidden h-7 w-7 rounded-full object-cover border border-indigo-400/40">
-                <span id="header-avatar-fallback" class="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600/20 text-indigo-400"><i data-lucide="user-round" class="h-4 w-4"></i></span>
-                <span id="header-profile-name" class="max-w-[110px] truncate text-xs font-medium">Profilim</span>
-            </button>
-            <span id="account-email" class="hidden xl:inline text-[11px] text-slate-500 max-w-[150px] truncate"></span>
-            <button onclick="signOut()" class="p-2 rounded-xl input-bg border text-slate-500 hover:text-rose-500 transition" title="Güvenli çıkış" aria-label="Güvenli çıkış">
-                <i data-lucide="log-out" class="w-4 h-4"></i>
-            </button>
+            <div id="profile-menu-wrap" class="relative">
+                <button id="profile-open" type="button" onclick="toggleProfileMenu(event)" aria-haspopup="true" aria-expanded="false" aria-controls="profile-dropdown" class="flex items-center gap-2 rounded-xl border input-bg px-2.5 py-1.5 hover:border-indigo-500 transition" title="Hesap menüsü">
+                    <img id="header-avatar" src="" alt="" class="hidden h-7 w-7 rounded-full object-cover border border-indigo-400/40">
+                    <span id="header-avatar-fallback" class="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-600/20 text-indigo-400"><i data-lucide="user-round" class="h-4 w-4"></i></span>
+                    <span class="min-w-0 text-left"><span id="header-profile-name" class="block max-w-[110px] truncate text-xs font-semibold">Profilim</span><span id="header-profile-role" class="block text-[10px] text-slate-500">Yönetici</span></span>
+                    <i data-lucide="chevron-down" class="h-3.5 w-3.5 text-slate-500"></i>
+                </button>
+                <div id="profile-dropdown" class="hidden absolute right-0 top-full z-[90] mt-2 w-56 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 p-1.5 shadow-2xl">
+                    <button type="button" onclick="openProfileFromMenu()" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-200 hover:bg-slate-800"><i data-lucide="user-round-pen" class="h-4 w-4 text-indigo-400"></i><span>Profilimi düzenle</span></button>
+                    <div class="my-1 border-t border-slate-800"></div>
+                    <button type="button" onclick="signOut()" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-rose-400 hover:bg-rose-500/10"><i data-lucide="log-out" class="h-4 w-4"></i><span>Güvenli çıkış</span></button>
+                </div>
+            </div>
             <!-- Currency Switcher (USD / TRY) -->
             <button onclick="toggleCurrency()" id="btn-currency" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold input-bg border hover:border-indigo-500 transition">
                 <span class="text-indigo-500 font-bold">$</span>
@@ -856,6 +860,13 @@
         });
 
         function bindAuthUI() {
+            document.addEventListener('click', (event) => {
+                const wrap = document.getElementById('profile-menu-wrap');
+                if (wrap && !wrap.contains(event.target)) closeProfileMenu();
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') closeProfileMenu();
+            });
             document.getElementById('auth-form').addEventListener('submit', handleAuthSubmit);
             document.getElementById('forgot-credentials-open').addEventListener('click', openRecoveryModal);
             document.getElementById('send-password-reset').addEventListener('click', sendPasswordReset);
@@ -2319,7 +2330,26 @@ async function activateApp(session) {
             if (url) { img.src = url; img.classList.remove('hidden'); fallback.classList.add('hidden'); img.onerror = () => { img.classList.add('hidden'); fallback.classList.remove('hidden'); }; }
             else { img.removeAttribute('src'); img.classList.add('hidden'); fallback.classList.remove('hidden'); }
         }
+        function toggleProfileMenu(event) {
+            event?.stopPropagation();
+            const menu = document.getElementById('profile-dropdown');
+            const button = document.getElementById('profile-open');
+            const willOpen = menu.classList.contains('hidden');
+            menu.classList.toggle('hidden', !willOpen);
+            button.setAttribute('aria-expanded', String(willOpen));
+        }
+        function closeProfileMenu() {
+            const menu = document.getElementById('profile-dropdown');
+            const button = document.getElementById('profile-open');
+            if (menu) menu.classList.add('hidden');
+            if (button) button.setAttribute('aria-expanded', 'false');
+        }
+        function openProfileFromMenu() {
+            closeProfileMenu();
+            openProfileModal();
+        }
         function openProfileModal() {
+            closeProfileMenu();
             document.getElementById('profile-message').textContent = '';
             document.getElementById('profile-modal').classList.remove('hidden');
             if (activeUserId) void loadProfileDetails(document.getElementById('profile-username-readonly').textContent);
