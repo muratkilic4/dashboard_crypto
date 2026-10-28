@@ -185,6 +185,98 @@
             background: #94A3B8;
             border-radius: 4px;
         }
+
+        /* CRYPTODASH PREMIUM VIOLET DESIGN SYSTEM */
+        :root {
+            --cd-violet: #8b5cf6;
+            --cd-violet-bright: #a78bfa;
+            --cd-violet-soft: rgba(139, 92, 246, .14);
+            --cd-line: rgba(167, 139, 250, .18);
+            --cd-panel: rgba(14, 19, 36, .88);
+        }
+        html.dark body {
+            background-color: #080b16;
+            background-image:
+                radial-gradient(ellipse at 8% -8%, rgba(124, 58, 237, .18), transparent 36%),
+                radial-gradient(ellipse at 94% 4%, rgba(91, 33, 182, .12), transparent 30%),
+                linear-gradient(180deg, #090d1b 0%, #080b15 60%, #090d19 100%);
+            color: #f1f0ff;
+        }
+        html.dark .header-bg {
+            background: rgba(9, 12, 25, .88);
+            border-color: rgba(167, 139, 250, .16);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .2);
+        }
+        html.dark .card-bg {
+            background: linear-gradient(145deg, rgba(22, 25, 48, .96), rgba(13, 17, 33, .94));
+            border-color: var(--cd-line);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, .14);
+        }
+        html.dark .card-bg:hover {
+            border-color: rgba(167, 139, 250, .34);
+        }
+        html.dark .input-bg {
+            background-color: rgba(8, 11, 24, .86);
+            border-color: rgba(167, 139, 250, .2);
+        }
+        html.dark .table-head-bg {
+            background: rgba(139, 92, 246, .1);
+            color: #c4b5fd;
+        }
+        html.dark .table-row-hover:hover { background-color: rgba(139, 92, 246, .075); }
+        /* Normalize existing indigo accents to the selected premium violet palette. */
+        .bg-indigo-600 { background-color: #7c3aed !important; }
+        .hover\\:bg-indigo-500:hover { background-color: #6d28d9 !important; }
+        .text-indigo-400, .dark\\:text-indigo-400 { color: #a78bfa !important; }
+        .text-indigo-500, .dark\\:text-indigo-500 { color: #8b5cf6 !important; }
+        .border-indigo-500, .focus\\:border-indigo-500:focus { border-color: #8b5cf6 !important; }
+        .shadow-indigo-500\\/20 { --tw-shadow-color: rgba(139, 92, 246, .2); }
+        .shadow-indigo-600\\/20 { --tw-shadow-color: rgba(124, 58, 237, .2); }
+        button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+        button { transition: background-color .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease; }
+        button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+            outline: 2px solid #a78bfa;
+            outline-offset: 2px;
+        }
+        input, select, textarea {
+            border-radius: .8rem;
+            transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: rgba(167, 139, 250, .72);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, .12);
+        }
+        table { border-collapse: separate; border-spacing: 0; }
+        thead th { letter-spacing: .045em; font-size: .68rem; text-transform: uppercase; }
+        tbody tr:last-child td { border-bottom-color: transparent; }
+        .dashboard-intro {
+            border-color: rgba(167, 139, 250, .25);
+            background:
+                radial-gradient(circle at 90% 10%, rgba(139, 92, 246, .16), transparent 32%),
+                linear-gradient(115deg, rgba(91, 33, 182, .18), rgba(15, 18, 38, .35) 62%, rgba(139, 92, 246, .06));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.025), 0 18px 44px rgba(0,0,0,.1);
+        }
+        .dashboard-eyebrow { color: #c4b5fd; }
+        #auth-screen > div, #credential-setup-screen > div {
+            border-color: rgba(167, 139, 250, .22);
+            background: linear-gradient(145deg, #17152d, #0d1020 78%);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, .42), 0 0 0 1px rgba(139, 92, 246, .04);
+        }
+        #auth-screen .bg-indigo-600, #credential-setup-screen .bg-indigo-600 {
+            box-shadow: 0 8px 24px rgba(124, 58, 237, .24);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #62528e; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+        ::selection { background: rgba(139, 92, 246, .32); color: #fff; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
+        @media (max-width: 640px) {
+            main { padding-left: .85rem !important; padding-right: .85rem !important; }
+            .header-bg { gap: .65rem; padding-left: .85rem; padding-right: .85rem; }
+            .dashboard-intro { border-radius: 1rem; }
+        }
+
     </style>
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col justify-between">
