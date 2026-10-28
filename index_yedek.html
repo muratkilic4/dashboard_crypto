@@ -137,6 +137,11 @@
             color: #a5b4fc;
         }
         html.dark .table-row-hover:hover { background-color: rgba(99, 102, 241, .08); }
+        /* Keep transaction rows stable and avoid hover flicker. */
+        .table-row-hover { transition: background-color .12s ease !important; }
+        .table-row-hover:hover { animation: none !important; transform: none !important; }
+        #manage-tx-table-body button { position: relative; z-index: 2; cursor: pointer; }
+        #manage-tx-table-body button:focus-visible { outline: 2px solid #818cf8; outline-offset: 2px; }
         .dashboard-intro {
             position: relative;
             overflow: hidden;
@@ -702,12 +707,23 @@
                 <div class="flex items-center justify-between gap-2"><label id="total-amount-label" class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Toplam İşlem Tutarı (USDT)</label><span id="trade-market-badge" class="hidden text-[10px] font-bold rounded-md px-2 py-1 bg-sky-500/10 text-sky-500">Binance TR</span></div>
                 <input type="number" step="any" id="input-total-amount" oninput="calculateAmountFromTotal()" placeholder="Örn: 500" class="w-full input-bg border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500">
                 <div class="mt-3"><label class="block text-xs text-slate-500 dark:text-slate-400 mb-2">İşlem para birimi</label><div class="grid grid-cols-2 gap-2"><button type="button" id="quote-usdt" onclick="setTradeCurrency('USDT')" class="py-2 rounded-xl border font-semibold text-xs transition">USDT · Binance</button><button type="button" id="quote-try" onclick="setTradeCurrency('TRY')" class="py-2 rounded-xl border font-semibold text-xs transition">TL · Binance TR</button></div></div>
-                <div class="mt-3"><label id="unit-price-label" class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Birim Fiyat (USDT)</label><input type="number" step="any" id="input-price" required oninput="calculateAmountFromTotal()" placeholder="0.00" class="w-full input-bg border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500"></div>
-
-                <!-- Calculated Amount (Miktar) -->
-                <div>
-                    <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Hesaplanan Miktar (Coin Adedi)</label>
-                    <input type="number" step="any" id="input-amount" required oninput="calculateTotalFromAmount()" placeholder="0.00" class="w-full input-bg border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500 font-semibold text-indigo-500">
+                <div id="unit-price-field" class="mt-3 rounded-xl border border-slate-200 dark:border-slate-700 p-3 transition-colors">
+                    <label id="unit-price-label" for="input-price" class="block text-xs text-slate-500 dark:text-slate-400 mb-2">Birim Fiyat (USDT)</label>
+                    <input type="number" step="any" id="input-price" required oninput="calculateAmountFromTotal()" placeholder="Fiyatı manuel girin" class="w-full input-bg border rounded-xl px-3 py-2.5 text-sm font-semibold focus:outline-none focus:border-indigo-500">
+                    <p id="sell-price-help" class="hidden text-[11px] text-rose-500 mt-2">Satış fiyatını manuel girin. Bu alan seçtiğiniz coin miktarını değiştirmez.</p>
+                </div>
+                <div id="coin-amount-field">
+                    <div class="flex items-center justify-between gap-2 mb-1">
+                        <label id="coin-amount-label" for="input-amount" class="block text-xs text-slate-500 dark:text-slate-400">Hesaplanan Miktar (Coin Adedi)</label>
+                        <span id="sell-balance-badge" class="hidden text-[11px] font-semibold text-slate-500 dark:text-slate-400">Mevcut: —</span>
+                    </div>
+                    <input type="number" step="any" id="input-amount" required oninput="calculateTotalFromAmount()" placeholder="0.00" class="w-full input-bg border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-500 font-semibold text-indigo-500">
+                    <div id="sell-percentage-buttons" class="hidden grid grid-cols-3 gap-2 mt-2">
+                        <button type="button" onclick="setSellPercentage(25)" class="py-2 rounded-lg border border-rose-500/30 bg-rose-500/5 text-rose-500 text-xs font-semibold hover:bg-rose-500/10">%25 sat</button>
+                        <button type="button" onclick="setSellPercentage(50)" class="py-2 rounded-lg border border-rose-500/30 bg-rose-500/5 text-rose-500 text-xs font-semibold hover:bg-rose-500/10">%50 sat</button>
+                        <button type="button" onclick="setSellPercentage(100)" class="py-2 rounded-lg border border-rose-500/30 bg-rose-500/5 text-rose-500 text-xs font-semibold hover:bg-rose-500/10">%100 sat</button>
+                    </div>
+                    <p id="sell-amount-help" class="hidden text-[11px] text-slate-500 dark:text-slate-400 mt-2">Satılacak coin miktarını kendiniz girin veya yüzde butonlarını kullanın.</p>
                 </div>
 
                 <!-- Date -->
@@ -2022,8 +2038,13 @@ async function activateApp(session) {
             document.getElementById('input-coin-search').value = `${name} (${symbol})`;
             document.getElementById('selected-coin-symbol').value = symbol;
             document.getElementById('coin-dropdown').classList.add('hidden');
-            if (price > 0) document.getElementById('input-price').value = selectedTradeCurrency === 'TRY' ? tradePriceFromUsd(price, 'TRY') : price;
+            if (selectedTxType === 'SELL') {
+                if (!document.getElementById('edit-tx-id').value) document.getElementById('input-price').value = '';
+            } else if (price > 0) {
+                document.getElementById('input-price').value = selectedTradeCurrency === 'TRY' ? tradePriceFromUsd(price, 'TRY') : price;
+            }
             updateTradeCurrencyUI();
+            updateSellAmountControls();
             if (document.getElementById('input-total-amount').value) calculateAmountFromTotal();
             const helper = document.getElementById('coin-search-status');
             if (helper) helper.textContent = binanceSymbol ? 'Binance USDT paritesi bulundu.' : 'Binance USDT paritesi bulunamadı; coin kaydedilebilir, fiyatı manuel girilebilir.';
@@ -2061,6 +2082,7 @@ async function activateApp(session) {
             const price = parseFloat(document.getElementById('input-price').value);
             const amountInput = document.getElementById('input-amount');
 
+            // Satışta miktar kullanıcı kontrolündedir; fiyat yalnızca toplam tutarı günceller.
             if (selectedTxType === 'SELL') {
                 calculateTotalFromAmount();
                 return;
@@ -2069,6 +2091,55 @@ async function activateApp(session) {
                 const calcAmount = total / price;
                 amountInput.value = calcAmount % 1 === 0 ? calcAmount : calcAmount.toFixed(8);
             }
+        }
+
+        function getAvailableCoinAmount(symbol) {
+            if (!symbol) return 0;
+            const asset = calculatePortfolio().assetDetails.find(item => item.symbol === String(symbol).toUpperCase());
+            return asset ? Number(asset.amount) || 0 : 0;
+        }
+
+        function updateSellAmountControls() {
+            const symbol = document.getElementById('selected-coin-symbol')?.value || '';
+            const isSell = selectedTxType === 'SELL';
+            const balance = getAvailableCoinAmount(symbol);
+            const balanceBadge = document.getElementById('sell-balance-badge');
+            const percentButtons = document.getElementById('sell-percentage-buttons');
+            const amountHelp = document.getElementById('sell-amount-help');
+            const priceHelp = document.getElementById('sell-price-help');
+            const priceField = document.getElementById('unit-price-field');
+            const amountLabel = document.getElementById('coin-amount-label');
+            const totalInput = document.getElementById('input-total-amount');
+            if (balanceBadge) {
+                balanceBadge.classList.toggle('hidden', !isSell);
+                balanceBadge.textContent = 'Mevcut: ' + balance.toLocaleString('tr-TR',{maximumFractionDigits:8}) + ' ' + (symbol || 'coin');
+            }
+            if (percentButtons) percentButtons.classList.toggle('hidden', !isSell);
+            if (amountHelp) amountHelp.classList.toggle('hidden', !isSell);
+            if (priceHelp) priceHelp.classList.toggle('hidden', !isSell);
+            if (priceField) priceField.className = 'mt-3 rounded-xl border p-3 transition-colors ' + (isSell ? 'border-rose-500/50 bg-rose-500/5 ring-1 ring-rose-500/20' : 'border-slate-200 dark:border-slate-700');
+            if (amountLabel) amountLabel.textContent = isSell ? 'Satılacak Miktar (Coin Adedi)' : 'Hesaplanan Miktar (Coin Adedi)';
+            if (totalInput) {
+                totalInput.readOnly = isSell;
+                totalInput.classList.toggle('opacity-70', isSell);
+            }
+        }
+
+        function setSellPercentage(percent) {
+            if (selectedTxType !== 'SELL') return;
+            const symbol = document.getElementById('selected-coin-symbol')?.value || '';
+            if (!symbol) {
+                showToast('Önce satmak istediğiniz coini seçin.', true);
+                return;
+            }
+            const balance = getAvailableCoinAmount(symbol);
+            if (!(balance > 0)) {
+                showToast('Bu coin için satılabilir bakiye bulunamadı.', true);
+                return;
+            }
+            const amount = percent >= 100 ? balance : balance * (percent / 100);
+            document.getElementById('input-amount').value = Number(amount.toFixed(8)).toString();
+            calculateTotalFromAmount();
         }
 
         function calculateTotalFromAmount() {
@@ -2087,11 +2158,8 @@ async function activateApp(session) {
             const totalLabel = document.getElementById('total-amount-label') || totalInput?.previousElementSibling;
             const amountLabel = document.getElementById('input-amount')?.previousElementSibling;
             if (totalLabel) totalLabel.textContent = selectedTxType === 'SELL' ? 'Toplam Satış Tutarı (' + (selectedTradeCurrency === 'TRY' ? 'TL' : 'USDT') + ') · Otomatik' : 'Toplam İşlem Tutarı (' + (selectedTradeCurrency === 'TRY' ? 'TL' : 'USDT') + ')';
-            if (amountLabel) amountLabel.textContent = selectedTxType === 'SELL' ? 'Satılan Miktar (Coin Adedi)' : 'Coin Miktarı';
-            if (totalInput) {
-                totalInput.readOnly = selectedTxType === 'SELL';
-                totalInput.classList.toggle('opacity-70', selectedTxType === 'SELL');
-            }
+            if (amountLabel) amountLabel.textContent = selectedTxType === 'SELL' ? 'Satılacak Miktar (Coin Adedi)' : 'Coin Miktarı';
+            updateSellAmountControls();
             updateTradeCurrencyUI();
             if (selectedTxType === 'SELL') calculateTotalFromAmount();
             else calculateAmountFromTotal();
@@ -2236,15 +2304,20 @@ async function activateApp(session) {
             const tx = transactions.find(t => String(t.id) === String(id));
             if (!tx) return;
 
+            // Fill synchronously: the edit modal should open on the first click.
+            const coinMeta = MARKET_DATA[tx.coin] || {};
             document.getElementById('edit-tx-id').value = tx.id;
-            selectCoinFromSearch(tx.coin);
+            document.getElementById('input-coin-search').value = `${tx.coinName || coinMeta.name || tx.coin} (${tx.coin})`;
+            document.getElementById('selected-coin-symbol').value = tx.coin;
+            document.getElementById('coin-search-status').textContent = 'Kayıtlı coin seçildi.';
+            document.getElementById('coin-dropdown').classList.add('hidden');
             document.getElementById('input-amount').value = tx.amount;
             setTradeCurrency(tx.tradeCurrency || 'USDT', true);
             document.getElementById('input-price').value = tradePriceFromUsd(tx.price, selectedTradeCurrency);
             document.getElementById('input-total-amount').value = tradePriceFromUsd(tx.amount * tx.price, selectedTradeCurrency);
-            updateTradeCurrencyUI();
             document.getElementById('input-date').value = tx.date;
             setTxType(tx.type);
+            updateSellAmountControls();
             calculateTotalFromAmount();
 
             document.getElementById('modal-title').innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-indigo-500"></i> İşlem Kaydını Düzenle`;
