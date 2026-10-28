@@ -558,16 +558,18 @@
         }
 
             /* Clean, modern mini performance chart shared by dashboard and admin tables */
-        .mini-performance { width: 128px; display: flex; flex-direction: column; gap: 6px; }
-        .mini-performance-track { position: relative; height: 7px; width: 100%; overflow: hidden; border-radius: 999px; background: linear-gradient(90deg, rgba(244,63,94,.10), rgba(148,163,184,.14) 50%, rgba(16,185,129,.12)); box-shadow: inset 0 0 0 1px rgba(148,163,184,.12); }
-        .mini-performance-zero { position: absolute; z-index: 2; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(100,116,139,.55); }
-        .mini-performance-fill { position: absolute; top: 1px; bottom: 1px; border-radius: 999px; }
-        .mini-performance-fill.is-positive { left: 50%; background: linear-gradient(90deg,#34d399,#059669); box-shadow: 0 0 8px rgba(16,185,129,.20); }
-        .mini-performance-fill.is-negative { right: 50%; background: linear-gradient(90deg,#fb7185,#e11d48); box-shadow: 0 0 8px rgba(244,63,94,.18); }
+        .mini-performance { width: 136px; display: flex; flex-direction: column; gap: 7px; padding: 2px 0; }
+        .mini-performance-track { position: relative; height: 10px; width: 100%; overflow: hidden; border-radius: 999px; background: linear-gradient(90deg,rgba(244,63,94,.13) 0%,rgba(148,163,184,.09) 48%,rgba(148,163,184,.09) 52%,rgba(16,185,129,.13) 100%); box-shadow: inset 0 1px 2px rgba(15,23,42,.08); }
+        .mini-performance-track::after { content: ''; position: absolute; inset: 0; border: 1px solid rgba(148,163,184,.15); border-radius: inherit; pointer-events: none; }
+        .mini-performance-zero { position: absolute; z-index: 2; left: 50%; top: 1px; bottom: 1px; width: 2px; transform: translateX(-50%); border-radius: 2px; background: rgba(100,116,139,.55); }
+        .mini-performance-fill { position: absolute; top: 2px; bottom: 2px; border-radius: 999px; transition: width .25s ease; }
+        .mini-performance-fill.is-positive { left: 50%; background: linear-gradient(90deg,#6ee7b7 0%,#10b981 70%,#059669 100%); box-shadow: 0 0 10px rgba(16,185,129,.24); }
+        .mini-performance-fill.is-negative { right: 50%; background: linear-gradient(90deg,#fb7185 0%,#f43f5e 70%,#e11d48 100%); box-shadow: 0 0 10px rgba(244,63,94,.22); }
         .mini-performance-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; white-space: nowrap; }
-        .mini-performance-value { font-size: 11px; line-height: 1.2; font-weight: 750; font-variant-numeric: tabular-nums; }
-        .mini-performance-label { font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-        @media (max-width: 640px) { .mini-performance { width: 112px; } }
+        .mini-performance-value { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; line-height: 1.2; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+        .mini-performance-value::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+        .mini-performance-label { font-size: 9px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+        @media (max-width: 640px) { .mini-performance { width: 118px; } }
 
 </style>
 </head>
@@ -2142,18 +2144,20 @@ async function activateApp(session) {
         function renderMiniPerformance(percent, label = '') {
             const value = Number(percent) || 0;
             const positive = value >= 0;
-            const magnitude = Math.min(100, Math.max(4, Math.abs(value) * 4));
+            // Normalize the bar so small changes remain visible without letting extreme values dominate.
+            const magnitude = Math.min(50, Math.max(3, (Math.log1p(Math.abs(value)) / Math.log(11)) * 50));
             const color = positive ? '#10b981' : '#f43f5e';
             const sign = positive ? '+' : '';
+            const direction = positive ? 'Pozitif performans' : 'Negatif performans';
             return `
-                <div class="mini-performance" title="${sign}${value.toFixed(2)}%">
-                    <div class="mini-performance-track">
+                <div class="mini-performance" title="${direction}: ${sign}${value.toFixed(2)}%">
+                    <div class="mini-performance-track" role="img" aria-label="${direction} ${sign}${value.toFixed(2)} yüzde">
                         <span class="mini-performance-zero"></span>
-                        <span class="mini-performance-fill ${positive ? 'is-positive' : 'is-negative'}" style="width:${magnitude / 2}%;"></span>
+                        <span class="mini-performance-fill ${positive ? 'is-positive' : 'is-negative'}" style="width:${magnitude}%;"></span>
                     </div>
                     <div class="mini-performance-meta">
                         <span class="mini-performance-value" style="color:${color}">${sign}${value.toFixed(1)}%</span>
-                        <span class="mini-performance-label">${label || (positive ? 'Pozitif' : 'Negatif')}</span>
+                        <span class="mini-performance-label">${label || (positive ? 'Kârda' : 'Zararda')}</span>
                     </div>
                 </div>`;
         }
