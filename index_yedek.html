@@ -586,6 +586,7 @@
                                     <th class="p-3">Miktar</th>
                                     <th class="p-3">İşlem Fiyatı</th>
                                     <th class="p-3">Toplam Tutar</th>
+                                    <th class="p-3">Gerçekleşen K/Z</th>
                                     <th class="p-3 rounded-r-lg text-right">Düzenle / Sil</th>
                                 </tr>
                             </thead>
@@ -660,7 +661,7 @@
                 <!-- Calculated Amount (Miktar) -->
                 <div>
                     <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Hesaplanan Miktar (Coin Adedi)</label>
-                    <input type="number" step="any" id="input-amount" required placeholder="0.00" class="w-full input-bg border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500 font-semibold text-indigo-500">
+                    <input type="number" step="any" id="input-amount" required oninput="calculateTotalFromAmount()" placeholder="0.00" class="w-full input-bg border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500 font-semibold text-indigo-500">
                 </div>
 
                 <!-- Date -->
@@ -1606,6 +1607,31 @@ async function activateApp(session) {
             });
         }
 
+        function calculateRealizedPnLByTransaction() {
+            const holdings = {};
+            const pnlById = new Map();
+            const ordered = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+            for (const tx of ordered) {
+                const amount = Number(tx.amount);
+                const price = Number(tx.price);
+                const fee = Number(tx.fee || 0);
+                if (!holdings[tx.coin]) holdings[tx.coin] = { amount: 0, totalCost: 0 };
+                const holding = holdings[tx.coin];
+                if (!Number.isFinite(amount) || !Number.isFinite(price) || amount <= 0 || price <= 0) continue;
+                if (tx.type === 'BUY') {
+                    holding.amount += amount;
+                    holding.totalCost += amount * price + fee;
+                } else if (tx.type === 'SELL') {
+                    const avgCost = holding.amount > 0 ? holding.totalCost / holding.amount : 0;
+                    const realized = (amount * price - fee) - (avgCost * amount);
+                    pnlById.set(String(tx.id), realized);
+                    holding.amount = Math.max(0, holding.amount - amount);
+                    holding.totalCost = Math.max(0, holding.totalCost - avgCost * amount);
+                }
+            }
+            return pnlById;
+        }
+
         // Render Transaction Management Table & Admin Summary Cards
         function renderManageTable() {
             const tbody = document.getElementById('manage-tx-table-body');
@@ -1613,6 +1639,7 @@ async function activateApp(session) {
 
             let totalBuyVolume = 0;
             let totalSellVolume = 0;
+            const realizedPnLById = calculateRealizedPnLByTransaction();
 
             transactions.forEach(tx => {
                 const total = tx.amount * tx.price;
@@ -1633,7 +1660,7 @@ async function activateApp(session) {
             }
 
             if (transactions.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500 text-xs">Kayıtlı işlem bulunamadı.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500 text-xs">Kayıtlı işlem bulunamadı.</td></tr>`;
                 return;
             }
 
@@ -1660,13 +1687,16 @@ async function activateApp(session) {
                     <td class="p-3 font-medium">${tx.amount}</td>
                     <td class="p-3">${formatCurrencyVal(tx.price)}</td>
                     <td class="p-3 text-slate-900 dark:text-white font-semibold">${formatCurrencyVal(total)}</td>
-                    <td class="p-3 text-right flex items-center justify-end gap-2">
-                        <button onclick="editTransaction(${JSON.stringify(String(tx.id))})" class="p-1.5 text-slate-400 hover:text-indigo-500 transition" title="Düzenle">
+                    <td class="p-3 font-semibold ${tx.type === 'SELL' ? ((realizedPnLById.get(String(tx.id)) || 0) >= 0 ? 'text-emerald-500' : 'text-rose-500') : 'text-slate-400'}">${tx.type === 'SELL' ? ((realizedPnLById.get(String(tx.id)) || 0) >= 0 ? '+' : '') + formatCurrencyVal(realizedPnLById.get(String(tx.id)) || 0) : '—'}</td>
+                    <td class="p-3 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                        <button type="button" onclick='editTransaction(${JSON.stringify(String(tx.id))})' class="p-1.5 text-slate-400 hover:text-indigo-500 transition" title="Düzenle">
                             <i data-lucide="edit-3" class="w-4 h-4"></i>
                         </button>
-                        <button onclick="deleteTransaction(${JSON.stringify(String(tx.id))})" class="p-1.5 text-slate-400 hover:text-rose-500 transition" title="Sil">
+                        <button type="button" onclick='deleteTransaction(${JSON.stringify(String(tx.id))})' class="p-1.5 text-slate-400 hover:text-rose-500 transition" title="Sil" aria-label="İşlemi sil">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1830,16 +1860,47 @@ async function activateApp(session) {
             }
         }
 
-        // Calculation helper: Amount = Total / Price
+        // BUY: total + unit price calculates coin amount.
+        // SELL: coin amount + unit price calculates total proceeds.
         function calculateAmountFromTotal() {
-            const total = parseFloat(document.getElementById('input-total-amount').value);
+            const totalInput = document.getElementById('input-total-amount');
+            const total = parseFloat(totalInput.value);
             const price = parseFloat(document.getElementById('input-price').value);
             const amountInput = document.getElementById('input-amount');
 
-            if (total && price && price > 0) {
-                const calcAmount = total / price;
-                amountInput.value = calcAmount % 1 === 0 ? calcAmount : calcAmount.toFixed(6);
+            if (selectedTxType === 'SELL') {
+                calculateTotalFromAmount();
+                return;
             }
+            if (Number.isFinite(total) && total > 0 && Number.isFinite(price) && price > 0) {
+                const calcAmount = total / price;
+                amountInput.value = calcAmount % 1 === 0 ? calcAmount : calcAmount.toFixed(8);
+            }
+        }
+
+        function calculateTotalFromAmount() {
+            const amount = parseFloat(document.getElementById('input-amount').value);
+            const price = parseFloat(document.getElementById('input-price').value);
+            const totalInput = document.getElementById('input-total-amount');
+            if (selectedTxType === 'SELL' && Number.isFinite(amount) && amount > 0 && Number.isFinite(price) && price > 0) {
+                totalInput.value = (amount * price).toFixed(2);
+            } else if (selectedTxType === 'BUY' && Number.isFinite(amount) && amount > 0 && Number.isFinite(price) && price > 0) {
+                totalInput.value = (amount * price).toFixed(2);
+            }
+        }
+
+        function updateTransactionFormMode() {
+            const totalInput = document.getElementById('input-total-amount');
+            const totalLabel = totalInput?.previousElementSibling;
+            const amountLabel = document.getElementById('input-amount')?.previousElementSibling;
+            if (totalLabel) totalLabel.textContent = selectedTxType === 'SELL' ? 'Toplam Satış Tutarı ($) · Otomatik' : 'Toplam Alım Tutarı ($)';
+            if (amountLabel) amountLabel.textContent = selectedTxType === 'SELL' ? 'Satılan Miktar (Coin Adedi)' : 'Coin Miktarı';
+            if (totalInput) {
+                totalInput.readOnly = selectedTxType === 'SELL';
+                totalInput.classList.toggle('opacity-70', selectedTxType === 'SELL');
+            }
+            if (selectedTxType === 'SELL') calculateTotalFromAmount();
+            else calculateAmountFromTotal();
         }
 
         // --- Modal & Form Actions ---
@@ -1850,6 +1911,7 @@ async function activateApp(session) {
             document.getElementById('input-total-amount').value = '';
             document.getElementById('input-amount').value = '';
             document.getElementById('input-price').value = '';
+            setTxType('BUY');
             initDateInput();
             
             document.getElementById('modal-title').innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-indigo-500"></i> Yeni İşlem Kaydı`;
@@ -1879,6 +1941,7 @@ async function activateApp(session) {
                 btnSell.className = 'py-2 rounded-xl border font-semibold text-xs transition border-rose-500 bg-rose-500/10 text-rose-500';
                 btnBuy.className = 'py-2 rounded-xl border font-semibold text-xs transition border-slate-300 dark:border-slate-700 text-slate-500';
             }
+            updateTransactionFormMode();
         }
 
         async function handleFormSubmit(event) {
@@ -1977,6 +2040,7 @@ async function activateApp(session) {
             document.getElementById('input-total-amount').value = (tx.amount * tx.price).toFixed(2);
             document.getElementById('input-date').value = tx.date;
             setTxType(tx.type);
+            calculateTotalFromAmount();
 
             document.getElementById('modal-title').innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-indigo-500"></i> İşlem Kaydını Düzenle`;
             document.getElementById('tx-modal').classList.remove('hidden');
