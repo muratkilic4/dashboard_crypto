@@ -1972,7 +1972,7 @@ async function activateApp(session) {
 
         function updateTransactionFormMode() {
             const totalInput = document.getElementById('input-total-amount');
-            const totalLabel = totalInput?.previousElementSibling;
+            const totalLabel = document.getElementById('total-amount-label') || totalInput?.previousElementSibling;
             const amountLabel = document.getElementById('input-amount')?.previousElementSibling;
             if (totalLabel) totalLabel.textContent = selectedTxType === 'SELL' ? 'Toplam Satış Tutarı (' + (selectedTradeCurrency === 'TRY' ? 'TL' : 'USDT') + ') · Otomatik' : 'Toplam İşlem Tutarı (' + (selectedTradeCurrency === 'TRY' ? 'TL' : 'USDT') + ')';
             if (amountLabel) amountLabel.textContent = selectedTxType === 'SELL' ? 'Satılan Miktar (Coin Adedi)' : 'Coin Miktarı';
