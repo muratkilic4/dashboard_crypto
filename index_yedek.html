@@ -871,12 +871,6 @@ async function handleAuthSubmit(event) {
   }
 }
 
-  const invalidLogin =
-    error?.context?.status === 401 ||
-    /Kullanıcı adı veya şifre hatalı|Invalid login credentials/i.test(
-      detail || error.message || ''
-    );
-
   message.textContent = invalidLogin
     ? 'Kullanıcı adı veya şifre hatalı.'
     : detail || 'Giriş yapılamadı. Lütfen bağlantıyı ve sunucu ayarlarını kontrol et.';
