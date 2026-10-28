@@ -1618,7 +1618,19 @@ async function activateApp(session) {
 
         // --- Chart Configuration & Dynamic Updates ---
         function initCharts() {
-            const ctxPie = document.getElementById('portfolioPieChart').getContext('2d');
+            // activateApp birden fazla kez tetiklenirse aynı canvas üzerinde ikinci Chart oluşturma.
+            const pieCanvas = document.getElementById('portfolioPieChart');
+            const trendCanvas = document.getElementById('marketTrendChart');
+            if (pieChartInstance) { pieChartInstance.destroy(); pieChartInstance = null; }
+            if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
+            // Önceki instance değişkeni kaybolmuş olsa bile Chart.js kayıtlarını temizle.
+            if (window.Chart && typeof Chart.getChart === 'function') {
+                const existingPie = Chart.getChart(pieCanvas);
+                const existingTrend = Chart.getChart(trendCanvas);
+                if (existingPie) existingPie.destroy();
+                if (existingTrend) existingTrend.destroy();
+            }
+            const ctxPie = pieCanvas.getContext('2d');
             pieChartInstance = new Chart(ctxPie, {
                 type: 'doughnut',
                 data: {
@@ -1638,7 +1650,7 @@ async function activateApp(session) {
                 }
             });
 
-            const ctxTrend = document.getElementById('marketTrendChart').getContext('2d');
+            const ctxTrend = trendCanvas.getContext('2d');
             trendChartInstance = new Chart(ctxTrend, {
                 type: 'line',
                 data: {
