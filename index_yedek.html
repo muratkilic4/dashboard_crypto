@@ -2194,7 +2194,12 @@ async function activateApp(session) {
         }
 
         function setTxType(type) {
+            const previousType = selectedTxType;
             selectedTxType = type;
+            if (type === 'SELL' && previousType !== 'SELL' && !document.getElementById('edit-tx-id')?.value) {
+                const priceInput = document.getElementById('input-price');
+                if (priceInput) priceInput.value = '';
+            }
             const btnBuy = document.getElementById('btn-type-buy');
             const btnSell = document.getElementById('btn-type-sell');
 
@@ -2311,12 +2316,12 @@ async function activateApp(session) {
             document.getElementById('selected-coin-symbol').value = tx.coin;
             document.getElementById('coin-search-status').textContent = 'Kayıtlı coin seçildi.';
             document.getElementById('coin-dropdown').classList.add('hidden');
-            document.getElementById('input-amount').value = tx.amount;
+            setTxType(tx.type);
             setTradeCurrency(tx.tradeCurrency || 'USDT', true);
+            document.getElementById('input-amount').value = tx.amount;
             document.getElementById('input-price').value = tradePriceFromUsd(tx.price, selectedTradeCurrency);
             document.getElementById('input-total-amount').value = tradePriceFromUsd(tx.amount * tx.price, selectedTradeCurrency);
             document.getElementById('input-date').value = tx.date;
-            setTxType(tx.type);
             updateSellAmountControls();
             calculateTotalFromAmount();
 
