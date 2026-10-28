@@ -3,36 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CryptoDash Pro - Kripto Portföy & Ventic Tasarım</title>
+    <title>CryptoDash Pro - Kripto Portföy & Kâr/Zarar Yönetimi</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Font: Inter -->
+    <!-- Font Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Persistent Transactions in LocalStorage -->
+    
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        ventic: {
-                            50: '#ecfdf5',
-                            100: '#d1fae5',
-                            500: '#10b981',
-                            600: '#059669',
-                            700: '#047857',
-                            800: '#065f46',
-                            900: '#064e3b',
-                            darkBg: '#0b1321',
-                            darkCard: '#152033',
-                            darkBorder: '#22324d'
+                        brand: {
+                            50: '#ECFDF5', 100: '#D1FAE5', 500: '#10B981', 600: '#059669', 700: '#047857'
                         }
                     }
                 }
@@ -40,263 +29,647 @@
         }
     </script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            transition: background-color 0.25s ease, color 0.25s ease;
+        body { transition: background-color 0.25s ease, color 0.25s ease; font-family: 'Inter', sans-serif; }
+        
+        /* Dynamic Theme System Engine */
+        :root {
+            --bg-main: #F4F5F7;
+            --bg-card: #FFFFFF;
+            --bg-sidebar: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-main: #111827;
+            --text-muted: #6B7280;
+            --accent-color: #10B981;
+            --accent-hover: #059669;
+            --accent-light: rgba(16, 185, 129, 0.1);
         }
 
-        /* Ventic Light Theme Custom Adjustments */
-        html.light body {
-            background-color: #F4F6F9;
-            color: #1E293B;
-        }
-        html.light .v-card {
-            background-color: #FFFFFF;
-            border-color: #E2E8F0;
-            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
-        }
-        html.light .v-sidebar {
-            background-color: #FFFFFF;
-            border-color: #E2E8F0;
-        }
-        html.light .v-header {
-            background-color: rgba(255, 255, 255, 0.9);
-            border-color: #E2E8F0;
-        }
-        html.light .v-input {
-            background-color: #F8FAFC;
-            border-color: #E2E8F0;
-            color: #0F172A;
-        }
-        html.light .v-table-head {
-            background-color: #F8FAFC;
-            color: #64748B;
+        /* Preset 1: Ventic Emerald */
+        html[data-theme="ventic"] {
+            --bg-main: #F4F5F7; --bg-card: #FFFFFF; --bg-sidebar: #FFFFFF;
+            --border-color: #E5E7EB; --text-main: #111827; --text-muted: #6B7280;
+            --accent-color: #10B981; --accent-hover: #059669; --accent-light: rgba(16, 185, 129, 0.1);
         }
 
-        /* Ventic Dark Theme Custom Adjustments */
-        html.dark body {
-            background-color: #0B1321;
-            color: #F1F5F9;
-        }
-        html.dark .v-card {
-            background-color: #152033;
-            border-color: #22324D;
-            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2);
-        }
-        html.dark .v-sidebar {
-            background-color: #111A2C;
-            border-color: #1E2D45;
-        }
-        html.dark .v-header {
-            background-color: rgba(17, 26, 44, 0.9);
-            border-color: #1E2D45;
-        }
-        html.dark .v-input {
-            background-color: #0B1321;
-            border-color: #22324D;
-            color: #F8FAFC;
-        }
-        html.dark .v-table-head {
-            background-color: #1B2A44;
-            color: #94A3B8;
+        /* Preset 2: Kripton Crypto UI */
+        html[data-theme="kripton"] {
+            --bg-main: #0B0E14; --bg-card: #151A23; --bg-sidebar: #11151D;
+            --border-color: #232A37; --text-main: #F3F4F6; --text-muted: #9CA3AF;
+            --accent-color: #8B5CF6; --accent-hover: #7C3AED; --accent-light: rgba(139, 92, 246, 0.15);
         }
 
-        /* Preset 2: Dark Cyber Pro Override */
-        html[data-preset="cyber"] body {
-            background-color: #090D16 !important;
-            color: #F8FAFC !important;
-        }
-        html[data-preset="cyber"] .v-card {
-            background-color: #0F172A !important;
-            border-color: #1E293B !important;
-            box-shadow: 0 4px 25px -4px rgba(6, 182, 212, 0.08) !important;
-        }
-        html[data-preset="cyber"] .v-sidebar, html[data-preset="cyber"] .v-header {
-            background-color: #0F172A !important;
-            border-color: #1E293B !important;
-        }
-        html[data-preset="cyber"] .v-input {
-            background-color: #090D16 !important;
-            border-color: #334155 !important;
-            color: #F8FAFC !important;
+        /* Preset 3: Weducation Modern */
+        html[data-theme="weducation"] {
+            --bg-main: #F8FAFC; --bg-card: #FFFFFF; --bg-sidebar: #FFFFFF;
+            --border-color: #E2E8F0; --text-main: #0F172A; --text-muted: #64748B;
+            --accent-color: #EC4899; --accent-hover: #DB2777; --accent-light: rgba(236, 72, 153, 0.1);
         }
 
-        /* Preset 3: Sunset Gold Override */
-        html[data-preset="sunset"] body {
-            background-color: #140E0A !important;
-            color: #FFF7ED !important;
-        }
-        html[data-preset="sunset"] .v-card {
-            background-color: #1C140E !important;
-            border-color: #2E2016 !important;
-            box-shadow: 0 4px 25px -4px rgba(245, 158, 11, 0.08) !important;
-        }
-        html[data-preset="sunset"] .v-sidebar, html[data-preset="sunset"] .v-header {
-            background-color: #1C140E !important;
-            border-color: #2E2016 !important;
-        }
-        html[data-preset="sunset"] .v-input {
-            background-color: #140E0A !important;
-            border-color: #432E1E !important;
-            color: #FFF7ED !important;
+        /* Preset 4: Workload Soft */
+        html[data-theme="workload"] {
+            --bg-main: #F1F5F9; --bg-card: #FFFFFF; --bg-sidebar: #FFFFFF;
+            --border-color: #E2E8F0; --text-main: #1E293B; --text-muted: #64748B;
+            --accent-color: #06B6D4; --accent-hover: #0891B2; --accent-light: rgba(6, 182, 212, 0.1);
         }
 
-        /* Preset 4: Royal Indigo Override */
-        html[data-preset="royal"] body {
-            background-color: #F1F5F9 !important;
-            color: #0F172A !important;
-        }
-        html[data-preset="royal"] .v-card {
-            background-color: #FFFFFF !important;
-            border-color: #E2E8F0 !important;
-            box-shadow: 0 4px 20px -2px rgba(79, 70, 229, 0.04) !important;
-        }
-        html[data-preset="royal"] .v-sidebar, html[data-preset="royal"] .v-header {
-            background-color: #FFFFFF !important;
-            border-color: #E2E8F0 !important;
-        }
-        html[data-preset="royal"] .v-input {
-            background-color: #F8FAFC !important;
-            border-color: #CBD5E1 !important;
-            color: #0F172A !important;
+        /* Preset 5: Dashboard Builder */
+        html[data-theme="uibuilder"] {
+            --bg-main: #FAF5FF; --bg-card: #FFFFFF; --bg-sidebar: #FFFFFF;
+            --border-color: #F3E8FF; --text-main: #3B0764; --text-muted: #7E22CE;
+            --accent-color: #6366F1; --accent-hover: #4F46E5; --accent-light: rgba(99, 102, 241, 0.1);
         }
 
-        /* Preset 5: Minimal Monochrome Override */
-        html[data-preset="mono"] body {
-            background-color: #FFFFFF !important;
-            color: #000000 !important;
-        }
-        html[data-preset="mono"] .v-card {
-            background-color: #FFFFFF !important;
-            border-color: #000000 !important;
-            border-width: 2px !important;
-            box-shadow: 4px 4px 0px 0px #000000 !important;
-        }
-        html[data-preset="mono"] .v-sidebar, html[data-preset="mono"] .v-header {
-            background-color: #FFFFFF !important;
-            border-color: #000000 !important;
-        }
-        html[data-preset="mono"] .v-input {
-            background-color: #FFFFFF !important;
-            border-color: #000000 !important;
-            color: #000000 !important;
-        }
+        body { background-color: var(--bg-main); color: var(--text-main); }
+        .card-bg { background-color: var(--bg-card); border-color: var(--border-color); }
+        .sidebar-bg { background-color: var(--bg-sidebar); border-color: var(--border-color); }
+        .text-accent { color: var(--accent-color); }
+        .bg-accent { background-color: var(--accent-color); }
+        .bg-accent-light { background-color: var(--accent-light); }
+        .border-accent { border-color: var(--accent-color); }
 
-        /* Scrollbar Styling */
-<!-- ... existing code -->
-        <!-- Ventic Top Navbar -->
-        <header class="v-header sticky top-0 z-20 border-b backdrop-blur-md px-4 lg:px-8 py-3.5 flex items-center justify-between gap-4 transition-colors">
-            
-            <!-- Ventic Global Search Bar -->
-            <div class="flex-1 max-w-xs relative hidden sm:block">
-                <input type="text" placeholder="Arama yapın (Örn: BTC, ETH)..." oninput="quickSearchFilter(this.value)" class="v-input w-full rounded-2xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-ventic-500/30 border transition">
-                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
-            </div>
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased">
 
-            <!-- Header Right Controls -->
-            <div class="flex items-center gap-3 ml-auto">
-                
-                <!-- Tasarım Seç (Design Preset Dropdown) -->
-                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold v-input border hover:border-ventic-500 transition">
-                    <i data-lucide="palette" class="w-4 h-4 text-ventic-600"></i>
-                    <select id="preset-selector" onchange="applyDesignPreset(this.value)" class="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer">
-                        <option value="ventic">Ventic Emerald</option>
-                        <option value="cyber">Dark Cyber Pro</option>
-                        <option value="sunset">Sunset Gold</option>
-                        <option value="royal">Royal Indigo</option>
-                        <option value="mono">Minimal Monochrome</option>
-                    </select>
+    <div class="flex min-h-screen">
+
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 sidebar-bg border-r hidden md:flex flex-col justify-between p-4 transition-colors">
+            <div class="space-y-6">
+                <!-- Logo / App Brand -->
+                <div class="flex items-center gap-3 px-2 py-1">
+                    <div class="w-10 h-10 rounded-xl bg-accent flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+                        <i data-lucide="layers" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-base tracking-tight leading-tight">CryptoDash</h1>
+                        <p class="text-[11px] text-slate-400 font-medium">Portföy Yönetimi</p>
+                    </div>
                 </div>
 
-                <!-- Currency Toggle -->
-                <button onclick="toggleCurrency()" id="btn-currency" class="flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-bold v-input border hover:border-ventic-500 transition">
-                    <span class="text-ventic-600 font-extrabold">$</span>
-                    <span id="currency-label">USD</span>
-                </button>
-<!-- ... existing code -->
-    <!-- ================= JAVASCRIPT LOGIC ================= -->
-    <script>
-        // --- State Management ---
-        let currentPinCode = localStorage.getItem('cryptodash_pin') || "1234";
-        let isManageUnlocked = false;
-        let currentCurrency = 'USD'; // 'USD' | 'TRY'
-        let usdToTryRate = 34.50;
-        let currentTheme = 'light'; 
-        let activeFilterView = 'all'; // 'all' | 'bought' | 'sold'
-        let activeDesignPreset = localStorage.getItem('cryptodash_preset') || 'ventic';
+                <!-- Navigation Links -->
+                <nav class="space-y-1">
+                    <button onclick="switchTab('all')" id="nav-all" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-accent text-white shadow-sm transition">
+                        <div class="flex items-center gap-2.5">
+                            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                            <span>Genel Görünüm</span>
+                        </div>
+                        <span class="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-md font-bold" id="badge-count-all">0</span>
+                    </button>
 
-        // ... existing state & data ...
+                    <button onclick="switchTab('buy')" id="nav-buy" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition">
+                        <div class="flex items-center gap-2.5">
+                            <i data-lucide="arrow-down-left" class="w-4 h-4 text-emerald-500"></i>
+                            <span>Alınanlar (Aktif)</span>
+                        </div>
+                        <span class="text-[10px] bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded-md font-bold" id="badge-count-buy">0</span>
+                    </button>
 
-        // --- Window Initialization ---
-        window.onload = function() {
-            lucide.createIcons();
-            initDateInput();
-            initCharts();
+                    <button onclick="switchTab('sell')" id="nav-sell" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition">
+                        <div class="flex items-center gap-2.5">
+                            <i data-lucide="arrow-up-right" class="w-4 h-4 text-rose-500"></i>
+                            <span>Satılanlar (Realized)</span>
+                        </div>
+                        <span class="text-[10px] bg-rose-500/10 text-rose-600 px-1.5 py-0.5 rounded-md font-bold" id="badge-count-sell">0</span>
+                    </button>
+
+                    <button onclick="switchTab('manage')" id="nav-manage" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition">
+                        <div class="flex items-center gap-2.5">
+                            <i data-lucide="lock" class="w-4 h-4 text-amber-500"></i>
+                            <span>İşlem Yönetimi</span>
+                        </div>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Bottom Info Banner -->
+            <div class="p-3.5 rounded-xl bg-accent-light border border-accent/20 space-y-2">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-800">
+                    <i data-lucide="activity" class="w-4 h-4 text-accent"></i>
+                    <span>Binance Canlı Akış</span>
+                </div>
+                <p class="text-[11px] text-slate-500 leading-snug">Piyasa verileri 5 saniyede bir otomatik yenilenmektedir.</p>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="flex-1 flex flex-col min-w-0">
+
+            <!-- Top Header -->
+            <header class="sidebar-bg border-b px-6 py-3.5 flex items-center justify-between gap-4 sticky top-0 z-30 backdrop-blur-md">
+                <div class="flex items-center gap-3">
+                    <button class="md:hidden p-2 rounded-lg text-slate-600" onclick="toggleMobileSidebar()">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <h2 class="font-bold text-lg text-slate-800 tracking-tight" id="page-title">Genel Portföy Bakışı</h2>
+                </div>
+
+                <!-- Right Header Actions -->
+                <div class="flex items-center gap-3">
+                    <!-- Preset Theme Selector -->
+                    <div class="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-200">
+                        <i data-lucide="palette" class="w-4 h-4 text-accent"></i>
+                        <select id="theme-select" onchange="changeThemePreset(this.value)" class="bg-transparent text-xs font-bold text-slate-700 focus:outline-none cursor-pointer">
+                            <option value="ventic">Ventic Emerald</option>
+                            <option value="kripton">Kripton Crypto</option>
+                            <option value="weducation">Weducation</option>
+                            <option value="workload">Workload Soft</option>
+                            <option value="uibuilder">UI Builder</option>
+                        </select>
+                    </div>
+
+                    <!-- Currency Switcher -->
+                    <button onclick="toggleCurrency()" id="btn-currency" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 border border-slate-200 hover:border-accent transition flex items-center gap-1">
+                        <span class="text-accent font-extrabold">$</span>
+                        <span id="currency-label">USD</span>
+                    </button>
+
+                    <!-- Add Transaction Button -->
+                    <button onclick="openModal()" class="flex items-center gap-2 bg-accent hover:bg-emerald-600 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-md shadow-emerald-500/20 active:scale-95">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>İşlem Ekle</span>
+                    </button>
+
+                    <!-- User Profile Avatar Button -->
+                    <button onclick="openProfileModal()" class="flex items-center gap-2 pl-2 border-l border-slate-200 hover:opacity-80 transition">
+                        <img id="header-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="w-8 h-8 rounded-full object-cover border-2 border-accent">
+                        <div class="text-left hidden lg:block">
+                            <span class="block text-xs font-bold leading-tight" id="header-user-name">Lion Admin</span>
+                            <span class="block text-[10px] text-slate-400 font-medium" id="header-user-role">Portföy Yöneticisi</span>
+                        </div>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main Scrollable Content -->
+            <main class="flex-1 p-6 space-y-6 overflow-y-auto">
+
+                <!-- Dynamic Statistics Cards Header -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="stats-cards-container">
+                    <!-- Dynamic Stats Cards Rendered by JS -->
+                </div>
+
+                <!-- Main Content Views -->
+                <div id="view-dashboard" class="space-y-6">
+                    
+                    <!-- Holdings Table Section -->
+                    <div class="card-bg p-5 rounded-2xl border shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-sm font-bold flex items-center gap-2" id="table-title">
+                                <i data-lucide="layers" class="w-4 h-4 text-accent"></i> Aktif Varlıklar ve Kâr/Zarar
+                            </h3>
+                            <span class="text-[11px] text-slate-400 font-medium" id="table-subtitle">Canlı Binance Fiyatlarıyla Senkronize</span>
+                        </div>
+
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left text-xs">
+                                <thead>
+                                    <tr class="border-b text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
+                                        <th class="pb-3">Varlık</th>
+                                        <th class="pb-3">Kalan Miktar</th>
+                                        <th class="pb-3">Ort. Maliyet</th>
+                                        <th class="pb-3">Anlık Fiyat</th>
+                                        <th class="pb-3">Toplam Değer</th>
+                                        <th class="pb-3 text-right">Kâr / Zarar</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assets-table-body" class="divide-y divide-slate-100">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="card-bg p-5 rounded-2xl border shadow-sm flex flex-col justify-between">
+                            <h3 class="text-sm font-bold flex items-center gap-2 mb-4">
+                                <i data-lucide="pie-chart" class="w-4 h-4 text-accent"></i> Portföy Varlık Dağılımı
+                            </h3>
+                            <div class="relative h-[220px] flex items-center justify-center">
+                                <canvas id="portfolioPieChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card-bg p-5 rounded-2xl border shadow-sm lg:col-span-2 flex flex-col justify-between">
+                            <h3 class="text-sm font-bold flex items-center gap-2 mb-4">
+                                <i data-lucide="activity" class="w-4 h-4 text-accent"></i> Canlı Piyasa Trend Akışı (Binance)
+                            </h3>
+                            <div class="relative h-[220px]">
+                                <canvas id="marketTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Manage View -->
+                <div id="view-manage" class="hidden space-y-6">
+                    <!-- Protected Lock Screen -->
+                    <div id="lock-screen" class="card-bg p-8 rounded-2xl border max-w-md mx-auto text-center space-y-4 shadow-md">
+                        <div class="w-12 h-12 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center mx-auto">
+                            <i data-lucide="lock" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-base font-bold">İşlem Yönetimi Korumalı</h3>
+                        <p class="text-xs text-slate-400">Giriş yapmak için lütfen PIN kodunu girin.</p>
+                        <input type="password" id="pin-input" maxlength="6" placeholder="PIN" class="w-full text-center text-lg font-bold border rounded-xl p-2.5 bg-slate-50">
+                        <button onclick="verifyPin()" class="w-full bg-accent text-white font-bold py-2.5 rounded-xl text-xs transition">Giriş Yap</button>
+                    </div>
+
+                    <!-- Unlocked Management Content -->
+                    <div id="manage-content" class="hidden space-y-6">
+                        <div class="card-bg p-5 rounded-2xl border shadow-sm">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-sm font-bold flex items-center gap-2">
+                                    <i data-lucide="sliders" class="w-4 h-4 text-accent"></i> Kayıtlı Tüm İşlem Geçmişi
+                                </h3>
+                                <button onclick="clearAllTransactions()" class="text-xs text-rose-500 font-bold border border-rose-200 px-3 py-1 rounded-lg hover:bg-rose-50">Tümünü Sil</button>
+                            </div>
+                            <div class="overflow-x-auto custom-scrollbar">
+                                <table class="w-full text-left text-xs">
+                                    <thead>
+                                        <tr class="border-b text-slate-400 uppercase font-semibold text-[10px]">
+                                            <th class="pb-3">Tarih</th>
+                                            <th class="pb-3">Tip</th>
+                                            <th class="pb-3">Coin</th>
+                                            <th class="pb-3">Miktar</th>
+                                            <th class="pb-3">İşlem Fiyatı</th>
+                                            <th class="pb-3">Toplam Tutar</th>
+                                            <th class="pb-3 text-right">İşlem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="manage-table-body" class="divide-y divide-slate-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal: Add/Edit Transaction -->
+    <div id="modal-tx" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="card-bg w-full max-w-md rounded-2xl p-6 border shadow-2xl space-y-4 relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <h3 class="text-sm font-bold flex items-center gap-2" id="modal-title">
+                <i data-lucide="plus-circle" class="w-4 h-4 text-accent"></i> Yeni İşlem Ekle
+            </h3>
             
-            // Apply Saved Preset
-            document.getElementById('preset-selector').value = activeDesignPreset;
-            applyDesignPreset(activeDesignPreset, false);
+            <form onsubmit="handleFormSubmit(event)" class="space-y-3">
+                <input type="hidden" id="edit-tx-id">
+                
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-500 mb-1">İşlem Tipi</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" id="btn-type-buy" onclick="setTxType('BUY')" class="py-2 rounded-xl border text-xs font-bold border-emerald-500 bg-emerald-500/10 text-emerald-600">ALIM (BUY)</button>
+                        <button type="button" id="btn-type-sell" onclick="setTxType('SELL')" class="py-2 rounded-xl border text-xs font-bold text-slate-400 border-slate-200">SATIM (SELL)</button>
+                    </div>
+                </div>
 
-            loadUserProfile();
+                <div class="relative">
+                    <label class="block text-[11px] font-medium text-slate-500 mb-1">Coin Arama veya Manuel Ekleme</label>
+                    <input type="text" id="input-coin-search" autocomplete="off" oninput="filterCoinSearch()" placeholder="Örn: SOL, BTC veya Manuel Kod..." class="w-full border rounded-xl p-2.5 text-xs bg-slate-50 font-bold focus:outline-none focus:border-accent">
+                    <input type="hidden" id="selected-coin-symbol">
+                    <div id="coin-dropdown" class="absolute left-0 right-0 top-full mt-1 bg-white border rounded-xl max-h-40 overflow-y-auto hidden z-50 shadow-xl divide-y"></div>
+                </div>
 
-            fetchBinancePrices();
-            setInterval(fetchBinancePrices, 5000);
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-500 mb-1">Birim Fiyat ($)</label>
+                        <input type="number" step="any" id="input-price" required oninput="calculateAmountFromTotal()" placeholder="0.00" class="w-full border rounded-xl p-2.5 text-xs bg-slate-50 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-500 mb-1">Toplam Tutar ($)</label>
+                        <input type="number" step="any" id="input-total-amount" oninput="calculateAmountFromTotal()" placeholder="0.00" class="w-full border rounded-xl p-2.5 text-xs bg-slate-50 font-bold">
+                    </div>
+                </div>
 
-            updateDashboard();
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-500 mb-1">Hesaplanan Miktar (Adet)</label>
+                    <input type="number" step="any" id="input-amount" required placeholder="0.00" class="w-full border rounded-xl p-2.5 text-xs bg-slate-50 font-extrabold text-accent">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-500 mb-1">Tarih</label>
+                    <input type="datetime-local" id="input-date" required class="w-full border rounded-xl p-2.5 text-xs bg-slate-50">
+                </div>
+
+                <button type="submit" class="w-full bg-accent text-white font-bold py-2.5 rounded-xl text-xs shadow-md shadow-emerald-500/20">Kaydet</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Profile & Admin Panel -->
+    <div id="modal-profile" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="card-bg w-full max-w-sm rounded-2xl p-6 border shadow-2xl space-y-4 relative">
+            <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <h3 class="text-sm font-bold flex items-center gap-2">
+                <i data-lucide="user" class="w-4 h-4 text-accent"></i> Profil & Admin Ayarları
+            </h3>
+
+            <form onsubmit="handleProfileSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-500 mb-1">Kullanıcı Adı</label>
+                    <input type="text" id="profile-name" required class="w-full border rounded-xl p-2.5 text-xs font-bold bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-500 mb-1">Unvan / Rol</label>
+                    <input type="text" id="profile-role" required class="w-full border rounded-xl p-2.5 text-xs font-bold bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-medium text-slate-500 mb-1">Avatar Görsel URL</label>
+                    <input type="text" id="profile-avatar-url" required class="w-full border rounded-xl p-2.5 text-xs font-bold bg-slate-50">
+                </div>
+                <button type="submit" class="w-full bg-accent text-white font-bold py-2.5 rounded-xl text-xs">Güncelle</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Logic Script -->
+    <script>
+        // --- App State ---
+        let activeTab = 'all'; // 'all', 'buy', 'sell', 'manage'
+        let currentCurrency = 'USD';
+        let usdToTryRate = 34.50;
+        let selectedTxType = 'BUY';
+        let currentTheme = localStorage.getItem('cryptodash_theme') || 'ventic';
+
+        let userProfile = JSON.parse(localStorage.getItem('cryptodash_profile')) || {
+            name: 'Lion Admin',
+            role: 'Portföy Yöneticisi',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
         };
 
-        // --- Design Preset Switcher Engine ---
-        function applyDesignPreset(presetKey, save = true) {
-            activeDesignPreset = presetKey;
-            const html = document.documentElement;
-            
-            if (save) {
-                localStorage.setItem('cryptodash_preset', presetKey);
-            }
+        const MARKET_DATA = {
+            BTC: { name: 'Bitcoin', symbol: 'BTC', price: 65420.00, change: 1.2 },
+            ETH: { name: 'Ethereum', symbol: 'ETH', price: 3450.50, change: -0.8 },
+            SOL: { name: 'Solana', symbol: 'SOL', price: 142.80, change: 4.5 },
+            BNB: { name: 'BNB', symbol: 'BNB', price: 580.20, change: 0.5 },
+            AVAX: { name: 'Avalanche', symbol: 'AVAX', price: 28.40, change: -2.1 }
+        };
 
-            html.setAttribute('data-preset', presetKey);
+        // Standardized Weighted Average transactions (Sample scenario)
+        let transactions = JSON.parse(localStorage.getItem('cryptodash_txs')) || [
+            { id: 1, type: 'BUY', coin: 'SOL', amount: 24.5098, price: 102.00, date: '2024-03-01T10:00' },
+            { id: 2, type: 'SELL', coin: 'SOL', amount: 8.40, price: 125.00, date: '2024-03-05T14:30' },
+            { id: 3, type: 'BUY', coin: 'SOL', amount: 15.3061, price: 98.00, date: '2024-03-10T16:00' }
+        ];
 
-            // Handle dark/light base class for presets
-            if (presetKey === 'cyber' || presetKey === 'sunset') {
-                html.classList.remove('light');
-                html.classList.add('dark');
-                currentTheme = 'dark';
-            } else if (presetKey === 'royal' || presetKey === 'mono') {
-                html.classList.remove('dark');
-                html.classList.add('light');
-                currentTheme = 'light';
-            }
+        let pieChartInstance = null;
+        let trendChartInstance = null;
 
-            // Sync preset dynamic chart colors
-            if (trendChartInstance && trendChartInstance.data.datasets.length >= 2) {
-                if (presetKey === 'cyber') {
-                    trendChartInstance.data.datasets[0].borderColor = '#06B6D4';
-                    trendChartInstance.data.datasets[0].backgroundColor = 'rgba(6, 182, 212, 0.1)';
-                    trendChartInstance.data.datasets[1].borderColor = '#6366F1';
-                } else if (presetKey === 'sunset') {
-                    trendChartInstance.data.datasets[0].borderColor = '#F59E0B';
-                    trendChartInstance.data.datasets[0].backgroundColor = 'rgba(245, 158, 11, 0.1)';
-                    trendChartInstance.data.datasets[1].borderColor = '#F97316';
-                } else if (presetKey === 'royal') {
-                    trendChartInstance.data.datasets[0].borderColor = '#4F46E5';
-                    trendChartInstance.data.datasets[0].backgroundColor = 'rgba(79, 70, 229, 0.1)';
-                    trendChartInstance.data.datasets[1].borderColor = '#0EA5E9';
-                } else if (presetKey === 'mono') {
-                    trendChartInstance.data.datasets[0].borderColor = '#000000';
-                    trendChartInstance.data.datasets[0].backgroundColor = 'rgba(0, 0, 0, 0.05)';
-                    trendChartInstance.data.datasets[1].borderColor = '#666666';
-                } else {
-                    trendChartInstance.data.datasets[0].borderColor = '#10B981';
-                    trendChartInstance.data.datasets[0].backgroundColor = 'rgba(16, 185, 129, 0.1)';
-                    trendChartInstance.data.datasets[1].borderColor = '#6366F1';
-                }
-                trendChartInstance.update();
-            }
+        window.onload = function() {
+            lucide.createIcons();
+            changeThemePreset(currentTheme);
+            initProfileUI();
+            initCharts();
+            updateDashboard();
+            fetchBinancePrices();
+            setInterval(fetchBinancePrices, 5000);
+        };
 
-            updateChartsTheme();
-            showToast(`Tasarım "${presetKey.toUpperCase()}" temasına değiştirildi.`);
+        function changeThemePreset(theme) {
+            currentTheme = theme;
+            document.documentElement.setAttribute('data-theme', theme);
+            document.getElementById('theme-select').value = theme;
+            localStorage.setItem('cryptodash_theme', theme);
+            if (pieChartInstance) updateCharts([]);
         }
 
-        // ... existing logic ...
+        function initProfileUI() {
+            document.getElementById('header-user-name').textContent = userProfile.name;
+            document.getElementById('header-user-role').textContent = userProfile.role;
+            document.getElementById('header-avatar').src = userProfile.avatar;
+        }
+
+        async function fetchBinancePrices() {
+            try {
+                const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+                if (response.ok) {
+                    const data = await response.json();
+                    data.forEach(item => {
+                        if (item.symbol.endsWith('USDT')) {
+                            const coinSymbol = item.symbol.replace('USDT', '');
+                            if (MARKET_DATA[coinSymbol]) {
+                                MARKET_DATA[coinSymbol].price = parseFloat(item.lastPrice);
+                                MARKET_DATA[coinSymbol].change = parseFloat(item.priceChangePercent);
+                            }
+                        }
+                    });
+                    updateDashboard();
+                }
+            } catch (e) { console.warn("Binance API offline using defaults"); }
+        }
+
+        // Weighted Average Cost Logic Engine
+        function calculatePortfolio() {
+            const holdings = {};
+            let totalRealizedPnL = 0;
+            let totalSellVolume = 0;
+
+            transactions.forEach(tx => {
+                if (!holdings[tx.coin]) holdings[tx.coin] = { amount: 0, totalCost: 0, totalBuyVolume: 0 };
+
+                if (tx.type === 'BUY') {
+                    holdings[tx.coin].amount += tx.amount;
+                    holdings[tx.coin].totalCost += tx.amount * tx.price;
+                    holdings[tx.coin].totalBuyVolume += tx.amount * tx.price;
+                } else if (tx.type === 'SELL') {
+                    const avgCost = holdings[tx.coin].amount > 0 ? holdings[tx.coin].totalCost / holdings[tx.coin].amount : 0;
+                    const pnl = (tx.price - avgCost) * tx.amount;
+                    
+                    totalRealizedPnL += pnl;
+                    totalSellVolume += tx.amount * tx.price;
+
+                    holdings[tx.coin].amount -= tx.amount;
+                    holdings[tx.coin].totalCost -= avgCost * tx.amount;
+                }
+            });
+
+            let activeValue = 0;
+            let activeCost = 0;
+            const assetDetails = [];
+
+            Object.keys(holdings).forEach(symbol => {
+                const data = holdings[symbol];
+                if (data.amount > 0.00001) {
+                    const currentPrice = MARKET_DATA[symbol] ? MARKET_DATA[symbol].price : 0;
+                    const currentValue = data.amount * currentPrice;
+                    const avgCost = data.totalCost / data.amount;
+                    const pnl = currentValue - data.totalCost;
+                    const pnlPercent = data.totalCost > 0 ? (pnl / data.totalCost) * 100 : 0;
+
+                    activeValue += currentValue;
+                    activeCost += data.totalCost;
+
+                    assetDetails.push({ symbol, amount: data.amount, avgCost, currentPrice, currentValue, pnl, pnlPercent });
+                }
+            });
+
+            return { activeValue, activeCost, unrealizedPnL: activeValue - activeCost, totalRealizedPnL, totalSellVolume, assetDetails };
+        }
+
+        function updateDashboard() {
+            const summary = calculatePortfolio();
+
+            // Update Badges
+            document.getElementById('badge-count-all').textContent = transactions.length;
+            document.getElementById('badge-count-buy').textContent = summary.assetDetails.length;
+            document.getElementById('badge-count-sell').textContent = transactions.filter(t => t.type === 'SELL').length;
+
+            renderStatsCards(summary);
+            renderAssetsTable(summary.assetDetails);
+            updateCharts(summary.assetDetails);
+            if (activeTab === 'manage') renderManageTable();
+        }
+
+        function renderStatsCards(summary) {
+            const container = document.getElementById('stats-cards-container');
+            container.innerHTML = '';
+
+            if (activeTab === 'all' || activeTab === 'manage') {
+                container.innerHTML = `
+                    <div class="card-bg p-4 rounded-2xl border shadow-sm">
+                        <span class="text-[11px] font-bold text-slate-400">TOPLAM PORTFÖY DEĞERİ</span>
+                        <div class="text-xl font-extrabold mt-1">${formatCurrencyVal(summary.activeValue)}</div>
+                        <span class="text-[10px] text-slate-400">Maliyet: ${formatCurrencyVal(summary.activeCost)}</span>
+                    </div>
+                    <div class="card-bg p-4 rounded-2xl border shadow-sm">
+                        <span class="text-[11px] font-bold text-slate-400">POTANSİYEL KÂR / ZARAR</span>
+                        <div class="text-xl font-extrabold mt-1 ${summary.unrealizedPnL >= 0 ? 'text-emerald-500' : 'text-rose-500'}">${formatCurrencyVal(summary.unrealizedPnL)}</div>
+                    </div>
+                    <div class="card-bg p-4 rounded-2xl border shadow-sm">
+                        <span class="text-[11px] font-bold text-slate-400">REALIZED SATIŞ KÂRI</span>
+                        <div class="text-xl font-extrabold mt-1 text-emerald-500">${formatCurrencyVal(summary.totalRealizedPnL)}</div>
+                    </div>
+                    <div class="card-bg p-4 rounded-2xl border shadow-sm">
+                        <span class="text-[11px] font-bold text-slate-400">TOPLAM İŞLEM</span>
+                        <div class="text-xl font-extrabold mt-1">${transactions.length} Adet</div>
+                    </div>
+                `;
+            } else if (activeTab === 'buy') {
+                container.innerHTML = `
+                    <div class="card-bg p-4 rounded-2xl border shadow-sm">
+                        <span class="text-[11px] font-bold text-slate-400">AKTİF ELDE TUTULAN VERİ</span>
+                        <div class="text-xl font-extrabold mt-1 text-emerald-500">${formatCurrencyVal(summary.activeValue)}</div>
+                    </div>
+                    <div class="card-bg p-4 rounded-2xl border shadow-sm">
+                        <span class="text-[11px] font-bold text-slate-400">AKTİF MALİYET</span>
+                        <div class="text-xl font-extrabold mt-1">${formatCurrencyVal(summary.activeCost)}</div>
+                    </div>
+                `;
+            } else if (activeTab === 'sell') {
+                container.innerHTML = `
+                    <div class="card-bg p-4 rounded-2xl border shadow-sm">
+                        <span class="text-[11px] font-bold text-slate-400">TOPLAM SATIŞ HACMİ</span>
+                        <div class="text-xl font-extrabold mt-1 text-rose-500">${formatCurrencyVal(summary.totalSellVolume)}</div>
+                    </div>
+                    <div class="card-bg p-4 rounded-2xl border shadow-sm">
+                        <span class="text-[11px] font-bold text-slate-400">NET REALIZED KÂR</span>
+                        <div class="text-xl font-extrabold mt-1 text-emerald-500">${formatCurrencyVal(summary.totalRealizedPnL)}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderAssetsTable(assets) {
+            const tbody = document.getElementById('assets-table-body');
+            tbody.innerHTML = '';
+
+            assets.forEach(a => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-3 font-bold">${a.symbol}</td>
+                    <td class="py-3 font-medium">${a.amount.toFixed(4)}</td>
+                    <td class="py-3">${formatCurrencyVal(a.avgCost)}</td>
+                    <td class="py-3">${formatCurrencyVal(a.currentPrice)}</td>
+                    <td class="py-3 font-bold">${formatCurrencyVal(a.currentValue)}</td>
+                    <td class="py-3 text-right font-bold ${a.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}">${formatCurrencyVal(a.pnl)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function formatCurrencyVal(val) {
+            const converted = currentCurrency === 'TRY' ? val * usdToTryRate : val;
+            return `${currentCurrency === 'TRY' ? '₺' : '$'}${converted.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+
+        function toggleCurrency() {
+            currentCurrency = currentCurrency === 'USD' ? 'TRY' : 'USD';
+            document.getElementById('currency-label').textContent = currentCurrency;
+            updateDashboard();
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            document.getElementById('view-dashboard').classList.toggle('hidden', tab === 'manage');
+            document.getElementById('view-manage').classList.toggle('hidden', tab !== 'manage');
+            updateDashboard();
+        }
+
+        function openModal() { document.getElementById('modal-tx').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('modal-tx').classList.add('hidden'); }
+        function openProfileModal() { document.getElementById('modal-profile').classList.remove('hidden'); }
+        function closeProfileModal() { document.getElementById('modal-profile').classList.add('hidden'); }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const coin = (document.getElementById('selected-coin-symbol').value || document.getElementById('input-coin-search').value).toUpperCase();
+            const amount = parseFloat(document.getElementById('input-amount').value);
+            const price = parseFloat(document.getElementById('input-price').value);
+            const date = document.getElementById('input-date').value;
+
+            transactions.push({ id: Date.now(), type: selectedTxType, coin, amount, price, date });
+            localStorage.setItem('cryptodash_txs', JSON.stringify(transactions));
+            closeModal();
+            updateDashboard();
+        }
+
+        function calculateAmountFromTotal() {
+            const total = parseFloat(document.getElementById('input-total-amount').value);
+            const price = parseFloat(document.getElementById('input-price').value);
+            if (total && price) document.getElementById('input-amount').value = (total / price).toFixed(6);
+        }
+
+        function filterCoinSearch() {
+            const query = document.getElementById('input-coin-search').value.toLowerCase();
+            const dropdown = document.getElementById('coin-dropdown');
+            dropdown.innerHTML = '';
+            
+            Object.keys(MARKET_DATA).filter(s => s.toLowerCase().includes(query)).forEach(s => {
+                const item = document.createElement('div');
+                item.className = 'p-2 text-xs font-bold hover:bg-slate-100 cursor-pointer';
+                item.onclick = () => {
+                    document.getElementById('input-coin-search').value = s;
+                    document.getElementById('selected-coin-symbol').value = s;
+                    document.getElementById('input-price').value = MARKET_DATA[s].price;
+                    dropdown.classList.add('hidden');
+                };
+                item.textContent = s;
+                dropdown.appendChild(item);
+            });
+            dropdown.classList.remove('hidden');
+        }
+
+        function setTxType(t) { selectedTxType = t; }
+
+        function initCharts() {
+            const ctx = document.getElementById('portfolioPieChart').getContext('2d');
+            pieChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: [], datasets: [{ data: [] }] } });
+        }
+
+        function updateCharts(assets) {
+            if (!pieChartInstance) return;
+            pieChartInstance.data.labels = assets.map(a => a.symbol);
+            pieChartInstance.data.datasets[0].data = assets.map(a => a.currentValue);
+            pieChartInstance.update();
+        }
     </script>
-<!-- ... existing code -->
+</body>
+</html>
