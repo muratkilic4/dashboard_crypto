@@ -637,11 +637,11 @@
                             <thead class="table-head-bg text-xs uppercase tracking-wider">
                                 <tr>
                                     <th class="p-3 rounded-l-lg">Tarih</th>
-                                    <th class="p-3">İşlem</th>
+                                    <th class="p-3">İşlem Durumu</th>
                                     <th class="p-3">Kripto Varlık</th>
+                                    <th class="p-3">Alış Fiyatı / Tutarı</th>
+                                    <th class="p-3">Satış Fiyatı / Tutarı</th>
                                     <th class="p-3">Miktar</th>
-                                    <th class="p-3">İşlem Fiyatı</th>
-                                    <th class="p-3">Toplam Tutar</th>
                                     <th class="p-3">Gerçekleşen K/Z</th>
                                     <th class="p-3 rounded-r-lg text-right">Düzenle / Sil</th>
                                 </tr>
@@ -1732,7 +1732,12 @@ async function activateApp(session) {
         function calculateRealizedPnLByTransaction() {
             const holdings = {};
             const pnlById = new Map();
-            const ordered = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const ordered = [...transactions].sort((a, b) => {
+                const diff = new Date(a.date) - new Date(b.date);
+                if (diff !== 0) return diff;
+                if (a.type === b.type) return 0;
+                return a.type === 'BUY' ? -1 : 1;
+            });
             for (const tx of ordered) {
                 const amount = Number(tx.amount);
                 const price = Number(tx.price);
@@ -1745,7 +1750,9 @@ async function activateApp(session) {
                     holding.totalCost += amount * price + fee;
                 } else if (tx.type === 'SELL') {
                     const avgCost = holding.amount > 0 ? holding.totalCost / holding.amount : 0;
-                    const realized = (amount * price - fee) - (avgCost * amount);
+                    const costBasis = avgCost * amount;
+                    const proceeds = amount * price - fee;
+                    const realized = proceeds - costBasis;
                     pnlById.set(String(tx.id), realized);
                     holding.amount = Math.max(0, holding.amount - amount);
                     holding.totalCost = Math.max(0, holding.totalCost - avgCost * amount);
@@ -1755,6 +1762,34 @@ async function activateApp(session) {
         }
 
         // Render Transaction Management Table & Admin Summary Cards
+        function calculateSaleDetailsByTransaction() {
+            const holdings = {};
+            const detailsById = new Map();
+            const ordered = [...transactions].sort((a, b) => {
+                const diff = new Date(a.date) - new Date(b.date);
+                if (diff !== 0) return diff;
+                if (a.type === b.type) return 0;
+                return a.type === 'BUY' ? -1 : 1;
+            });
+            for (const tx of ordered) {
+                const amount = Number(tx.amount), price = Number(tx.price), fee = Number(tx.fee || 0);
+                if (!tx.coin || !Number.isFinite(amount) || amount <= 0 || !Number.isFinite(price) || price <= 0) continue;
+                const holding = holdings[tx.coin] || (holdings[tx.coin] = { amount: 0, totalCost: 0 });
+                if (tx.type === 'BUY') {
+                    holding.amount += amount;
+                    holding.totalCost += amount * price + fee;
+                } else if (tx.type === 'SELL') {
+                    const avgCost = holding.amount > 0 ? holding.totalCost / holding.amount : 0;
+                    const costBasis = avgCost * amount;
+                    const proceeds = amount * price - fee;
+                    detailsById.set(String(tx.id), { costBasis, proceeds, pnl: proceeds - costBasis });
+                    holding.amount = Math.max(0, holding.amount - amount);
+                    holding.totalCost = Math.max(0, holding.totalCost - costBasis);
+                }
+            }
+            return detailsById;
+        }
+
         function renderManageTable() {
             const tbody = document.getElementById('manage-tx-table-body');
             tbody.innerHTML = '';
@@ -1762,6 +1797,7 @@ async function activateApp(session) {
             let totalBuyVolume = 0;
             let totalSellVolume = 0;
             const realizedPnLById = calculateRealizedPnLByTransaction();
+            const saleDetailsById = calculateSaleDetailsByTransaction();
 
             transactions.forEach(tx => {
                 const total = tx.amount * tx.price;
@@ -1791,6 +1827,9 @@ async function activateApp(session) {
             sortedTx.forEach(tx => {
                 const total = tx.amount * tx.price;
                 const isBuy = tx.type === 'BUY';
+                const availableBalance = getAvailableCoinAmount(tx.coin);
+                const statusLabel = isBuy ? (availableBalance > 1e-10 ? 'Açık' : 'Satıldı') : 'Satıldı';
+                const saleDetails = saleDetailsById.get(String(tx.id));
                 const formattedDate = new Date(tx.date).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
 
                 const tr = document.createElement('tr');
@@ -1798,8 +1837,8 @@ async function activateApp(session) {
                 tr.innerHTML = `
                     <td class="p-3 text-xs text-slate-500 dark:text-slate-400">${formattedDate}</td>
                     <td class="p-3">
-                        <span class="px-2 py-0.5 text-[10px] rounded-md font-bold ${isBuy ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}">
-                            ${isBuy ? 'ALIM' : 'SATIM'}
+                        <span class="px-2 py-0.5 text-[10px] rounded-md font-bold ${isBuy ? (availableBalance > 1e-10 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-500/10 text-slate-500') : 'bg-rose-500/10 text-rose-500'}">
+                            ${statusLabel}
                         </span>
                     </td>
                     <td class="p-3 font-semibold text-slate-900 dark:text-white">
@@ -1808,10 +1847,10 @@ async function activateApp(session) {
                             <span>${escapeCoinText(tx.coinName || MARKET_DATA[tx.coin]?.name || tx.coin)} <small class="text-[10px] text-slate-400">${escapeCoinText(tx.coin)}</small>${tx.tradeCurrency === 'TRY' ? ' <small class="ml-1 font-bold text-sky-500">Binance TR</small>' : ''}</span>
                         </div>
                     </td>
-                    <td class="p-3 font-medium">${tx.amount}</td>
-                    <td class="p-3">${formatCurrencyVal(tx.price)}</td>
-                    <td class="p-3 text-slate-900 dark:text-white font-semibold">${formatCurrencyVal(total)}</td>
-                    <td class="p-3 font-semibold ${tx.type === 'SELL' ? ((realizedPnLById.get(String(tx.id)) || 0) >= 0 ? 'text-emerald-500' : 'text-rose-500') : 'text-slate-400'}">${tx.type === 'SELL' ? ((realizedPnLById.get(String(tx.id)) || 0) >= 0 ? '+' : '') + formatCurrencyVal(realizedPnLById.get(String(tx.id)) || 0) : '—'}</td>
+                    <td class="p-3 font-medium">${isBuy ? formatCurrencyVal(total + Number(tx.fee || 0)) : (saleDetails ? formatCurrencyVal(saleDetails.costBasis) : '—')}</td>
+                    <td class="p-3">${!isBuy ? formatCurrencyVal(total - Number(tx.fee || 0)) : '—'}</td>
+                    <td class="p-3 font-medium">${Number(tx.amount).toLocaleString('tr-TR', {maximumFractionDigits: 8})}</td>
+                    <td class="p-3 font-semibold ${!isBuy ? ((saleDetails?.pnl || 0) >= 0 ? 'text-emerald-500' : 'text-rose-500') : 'text-slate-400'}">${!isBuy && saleDetails ? ((saleDetails.pnl >= 0 ? '+' : '') + formatCurrencyVal(saleDetails.pnl)) : '—'}</td>
                     <td class="p-3 text-right">
                         <div class="flex items-center justify-end gap-2">
                         ${getAvailableCoinAmount(tx.coin) > 1e-10
@@ -2216,7 +2255,7 @@ async function activateApp(session) {
                 return;
             }
             openModal();
-            document.getElementById('input-coin-search').value = `${meta.name || symbol} (${symbol})`;
+            document.getElementById('input-coin-search').value = symbol;
             document.getElementById('selected-coin-symbol').value = symbol;
             document.getElementById('coin-search-status').textContent = `${meta.name || symbol} seçildi.`;
             setTxType(type === 'SELL' ? 'SELL' : 'BUY');
