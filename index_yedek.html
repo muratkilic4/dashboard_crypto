@@ -1117,13 +1117,38 @@ async function activateApp(session) {
         }
 
         async function loadTransactions() {
+            const columns = 'id, type, coin, amount, price, executed_at, fee';
             const { data, error } = await dbClient
                 .from('transactions')
-                .select('id, type, coin, amount, price, executed_at, fee')
+                .select(columns)
                 .eq('user_id', activeUserId)
                 .order('executed_at', { ascending: true });
             if (error) throw error;
-            transactions = (data || []).map(row => ({
+
+            let rows = data || [];
+            // Demo transactions are added only to a truly empty account. Existing user records are never overwritten.
+            if (rows.length === 0) {
+                const now = Date.now();
+                const demoRows = [
+                    { user_id: activeUserId, type: 'buy', coin: 'SOL', amount: 2500 / 102, price: 102, fee: 0, executed_at: new Date(now - 3 * 60 * 1000).toISOString() },
+                    { user_id: activeUserId, type: 'sell', coin: 'SOL', amount: 1050 / 125, price: 125, fee: 0, executed_at: new Date(now - 2 * 60 * 1000).toISOString() },
+                    { user_id: activeUserId, type: 'buy', coin: 'SOL', amount: 1500 / 98, price: 98, fee: 0, executed_at: new Date(now - 1 * 60 * 1000).toISOString() }
+                ];
+                try {
+                    const { data: seededRows, error: seedError } = await dbClient
+                        .from('transactions')
+                        .insert(demoRows)
+                        .select(columns);
+                    if (seedError) throw seedError;
+                    rows = (seededRows || []).sort((a, b) => new Date(a.executed_at) - new Date(b.executed_at));
+                    showToast('Örnek SOL senaryosu yüklendi. İstersen işlem yönetiminden silebilirsin.');
+                } catch (seedError) {
+                    console.warn('Örnek SOL işlemleri otomatik yüklenemedi:', seedError);
+                    // Do not block app startup if demo data cannot be inserted.
+                }
+            }
+
+            transactions = rows.map(row => ({
                 id: row.id,
                 type: String(row.type || '').toUpperCase(),
                 coin: row.coin,
@@ -1402,7 +1427,10 @@ async function activateApp(session) {
         }
 
         // --- Portfolio Calculation Logic ---
-        // Average-cost method. Transaction sets are validated before saving.
+        // Weighted average cost: buys add quantity and cost; partial sells remove cost at the current average,
+        // keeping the average cost of the remaining position unchanged. Realized PnL includes sell proceeds
+        // minus sell fees and the sold quantity's cost basis; buy fees are included in acquisition cost.
+        // Transaction sets are validated before saving.
         function calculatePortfolio() {
             const holdings = {};
             let realizedPnL = 0;
