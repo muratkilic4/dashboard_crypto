@@ -822,7 +822,8 @@
             dbClient.auth.onAuthStateChange((event, session) => {
                 // Token yenileme, uygulamayı baştan başlatıp geçerli oturumu ekrandan düşürmemeli.
                 if (session && ['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED'].includes(event)) {
-                    if (event === 'TOKEN_REFRESHED' && activeUserId === session.user.id) return;
+                    // Aynı kullanıcı için uygulama zaten açıksa auth olayları dashboard'u yeniden başlatmasın.
+                    if (activeUserId === session.user.id && appInitializedForUser === session.user.id) return;
                     // Supabase auth callback'i içinde başka async Supabase çağrıları başlatma.
                     setTimeout(() => { void activateApp(session); }, 0);
                 } else if (event === 'PASSWORD_RECOVERY') {
@@ -1011,11 +1012,21 @@ async function activateApp(session) {
   if (!session?.user || !dbClient) return;
 
   const userId = session.user.id;
-  activeUserId = userId;
+  // Kullanıcı aynıysa ve dashboard hazırsa tekrar veri/grafik başlatma.
+  if (appInitializedForUser === userId && activeUserId === userId) {
+    document.getElementById('auth-screen').classList.add('hidden');
+    document.getElementById('credential-setup-screen').classList.add('hidden');
+    document.getElementById('app-root').classList.remove('hidden');
+    return;
+  }
 
-  document.getElementById('auth-screen').classList.add('hidden');
-  document.getElementById('app-root').classList.add('hidden');
+  const previousUserId = activeUserId;
+  activeUserId = userId;
   document.getElementById('credential-setup-screen').classList.add('hidden');
+  // İlk yükleme sırasında yalnızca uygulama henüz hazır değilse yükleme ekranını göster.
+  if (appInitializedForUser !== userId) {
+    document.getElementById('auth-screen').classList.add('hidden');
+  }
 
   try {
     const { data: profile, error: profileError } = await dbClient
@@ -1025,12 +1036,10 @@ async function activateApp(session) {
       .maybeSingle();
 
     if (profileError) throw profileError;
-
-    if (!profile) {
-      throw new Error('Hesap profili bulunamadı.');
-    }
+    if (!profile) throw new Error('Hesap profili bulunamadı.');
 
     if (profile.must_change_credentials) {
+      document.getElementById('app-root').classList.add('hidden');
       document.getElementById('credential-setup-screen').classList.remove('hidden');
       return;
     }
@@ -1040,7 +1049,6 @@ async function activateApp(session) {
     document.getElementById('profile-display-username').textContent = profile.username || '';
     document.getElementById('profile-username-readonly').textContent = profile.username || '';
     await loadProfileDetails(profile.username || '');
-
     await loadTransactions();
     initCharts();
     updateDashboard();
@@ -1049,18 +1057,40 @@ async function activateApp(session) {
     lucide.createIcons();
 
     appInitializedForUser = userId;
+    document.getElementById('auth-screen').classList.add('hidden');
     document.getElementById('app-root').classList.remove('hidden');
   } catch (error) {
     console.error('Uygulama başlatılamadı:', error);
-    document.getElementById('credential-setup-screen').classList.add('hidden');
-    document.getElementById('app-root').classList.add('hidden');
-    document.getElementById('auth-screen').classList.remove('hidden');
-    document.getElementById('auth-message').textContent =
-      'Hesap kontrolü yapılamadı: ' + error.message;
+
+    // Başlatma hatası, Supabase oturumunun kapandığı anlamına gelmez.
+    let validSession = false;
+    try {
+      const { data } = await dbClient.auth.getSession();
+      validSession = data?.session?.user?.id === userId;
+    } catch (sessionError) {
+      console.error('Oturum doğrulanamadı:', sessionError);
+    }
+
+    if (validSession) {
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('credential-setup-screen').classList.add('hidden');
+      document.getElementById('app-root').classList.remove('hidden');
+      if (typeof showToast === 'function') {
+        showToast('Oturum açık, ancak bazı veriler yüklenemedi. Sayfayı yenilemeyi deneyebilirsin.', true);
+      }
+    } else {
+      activeUserId = null;
+      appInitializedForUser = null;
+      document.getElementById('credential-setup-screen').classList.add('hidden');
+      document.getElementById('app-root').classList.add('hidden');
+      document.getElementById('auth-screen').classList.remove('hidden');
+      const message = document.getElementById('auth-message');
+      message.textContent = 'Oturum doğrulanamadı. Lütfen yeniden giriş yap.';
+      message.classList.remove('hidden');
+    }
   }
 }
 
-        
         function deactivateApp() {
             activeUserId = null;
             appInitializedForUser = null;
