@@ -6,6 +6,8 @@
     <title>CryptoDash Pro - Kripto Portföy & Kâr/Zarar Yönetimi</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase Auth + Database client (public anon key only; never put service_role here) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Lucide Icons -->
@@ -114,6 +116,112 @@
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col justify-between">
 
+    <!-- Authentication gate: all portfolio data is protected by Supabase Auth + RLS -->
+    <section id="auth-screen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950">
+        <div class="w-full max-w-md rounded-3xl border border-slate-700 bg-slate-900 p-7 shadow-2xl">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="rounded-2xl bg-indigo-600 p-3 text-white"><i data-lucide="line-chart" class="w-6 h-6"></i></div>
+                <div>
+                    <h1 class="text-xl font-bold text-white">CryptoDash <span class="text-indigo-400">PRO</span></h1>
+                    <p class="text-xs text-slate-400">Güvenli portföy alanı</p>
+                </div>
+            </div>
+            <h2 id="auth-title" class="text-lg font-semibold text-white mb-1">Hesabına giriş yap</h2>
+            <p id="auth-description" class="text-sm text-slate-400 mb-5">Portföyünü görüntülemek için giriş yap.</p>
+            <div id="auth-config-warning" class="hidden mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-200">
+                Supabase henüz yapılandırılmadı. <code>index.html</code> içindeki <code>SUPABASE_URL</code> ve <code>SUPABASE_ANON_KEY</code> değerlerini doldur.
+            </div>
+            <form id="auth-form" class="space-y-4">
+               
+<div>
+    <label for="auth-email" class="block text-xs text-slate-300 mb-1.5">Kullanıcı adı veya e-posta</label>
+    <input id="auth-email" type="text" autocomplete="username" required class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-white outline-none focus:border-indigo-500" placeholder="admin">
+</div>
+
+                <div>
+                    <label for="auth-password" class="block text-xs text-slate-300 mb-1.5">Şifre (en az 8 karakter)</label>
+                    <input id="auth-password" type="password" autocomplete="current-password" minlength="8" required class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-white outline-none focus:border-indigo-500" placeholder="••••••••">
+                </div>
+                <button id="auth-submit" type="submit" class="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 py-3 text-sm font-semibold text-white transition">Giriş yap</button>
+            </form>
+            <p id="auth-message" role="status" class="mt-4 text-sm text-slate-300"></p>
+            <button id="auth-mode-toggle" type="button" class="hidden mt-4 text-sm text-indigo-300 hover:text-indigo-200">Hesabın yok mu? Kayıt ol</button>
+        </div>
+    </section>
+
+<section id="credential-setup-screen" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950">
+  <div class="w-full max-w-md rounded-3xl border border-slate-700 bg-slate-900 p-7 shadow-2xl">
+    <div class="mb-6 text-center">
+      <h2 class="text-2xl font-bold text-white">İlk Kurulum</h2>
+      <p class="mt-2 text-sm text-slate-400">
+        Devam etmek için yeni kullanıcı adını ve şifreni belirle.
+      </p>
+    </div>
+
+    <form id="credential-setup-form" class="space-y-4">
+      <div>
+        <label for="setup-username" class="mb-2 block text-sm text-slate-300">
+          Yeni kullanıcı adı
+        </label>
+        <input
+          id="setup-username"
+          type="text"
+          minlength="3"
+          maxlength="32"
+          pattern="[A-Za-z0-9_.-]+"
+          autocomplete="username"
+          required
+          class="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-cyan-500"
+          placeholder="Yeni kullanıcı adın"
+        >
+      </div>
+
+      <div>
+        <label for="setup-password" class="mb-2 block text-sm text-slate-300">
+          Yeni şifre
+        </label>
+        <input
+          id="setup-password"
+          type="password"
+          minlength="8"
+          autocomplete="new-password"
+          required
+          class="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-cyan-500"
+          placeholder="En az 8 karakter"
+        >
+      </div>
+
+      <div>
+        <label for="setup-password-confirm" class="mb-2 block text-sm text-slate-300">
+          Yeni şifreyi tekrar yaz
+        </label>
+        <input
+          id="setup-password-confirm"
+          type="password"
+          minlength="8"
+          autocomplete="new-password"
+          required
+          class="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-cyan-500"
+          placeholder="Şifreni tekrar yaz"
+        >
+      </div>
+
+      <button
+        id="credential-setup-submit"
+        type="submit"
+        class="w-full rounded-xl bg-cyan-500 px-4 py-3 font-semibold text-slate-950 hover:bg-cyan-400 disabled:opacity-50"
+      >
+        Bilgilerimi kaydet
+      </button>
+
+      <p id="credential-setup-message" role="status" class="text-sm text-center text-slate-300"></p>
+    </form>
+  </div>
+</section>
+
+    <div id="app-root" class="hidden">
+
+
     <!-- Top Navigation Bar -->
     <header class="header-bg sticky top-0 z-40 border-b backdrop-blur-md px-4 lg:px-8 py-3 flex justify-between items-center transition-colors">
         <div class="flex items-center gap-4">
@@ -124,7 +232,7 @@
                 <h1 class="font-bold text-lg tracking-tight flex items-center gap-2 text-slate-900 dark:text-white">
                     CryptoDash <span class="text-xs px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 font-semibold border border-indigo-500/20">PRO</span>
                 </h1>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Canlı Binance Verileri & Portföy Yönetimi</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Canlı Binance Verileri & Portföy Yönetimi <span id="market-status" class="ml-1 text-amber-500">● Bağlanıyor</span></p>
             </div>
         </div>
 
@@ -139,6 +247,10 @@
         </nav>
 
         <div class="flex items-center gap-2.5">
+            <span id="account-email" class="hidden xl:inline text-[11px] text-slate-500 max-w-[150px] truncate"></span>
+            <button onclick="signOut()" class="p-2 rounded-xl input-bg border text-slate-500 hover:text-rose-500 transition" title="Güvenli çıkış" aria-label="Güvenli çıkış">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+            </button>
             <!-- Currency Switcher (USD / TRY) -->
             <button onclick="toggleCurrency()" id="btn-currency" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold input-bg border hover:border-indigo-500 transition">
                 <span class="text-indigo-500 font-bold">$</span>
@@ -405,7 +517,7 @@
 
     <!-- Footer -->
     <footer class="border-t border-slate-200 dark:border-slate-800 py-4 px-6 text-center text-xs text-slate-500 dark:text-slate-500">
-        CryptoDash Pro &copy; 2026 - Realtime Binance API Entegreli Clean Design Kripto Yönetim Platformu
+        CryptoDash Pro &copy; 2026 - Binance piyasa verisi · Supabase ile kullanıcıya özel kayıtlar
     </footer>
 
     <!-- Modal: Add / Edit Transaction -->
@@ -519,110 +631,469 @@
         <span id="toast-message" class="text-xs font-medium">İşlem tamamlandı.</span>
     </div>
 
+    </div><!-- /#app-root -->
+
     <!-- Main JavaScript Logic -->
     <script>
-        // --- App State ---
-        let currentPinCode = "1234";
+        // --- App State / Configuration ---
+        // Supabase Project Settings > API bölümündeki Project URL ve anon/public key kullanılır.
+        // Service role key kesinlikle tarayıcıya konulmamalıdır.
+        const SUPABASE_URL = 'https://xlivymfgkbfilqnbykec.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_OPRlcX-rLHOAhfmouN7Sdw_3XRe4FLU';
+
+        let dbClient = null;
+        let activeUserId = null;
+        let appInitializedForUser = null;
+        let currentPinCode = '1234'; // Yalnızca arayüz kilidi; gerçek erişim Supabase Auth + RLS ile korunur.
         let isManageUnlocked = false;
-        let currentCurrency = 'USD'; // 'USD' or 'TRY'
-        let usdToTryRate = 34.50;    // Anlık USD/TRY Dönüşüm Kuru
-        let currentTheme = 'dark';   // 'dark' or 'light'
+        let currentCurrency = localStorage.getItem('cryptodash_currency') || 'USD';
+        let usdToTryRate = Number(localStorage.getItem('cryptodash_usd_try')) || 0;
+        let currentTheme = localStorage.getItem('cryptodash_theme') || 'dark';
+        let marketSocket = null;
+        let marketReconnectTimer = null;
+        let marketRetryMs = 2000;
+        let trendHistory = [];
+        let authMode = 'signin';
 
         // Binance Market Data Configuration & Icon SVGs
         const MARKET_DATA = {
-            BTC: { name: 'Bitcoin', symbol: 'BTC', price: 65420.00, change: 0.0, color: '#F7931A', binanceSymbol: 'BTCUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/btc.png' },
-            ETH: { name: 'Ethereum', symbol: 'ETH', price: 3450.50, change: 0.0, color: '#627EEA', binanceSymbol: 'ETHUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/eth.png' },
-            SOL: { name: 'Solana', symbol: 'SOL', price: 142.80, change: 0.0, color: '#14F195', binanceSymbol: 'SOLUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/sol.png' },
-            BNB: { name: 'BNB', symbol: 'BNB', price: 580.20, change: 0.0, color: '#F3BA2F', binanceSymbol: 'BNBUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/bnb.png' },
-            AVAX: { name: 'Avalanche', symbol: 'AVAX', price: 28.40, change: 0.0, color: '#E84142', binanceSymbol: 'AVAXUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/avax.png' },
-            XRP: { name: 'XRP', symbol: 'XRP', price: 0.58, change: 0.0, color: '#23292F', binanceSymbol: 'XRPUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/xrp.png' },
-            ADA: { name: 'Cardano', symbol: 'ADA', price: 0.38, change: 0.0, color: '#0033AD', binanceSymbol: 'ADAUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/ada.png' },
-            DOGE: { name: 'Dogecoin', symbol: 'DOGE', price: 0.12, change: 0.0, color: '#C2A633', binanceSymbol: 'DOGEUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/doge.png' }
+            BTC: { name: 'Bitcoin', symbol: 'BTC', price: 0, change: 0.0, color: '#F7931A', binanceSymbol: 'BTCUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/btc.png' },
+            ETH: { name: 'Ethereum', symbol: 'ETH', price: 0, change: 0.0, color: '#627EEA', binanceSymbol: 'ETHUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/eth.png' },
+            SOL: { name: 'Solana', symbol: 'SOL', price: 0, change: 0.0, color: '#14F195', binanceSymbol: 'SOLUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/sol.png' },
+            BNB: { name: 'BNB', symbol: 'BNB', price: 0, change: 0.0, color: '#F3BA2F', binanceSymbol: 'BNBUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/bnb.png' },
+            AVAX: { name: 'Avalanche', symbol: 'AVAX', price: 0, change: 0.0, color: '#E84142', binanceSymbol: 'AVAXUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/avax.png' },
+            XRP: { name: 'XRP', symbol: 'XRP', price: 0, change: 0.0, color: '#23292F', binanceSymbol: 'XRPUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/xrp.png' },
+            ADA: { name: 'Cardano', symbol: 'ADA', price: 0, change: 0.0, color: '#0033AD', binanceSymbol: 'ADAUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/ada.png' },
+            DOGE: { name: 'Dogecoin', symbol: 'DOGE', price: 0, change: 0.0, color: '#C2A633', binanceSymbol: 'DOGEUSDT', icon: 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/doge.png' }
         };
 
-        let transactions = [
-            { id: 1, type: 'BUY', coin: 'BTC', amount: 0.25, price: 61000, date: '2024-03-15T10:30' },
-            { id: 2, type: 'BUY', coin: 'ETH', amount: 2.5, price: 3200, date: '2024-03-18T14:20' },
-            { id: 3, type: 'BUY', coin: 'SOL', amount: 15, price: 120, date: '2024-03-20T09:15' },
-            { id: 4, type: 'SELL', coin: 'SOL', amount: 5, price: 145, date: '2024-03-22T16:45' }
-        ];
+        let transactions = [];
 
         let selectedTxType = 'BUY';
         let pieChartInstance = null;
         let trendChartInstance = null;
 
-        // --- Window Initialization ---
-        window.onload = function() {
+        // --- Boot / Authentication ---
+        window.addEventListener('load', async () => {
             lucide.createIcons();
+            applySavedPreferences();
             initDateInput();
-            initCharts();
-            
-            // Binance Canlı Fiyat Çekimi
-            fetchBinancePrices();
-            setInterval(fetchBinancePrices, 5000); // 5 saniyede bir Binance fiyat güncellemesi
-
-            updateDashboard();
-
-            // Outside click listener for coin search dropdown
-            document.addEventListener('click', function(e) {
+            bindAuthUI();
+            document.addEventListener('click', event => {
                 const dropdown = document.getElementById('coin-dropdown');
                 const searchInput = document.getElementById('input-coin-search');
-                if (!dropdown.contains(e.target) && e.target !== searchInput) {
+                if (dropdown && searchInput && !dropdown.contains(event.target) && event.target !== searchInput) {
                     dropdown.classList.add('hidden');
                 }
             });
-        };
 
-        // --- Binance Realtime API Fetch ---
-        async function fetchBinancePrices() {
-            try {
-                const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Populate & sync market data dynamically from Binance
-                    data.forEach(item => {
-                        if (item.symbol.endsWith('USDT')) {
-                            const coinSymbol = item.symbol.replace('USDT', '');
-                            const price = parseFloat(item.lastPrice);
-                            const change = parseFloat(item.priceChangePercent);
+            const configured = !SUPABASE_URL.includes('YOUR_PROJECT_REF') &&
+                               !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE_ANON_KEY') &&
+                               Boolean(window.supabase?.createClient);
 
-                            if (MARKET_DATA[coinSymbol]) {
-                                MARKET_DATA[coinSymbol].price = price;
-                                MARKET_DATA[coinSymbol].change = change;
-                            } else if (data.length < 50) { // Dynamically add popular symbols if needed
-                                MARKET_DATA[coinSymbol] = {
-                                    name: coinSymbol,
-                                    symbol: coinSymbol,
-                                    price: price,
-                                    change: change,
-                                    color: '#6366F1',
-                                    binanceSymbol: item.symbol,
-                                    icon: `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/${coinSymbol.toLowerCase()}.png`
-                                };
-                            }
-                        }
-                    });
+            if (!configured) {
+                document.getElementById('auth-config-warning').classList.remove('hidden');
+                document.getElementById('auth-submit').disabled = true;
+                document.getElementById('auth-submit').classList.add('opacity-50', 'cursor-not-allowed');
+                document.getElementById('auth-message').textContent = 'Yapılandırma tamamlanınca giriş ve kayıt açılacak.';
+                return;
+            }
 
-                    // Realtime Trend Grafiğine Yeni Veri Ekle
-                    if (trendChartInstance && MARKET_DATA.BTC && MARKET_DATA.BTC.price > 0) {
-                        const now = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                        trendChartInstance.data.labels.shift();
-                        trendChartInstance.data.labels.push(now);
+            dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+            });
 
-                        trendChartInstance.data.datasets[0].data.shift();
-                        trendChartInstance.data.datasets[0].data.push(formatCurrencyVal(MARKET_DATA.BTC.price, true));
+            const { data, error } = await dbClient.auth.getSession();
+            if (error) console.error('Oturum okunamadı:', error.message);
+            if (data?.session) await activateApp(data.session);
 
-                        trendChartInstance.data.datasets[1].data.shift();
-                        trendChartInstance.data.datasets[1].data.push(formatCurrencyVal(MARKET_DATA.ETH.price, true));
-
-                        trendChartInstance.update('none');
-                    }
-
-                    updateDashboard();
+            dbClient.auth.onAuthStateChange((event, session) => {
+                if (session && ['SIGNED_IN', 'TOKEN_REFRESHED', 'USER_UPDATED'].includes(event)) {
+                    void activateApp(session);
+                } else if (event === 'SIGNED_OUT') {
+                    deactivateApp();
                 }
+            });
+        });
+
+        function bindAuthUI() {
+            document.getElementById('auth-form').addEventListener('submit', handleAuthSubmit);
+            document.getElementById('auth-mode-toggle').addEventListener('click', () => {
+                authMode = authMode === 'signin' ? 'signup' : 'signin';
+                document.getElementById('auth-title').textContent = authMode === 'signin' ? 'Hesabına giriş yap' : 'Yeni hesap oluştur';
+                document.getElementById('auth-description').textContent = authMode === 'signin'
+                    ? 'Portföyünü görüntülemek için giriş yap.'
+                    : 'Kendi portföyünü güvenli biçimde oluştur.';
+                document.getElementById('auth-submit').textContent = authMode === 'signin' ? 'Giriş yap' : 'Kayıt ol';
+                document.getElementById('auth-mode-toggle').textContent = authMode === 'signin'
+                    ? 'Hesabın yok mu? Kayıt ol'
+                    : 'Zaten hesabın var mı? Giriş yap';
+                document.getElementById('auth-password').autocomplete = authMode === 'signin' ? 'current-password' : 'new-password';
+                document.getElementById('auth-message').textContent = '';
+            });
+        }
+
+
+document.getElementById('credential-setup-form')
+  .addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const username = document.getElementById('setup-username').value.trim();
+    const password = document.getElementById('setup-password').value;
+    const confirmation = document.getElementById('setup-password-confirm').value;
+    const button = document.getElementById('credential-setup-submit');
+    const message = document.getElementById('credential-setup-message');
+
+    message.textContent = '';
+
+    if (!/^[a-zA-Z0-9_.-]{3,32}$/.test(username)) {
+      message.textContent =
+        'Kullanıcı adı 3–32 karakter olmalı; harf, rakam, nokta, tire veya alt çizgi kullan.';
+      return;
+    }
+
+    if (password.length < 8) {
+      message.textContent = 'Şifre en az 8 karakter olmalı.';
+      return;
+    }
+
+    if (password !== confirmation) {
+      message.textContent = 'Şifreler birbiriyle eşleşmiyor.';
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = 'Kaydediliyor…';
+
+    try {
+      const { error: passwordError } = await dbClient.auth.updateUser({
+        password
+      });
+
+      if (passwordError) throw passwordError;
+
+      const { data, error } = await dbClient.functions.invoke(
+        'complete-setup',
+        { body: { username } }
+      );
+
+      if (error) throw new Error(data?.error || error.message);
+      if (!data?.success) {
+        throw new Error(data?.error || 'İlk kurulum tamamlanamadı.');
+      }
+
+      document.getElementById('setup-password').value = '';
+      document.getElementById('setup-password-confirm').value = '';
+
+      const { data: sessionData, error: sessionError } =
+        await dbClient.auth.getSession();
+
+      if (sessionError) throw sessionError;
+      if (!sessionData.session) {
+        throw new Error('Oturum bulunamadı. Yeni şifrenle tekrar giriş yap.');
+      }
+
+      await activateApp(sessionData.session);
+    } catch (error) {
+      console.error('İlk kurulum hatası:', error);
+      message.textContent =
+        error?.context?.error || error.message || 'Kaydetme işlemi başarısız.';
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Bilgilerimi kaydet';
+    }
+  });
+
+
+
+async function handleAuthSubmit(event) {
+  event.preventDefault();
+
+  if (!dbClient) return;
+
+  const username = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const button = document.getElementById('auth-submit');
+  const message = document.getElementById('auth-message');
+
+  button.disabled = true;
+  button.textContent = 'Giriş yapılıyor…';
+  message.textContent = '';
+
+  try {
+    const { data, error } = await dbClient.functions.invoke(
+      'username-login',
+      {
+        body: { username, password }
+      }
+    );
+
+    if (error) {
+      let detail = '';
+
+      if (error.context && typeof error.context.json === 'function') {
+        try {
+          const response = await error.context.json();
+          detail = response?.error || '';
+        } catch {
+          // Sunucu yanıtı okunamazsa genel hata gösterilir.
+        }
+      }
+
+      if (
+        error.context?.status === 401 ||
+        /Kullanıcı adı veya şifre hatalı|Invalid login credentials/i.test(detail)
+      ) {
+        throw new Error('Kullanıcı adı veya şifre hatalı.');
+      }
+
+      throw new Error(detail || 'Giriş yapılamadı. Lütfen tekrar dene.');
+    }
+
+    if (!data?.access_token || !data?.refresh_token) {
+      throw new Error(data?.error || 'Giriş bilgileri doğrulanamadı.');
+    }
+
+    const { error: sessionError } = await dbClient.auth.setSession({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token
+    });
+
+    if (sessionError) throw sessionError;
+
+    message.textContent = 'Giriş başarılı.';
+  } catch (error) {
+    console.error('Giriş hatası:', error);
+    message.textContent = error.message || 'Giriş yapılamadı.';
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Giriş yap';
+  }
+}
+
+
+        function friendlyAuthError(message) {
+            const text = String(message || '');
+            if (/Invalid login credentials/i.test(text)) return 'E-posta veya şifre hatalı.';
+            if (/Email not confirmed/i.test(text)) return 'Önce e-posta adresini doğrula.';
+            if (/already registered/i.test(text)) return 'Bu e-posta ile hesap zaten var; giriş yapmayı dene.';
+            if (/Password should be at least/i.test(text)) return 'Şifre en az 8 karakter olmalı.';
+            return text || 'İşlem tamamlanamadı. Lütfen tekrar dene.';
+        }
+
+
+async function activateApp(session) {
+  if (!session?.user || !dbClient) return;
+
+  const userId = session.user.id;
+  activeUserId = userId;
+
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('app-root').classList.add('hidden');
+  document.getElementById('credential-setup-screen').classList.add('hidden');
+
+  try {
+    const { data: profile, error: profileError } = await dbClient
+      .from('profiles')
+      .select('username, must_change_credentials')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (profileError) throw profileError;
+
+    if (!profile) {
+      throw new Error('Hesap profili bulunamadı.');
+    }
+
+    if (profile.must_change_credentials) {
+      document.getElementById('credential-setup-screen').classList.remove('hidden');
+      return;
+    }
+
+    document.getElementById('account-email').textContent =
+      profile.username || session.user.email || '';
+
+    await loadTransactions();
+    initCharts();
+    updateDashboard();
+    connectBinanceStream();
+    void refreshUsdTryRate();
+    lucide.createIcons();
+
+    appInitializedForUser = userId;
+    document.getElementById('app-root').classList.remove('hidden');
+  } catch (error) {
+    console.error('Uygulama başlatılamadı:', error);
+    document.getElementById('credential-setup-screen').classList.add('hidden');
+    document.getElementById('app-root').classList.add('hidden');
+    document.getElementById('auth-screen').classList.remove('hidden');
+    document.getElementById('auth-message').textContent =
+      'Hesap kontrolü yapılamadı: ' + error.message;
+  }
+}
+
+        
+        function deactivateApp() {
+            activeUserId = null;
+            appInitializedForUser = null;
+            transactions = [];
+            isManageUnlocked = false;
+            if (marketSocket) {
+                marketSocket.onclose = null;
+                marketSocket.close();
+                marketSocket = null;
+            }
+            if (marketReconnectTimer) clearTimeout(marketReconnectTimer);
+            marketReconnectTimer = null;
+            if (pieChartInstance) { pieChartInstance.destroy(); pieChartInstance = null; }
+            if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
+            document.getElementById('app-root').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('account-email').textContent = '';
+        }
+
+        async function signOut() {
+            if (!dbClient) return;
+            const { error } = await dbClient.auth.signOut();
+            if (error) showToast('Çıkış yapılamadı: ' + error.message, true);
+        }
+
+        async function loadTransactions() {
+            const { data, error } = await dbClient
+                .from('transactions')
+                .select('id, type, coin, amount, price, executed_at, fee')
+                .eq('user_id', activeUserId)
+                .order('executed_at', { ascending: true });
+            if (error) throw error;
+            transactions = (data || []).map(row => ({
+                id: row.id,
+                type: row.type,
+                coin: row.coin,
+                amount: Number(row.amount),
+                price: Number(row.price),
+                fee: Number(row.fee || 0),
+                date: toLocalDateTimeInput(row.executed_at)
+            }));
+        }
+
+        function toLocalDateTimeInput(value) {
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '';
+            const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+            return local.toISOString().slice(0, 16);
+        }
+
+        function applySavedPreferences() {
+            const html = document.documentElement;
+            html.classList.toggle('dark', currentTheme === 'dark');
+            html.classList.toggle('light', currentTheme === 'light');
+            const currencyLabel = document.getElementById('currency-label');
+            if (currencyLabel) currencyLabel.textContent = currentCurrency;
+            const iconSun = document.getElementById('theme-icon-sun');
+            const iconMoon = document.getElementById('theme-icon-moon');
+            if (iconSun && iconMoon) {
+                iconSun.classList.toggle('hidden', currentTheme !== 'light');
+                iconMoon.classList.toggle('hidden', currentTheme !== 'dark');
+            }
+        }
+
+        // Binance combined WebSocket: only track the eight symbols shown in this dashboard.
+        function connectBinanceStream() {
+            if (marketSocket || !activeUserId) return;
+            const streams = Object.values(MARKET_DATA)
+                .map(coin => `${coin.binanceSymbol.toLowerCase()}@ticker`)
+                .join('/');
+            setMarketStatus('connecting');
+            try {
+                marketSocket = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
             } catch (error) {
-                console.warn("Binance API verisi alınırken varsayılan simülasyon kullanılıyor.", error);
+                marketSocket = null;
+                scheduleMarketReconnect();
+                return;
+            }
+
+            marketSocket.onopen = () => {
+                marketRetryMs = 2000;
+                setMarketStatus('live');
+            };
+            marketSocket.onmessage = event => {
+                try {
+                    const payload = JSON.parse(event.data);
+                    const ticker = payload.data;
+                    const symbol = String(ticker?.s || '').replace(/USDT$/, '');
+                    if (!MARKET_DATA[symbol]) return;
+                    const price = Number(ticker.c);
+                    const change = Number(ticker.P);
+                    if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(change)) return;
+                    MARKET_DATA[symbol].price = price;
+                    MARKET_DATA[symbol].change = change;
+                    MARKET_DATA[symbol].lastUpdated = Date.now();
+                    if (symbol === 'BTC' || symbol === 'ETH') addTrendPoint(symbol, price);
+                    setMarketStatus('live');
+                    updateDashboard();
+                } catch (error) {
+                    console.warn('Binance mesajı çözümlenemedi:', error);
+                }
+            };
+            marketSocket.onerror = () => setMarketStatus('offline');
+            marketSocket.onclose = () => {
+                marketSocket = null;
+                setMarketStatus('offline');
+                scheduleMarketReconnect();
+            };
+        }
+
+        function scheduleMarketReconnect() {
+            if (!activeUserId || marketReconnectTimer) return;
+            marketReconnectTimer = setTimeout(() => {
+                marketReconnectTimer = null;
+                marketRetryMs = Math.min(marketRetryMs * 2, 30000);
+                connectBinanceStream();
+            }, marketRetryMs);
+        }
+
+        function setMarketStatus(state) {
+            const el = document.getElementById('market-status');
+            if (!el) return;
+            const config = {
+                live: ['● Canlı', 'text-emerald-500'],
+                connecting: ['● Bağlanıyor', 'text-amber-500'],
+                offline: ['● Bağlantı yok', 'text-rose-500']
+            }[state] || ['● Bilinmiyor', 'text-slate-500'];
+            el.textContent = config[0];
+            el.className = `ml-1 ${config[1]}`;
+        }
+
+        function addTrendPoint(symbol, price) {
+            if (!trendChartInstance) return;
+            const now = new Date();
+            let point = trendHistory[trendHistory.length - 1];
+            if (!point || now.getTime() - point.time.getTime() >= 1000) {
+                point = { time: now, BTC: null, ETH: null };
+                trendHistory.push(point);
+                if (trendHistory.length > 30) trendHistory.shift();
+            }
+            point[symbol] = formatCurrencyVal(price, true);
+            trendChartInstance.data.labels = trendHistory.map(item => item.time.toLocaleTimeString('tr-TR', {
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            }));
+            trendChartInstance.data.datasets[0].data = trendHistory.map(item => item.BTC);
+            trendChartInstance.data.datasets[1].data = trendHistory.map(item => item.ETH);
+            trendChartInstance.update('none');
+        }
+
+        async function refreshUsdTryRate() {
+            try {
+                const response = await fetch('https://open.er-api.com/v6/latest/USD', { cache: 'no-store' });
+                if (!response.ok) throw new Error('Kur servisi yanıt vermedi.');
+                const data = await response.json();
+                const rate = Number(data?.rates?.TRY);
+                if (!Number.isFinite(rate) || rate <= 0) throw new Error('Geçersiz kur değeri.');
+                usdToTryRate = rate;
+                localStorage.setItem('cryptodash_usd_try', String(rate));
+                updateDashboard();
+            } catch (error) {
+                console.warn('USD/TRY kuru alınamadı; son bilinen kur varsa kullanılacak.', error);
             }
         }
 
@@ -638,15 +1109,20 @@
 
         // --- Currency Conversion Helper ---
         function formatCurrencyVal(valInUsd, numericOnly = false) {
-            const converted = currentCurrency === 'TRY' ? valInUsd * usdToTryRate : valInUsd;
+            const base = Number(valInUsd);
+            if (!Number.isFinite(base)) return numericOnly ? 0 : '—';
+            if (currentCurrency === 'TRY' && (!Number.isFinite(usdToTryRate) || usdToTryRate <= 0)) {
+                return numericOnly ? 0 : 'Kur bekleniyor';
+            }
+            const converted = currentCurrency === 'TRY' ? base * usdToTryRate : base;
             if (numericOnly) return converted;
-
             const symbol = currentCurrency === 'TRY' ? '₺' : '$';
-            return `${symbol}${converted.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            return `${symbol}${converted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }
 
         function toggleCurrency() {
             currentCurrency = currentCurrency === 'USD' ? 'TRY' : 'USD';
+            localStorage.setItem('cryptodash_currency', currentCurrency);
             document.getElementById('currency-label').textContent = currentCurrency;
             updateDashboard();
             showToast(`Para birimi ${currentCurrency} olarak değiştirildi.`);
@@ -671,6 +1147,7 @@
                 iconMoon.classList.remove('hidden');
                 iconSun.classList.add('hidden');
             }
+            localStorage.setItem('cryptodash_theme', currentTheme);
             updateChartsTheme();
         }
 
@@ -767,26 +1244,32 @@
         }
 
         // --- Portfolio Calculation Logic ---
+        // Average-cost method. Transaction sets are validated before saving.
         function calculatePortfolio() {
             const holdings = {};
             let realizedPnL = 0;
+            const ordered = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            transactions.forEach(tx => {
-                if (!holdings[tx.coin]) {
-                    holdings[tx.coin] = { amount: 0, totalCost: 0 };
-                }
+            for (const tx of ordered) {
+                if (!holdings[tx.coin]) holdings[tx.coin] = { amount: 0, totalCost: 0 };
+                const holding = holdings[tx.coin];
+                const amount = Number(tx.amount);
+                const price = Number(tx.price);
+                const fee = Number(tx.fee || 0);
+                if (!Number.isFinite(amount) || !Number.isFinite(price) || amount <= 0 || price <= 0) continue;
 
                 if (tx.type === 'BUY') {
-                    holdings[tx.coin].amount += tx.amount;
-                    holdings[tx.coin].totalCost += tx.amount * tx.price;
+                    holding.amount += amount;
+                    holding.totalCost += amount * price + fee;
                 } else if (tx.type === 'SELL') {
-                    const avgCost = holdings[tx.coin].amount > 0 ? holdings[tx.coin].totalCost / holdings[tx.coin].amount : 0;
-                    realizedPnL += (tx.price - avgCost) * tx.amount;
-
-                    holdings[tx.coin].amount -= tx.amount;
-                    holdings[tx.coin].totalCost -= avgCost * tx.amount;
+                    // Guard against invalid historical data; saving also performs a strict validation.
+                    if (amount > holding.amount + 1e-10) continue;
+                    const avgCost = holding.amount > 0 ? holding.totalCost / holding.amount : 0;
+                    realizedPnL += (price * amount - fee) - (avgCost * amount);
+                    holding.amount -= amount;
+                    holding.totalCost = Math.max(0, holding.totalCost - avgCost * amount);
                 }
-            });
+            }
 
             let totalValue = 0;
             let totalCost = 0;
@@ -794,39 +1277,41 @@
 
             Object.keys(holdings).forEach(symbol => {
                 const data = holdings[symbol];
-                if (data.amount > 0.00001) {
-                    const currentPrice = MARKET_DATA[symbol] ? MARKET_DATA[symbol].price : 0;
+                if (data.amount > 1e-10) {
+                    const currentPrice = MARKET_DATA[symbol]?.price || 0;
                     const currentValue = data.amount * currentPrice;
-                    const avgCost = data.totalCost / data.amount;
+                    const avgCost = data.amount > 0 ? data.totalCost / data.amount : 0;
                     const pnl = currentValue - data.totalCost;
                     const pnlPercent = data.totalCost > 0 ? (pnl / data.totalCost) * 100 : 0;
-
                     totalValue += currentValue;
                     totalCost += data.totalCost;
-
-                    assetDetails.push({
-                        symbol,
-                        amount: data.amount,
-                        avgCost,
-                        currentPrice,
-                        currentValue,
-                        pnl,
-                        pnlPercent
-                    });
+                    assetDetails.push({ symbol, amount: data.amount, avgCost, currentPrice, currentValue, pnl, pnlPercent });
                 }
             });
 
             const unrealizedPnL = totalValue - totalCost;
             const unrealizedPnLPercent = totalCost > 0 ? (unrealizedPnL / totalCost) * 100 : 0;
+            return { totalValue, totalCost, unrealizedPnL, unrealizedPnLPercent, realizedPnL, assetDetails };
+        }
 
-            return {
-                totalValue,
-                totalCost,
-                unrealizedPnL,
-                unrealizedPnLPercent,
-                realizedPnL,
-                assetDetails
-            };
+        function validateTransactionSet(candidate) {
+            const balances = new Map();
+            const ordered = [...candidate].sort((a, b) => new Date(a.date) - new Date(b.date));
+            for (const tx of ordered) {
+                const amount = Number(tx.amount);
+                const price = Number(tx.price);
+                const date = new Date(tx.date);
+                if (!tx.coin || !/^[A-Z0-9]{2,15}$/.test(tx.coin)) return 'Geçerli bir kripto sembolü seçin.';
+                if (!Number.isFinite(amount) || amount <= 0) return 'Miktar sıfırdan büyük ve geçerli olmalı.';
+                if (!Number.isFinite(price) || price <= 0) return 'Birim fiyat sıfırdan büyük ve geçerli olmalı.';
+                if (Number.isNaN(date.getTime())) return 'Geçerli bir işlem tarihi girin.';
+                const balance = balances.get(tx.coin) || 0;
+                if (tx.type === 'SELL' && amount > balance + 1e-10) {
+                    return `${tx.coin} satışı mevcut bakiyeyi aşıyor. İşlem tarihindeki kullanılabilir miktar: ${balance.toPrecision(8)}.`;
+                }
+                balances.set(tx.coin, tx.type === 'BUY' ? balance + amount : balance - amount);
+            }
+            return null;
         }
 
         // --- Update UI Dashboard ---
@@ -990,10 +1475,10 @@
                     <td class="p-3">${formatCurrencyVal(tx.price)}</td>
                     <td class="p-3 text-slate-900 dark:text-white font-semibold">${formatCurrencyVal(total)}</td>
                     <td class="p-3 text-right flex items-center justify-end gap-2">
-                        <button onclick="editTransaction(${tx.id})" class="p-1.5 text-slate-400 hover:text-indigo-500 transition" title="Düzenle">
+                        <button onclick="editTransaction(${JSON.stringify(String(tx.id))})" class="p-1.5 text-slate-400 hover:text-indigo-500 transition" title="Düzenle">
                             <i data-lucide="edit-3" class="w-4 h-4"></i>
                         </button>
-                        <button onclick="deleteTransaction(${tx.id})" class="p-1.5 text-slate-400 hover:text-rose-500 transition" title="Sil">
+                        <button onclick="deleteTransaction(${JSON.stringify(String(tx.id))})" class="p-1.5 text-slate-400 hover:text-rose-500 transition" title="Sil">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </td>
@@ -1029,11 +1514,11 @@
             trendChartInstance = new Chart(ctxTrend, {
                 type: 'line',
                 data: {
-                    labels: ['10:00', '10:05', '10:10', '10:15', '10:20', '10:25', '10:30'],
+                    labels: [],
                     datasets: [
                         {
                             label: 'Bitcoin (BTC)',
-                            data: [64800, 65100, 64950, 65200, 65000, 65350, 65420],
+                            data: [],
                             borderColor: '#F7931A',
                             backgroundColor: 'rgba(247, 147, 26, 0.08)',
                             fill: true,
@@ -1041,7 +1526,7 @@
                         },
                         {
                             label: 'Ethereum (ETH)',
-                            data: [3480, 3460, 3470, 3440, 3455, 3445, 3450],
+                            data: [],
                             borderColor: '#627EEA',
                             backgroundColor: 'rgba(98, 126, 234, 0.08)',
                             fill: true,
@@ -1167,6 +1652,7 @@
             document.getElementById('input-total-amount').value = '';
             document.getElementById('input-amount').value = '';
             document.getElementById('input-price').value = '';
+            initDateInput();
             
             document.getElementById('modal-title').innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-indigo-500"></i> Yeni İşlem Kaydı`;
             document.getElementById('tx-modal').classList.remove('hidden');
@@ -1197,51 +1683,94 @@
             }
         }
 
-        function handleFormSubmit(event) {
+        async function handleFormSubmit(event) {
             event.preventDefault();
-
-            const editId = document.getElementById('edit-tx-id').value;
-            let coin = document.getElementById('selected-coin-symbol').value.toUpperCase().trim();
-
-            if (!coin) {
-                const rawSearch = document.getElementById('input-coin-search').value.split('-')[0].trim().toUpperCase();
-                coin = rawSearch;
-            }
-
-            const amount = parseFloat(document.getElementById('input-amount').value);
-            const price = parseFloat(document.getElementById('input-price').value);
-            const date = document.getElementById('input-date').value;
-
-            if (!coin) {
-                showToast('Lütfen bir kripto para seçin.', true);
+            if (!dbClient || !activeUserId) {
+                showToast('İşlem kaydetmek için giriş yapmalısınız.', true);
                 return;
             }
 
-            if (!amount || !price || amount <= 0 || price <= 0) {
+            const editId = document.getElementById('edit-tx-id').value;
+            const coin = document.getElementById('selected-coin-symbol').value.toUpperCase().trim();
+            const amount = Number(document.getElementById('input-amount').value);
+            const price = Number(document.getElementById('input-price').value);
+            const date = document.getElementById('input-date').value;
+
+            if (!coin || !MARKET_DATA[coin]) {
+                showToast('Listeden geçerli bir kripto para seçin.', true);
+                return;
+            }
+            if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(price) || price <= 0) {
                 showToast('Geçerli miktar ve birim fiyat giriniz.', true);
                 return;
             }
-
-            if (editId) {
-                // Edit Existing
-                const index = transactions.findIndex(t => t.id == editId);
-                if (index !== -1) {
-                    transactions[index] = { id: parseInt(editId), type: selectedTxType, coin, amount, price, date };
-                    showToast('İşlem kaydı güncellendi.');
-                }
-            } else {
-                // Add New
-                const newTx = { id: Date.now(), type: selectedTxType, coin, amount, price, date };
-                transactions.push(newTx);
-                showToast('Yeni işlem kaydedildi!');
+            if (!date || Number.isNaN(new Date(date).getTime())) {
+                showToast('Geçerli bir işlem tarihi giriniz.', true);
+                return;
             }
 
-            closeModal();
-            updateDashboard();
+            const candidateTx = {
+                id: editId || `new-${Date.now()}`,
+                type: selectedTxType,
+                coin,
+                amount,
+                price,
+                fee: editId ? Number(transactions.find(t => String(t.id) === String(editId))?.fee || 0) : 0,
+                date
+            };
+            const candidate = editId
+                ? transactions.map(tx => String(tx.id) === String(editId) ? candidateTx : tx)
+                : [...transactions, candidateTx];
+            const validationError = validateTransactionSet(candidate);
+            if (validationError) {
+                showToast(validationError, true);
+                return;
+            }
+
+            const saveButton = document.querySelector('#tx-form button[type="submit"]');
+            if (saveButton) { saveButton.disabled = true; saveButton.classList.add('opacity-60'); }
+            try {
+                const row = {
+                    user_id: activeUserId,
+                    type: selectedTxType,
+                    coin,
+                    amount,
+                    price,
+                    fee: candidateTx.fee,
+                    executed_at: new Date(date).toISOString()
+                };
+                let result;
+                if (editId) {
+                    result = await dbClient.from('transactions').update(row)
+                        .eq('id', editId).eq('user_id', activeUserId)
+                        .select('id, type, coin, amount, price, executed_at, fee').single();
+                } else {
+                    result = await dbClient.from('transactions').insert(row)
+                        .select('id, type, coin, amount, price, executed_at, fee').single();
+                }
+                if (result.error) throw result.error;
+
+                const saved = result.data;
+                const mapped = {
+                    id: saved.id, type: saved.type, coin: saved.coin,
+                    amount: Number(saved.amount), price: Number(saved.price),
+                    fee: Number(saved.fee || 0), date: toLocalDateTimeInput(saved.executed_at)
+                };
+                if (editId) transactions = transactions.map(tx => String(tx.id) === String(editId) ? mapped : tx);
+                else transactions.push(mapped);
+
+                closeModal();
+                updateDashboard();
+                showToast(editId ? 'İşlem kaydı güncellendi.' : 'Yeni işlem veritabanına kaydedildi.');
+            } catch (error) {
+                showToast('Kayıt başarısız: ' + (error.message || 'Veritabanı hatası'), true);
+            } finally {
+                if (saveButton) { saveButton.disabled = false; saveButton.classList.remove('opacity-60'); }
+            }
         }
 
         function editTransaction(id) {
-            const tx = transactions.find(t => t.id === id);
+            const tx = transactions.find(t => String(t.id) === String(id));
             if (!tx) return;
 
             document.getElementById('edit-tx-id').value = tx.id;
@@ -1257,16 +1786,37 @@
             lucide.createIcons();
         }
 
-        function deleteTransaction(id) {
-            transactions = transactions.filter(t => t.id !== id);
-            updateDashboard();
-            showToast('İşlem kaydı silindi.');
+        async function deleteTransaction(id) {
+            if (!dbClient || !activeUserId) return;
+            if (!confirm('Bu işlem kaydını kalıcı olarak silmek istiyor musunuz?')) return;
+            try {
+                const { error } = await dbClient.from('transactions').delete()
+                    .eq('id', id).eq('user_id', activeUserId);
+                if (error) throw error;
+                transactions = transactions.filter(tx => String(tx.id) !== String(id));
+                updateDashboard();
+                showToast('İşlem kaydı silindi.');
+            } catch (error) {
+                showToast('Silme başarısız: ' + error.message, true);
+            }
         }
 
-        function clearAllTransactions() {
-            transactions = [];
-            updateDashboard();
-            showToast('Tüm işlemler temizlendi.');
+        async function clearAllTransactions() {
+            if (!dbClient || !activeUserId) return;
+            if (!transactions.length) {
+                showToast('Silinecek işlem bulunmuyor.');
+                return;
+            }
+            if (!confirm(`Toplam ${transactions.length} işlem kalıcı olarak silinecek. Devam edilsin mi?`)) return;
+            try {
+                const { error } = await dbClient.from('transactions').delete().eq('user_id', activeUserId);
+                if (error) throw error;
+                transactions = [];
+                updateDashboard();
+                showToast('Tüm işlemler silindi.');
+            } catch (error) {
+                showToast('İşlemler silinemedi: ' + error.message, true);
+            }
         }
 
         // --- Notification Toast Helper ---
