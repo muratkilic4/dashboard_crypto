@@ -1268,7 +1268,7 @@ async function activateApp(session) {
     document.getElementById('profile-username-readonly').textContent = profile.username || '';
     if (isReadOnlyDemo()) {
       currentProfileDetails = { first_name: '', last_name: '', avatar_url: '' };
-      transactions = [];
+      await loadTransactions();
       updateHeaderProfile();
     } else {
       await loadProfileDetails(profile.username || '');
