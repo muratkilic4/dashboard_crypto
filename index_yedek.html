@@ -1217,7 +1217,17 @@ async function activateApp(session) {
   if (!session?.user || !dbClient) return;
 
   const userId = session.user.id;
-  activeAccessMode = session.user.app_metadata?.access_mode === READONLY_DEMO_MODE ? READONLY_DEMO_MODE : 'full';
+  // The server-owned role table is authoritative; app_metadata is only a fallback for staged setup.
+  let readOnlyDemo = false;
+  try {
+    const { data: demoFlag, error: demoRoleError } = await dbClient.rpc('cryptodash_is_readonly_demo');
+    if (demoRoleError) throw demoRoleError;
+    readOnlyDemo = demoFlag === true;
+  } catch (roleError) {
+    console.warn('Demo rolü RPC kullanılamadı; app_metadata fallback uygulanıyor.', roleError);
+    readOnlyDemo = session.user.app_metadata?.access_mode === READONLY_DEMO_MODE;
+  }
+  activeAccessMode = readOnlyDemo ? READONLY_DEMO_MODE : 'full';
   applyAccessModeUI();
   // Kullanıcı aynıysa ve dashboard hazırsa tekrar veri/grafik başlatma.
   if (appInitializedForUser === userId && activeUserId === userId) {
