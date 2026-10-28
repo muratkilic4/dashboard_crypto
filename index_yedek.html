@@ -557,7 +557,19 @@
             .dashboard-intro { border-radius: 1rem; }
         }
 
-    </style>
+            /* Clean, modern mini performance chart shared by dashboard and admin tables */
+        .mini-performance { width: 128px; display: flex; flex-direction: column; gap: 6px; }
+        .mini-performance-track { position: relative; height: 7px; width: 100%; overflow: hidden; border-radius: 999px; background: linear-gradient(90deg, rgba(244,63,94,.10), rgba(148,163,184,.14) 50%, rgba(16,185,129,.12)); box-shadow: inset 0 0 0 1px rgba(148,163,184,.12); }
+        .mini-performance-zero { position: absolute; z-index: 2; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(100,116,139,.55); }
+        .mini-performance-fill { position: absolute; top: 1px; bottom: 1px; border-radius: 999px; }
+        .mini-performance-fill.is-positive { left: 50%; background: linear-gradient(90deg,#34d399,#059669); box-shadow: 0 0 8px rgba(16,185,129,.20); }
+        .mini-performance-fill.is-negative { right: 50%; background: linear-gradient(90deg,#fb7185,#e11d48); box-shadow: 0 0 8px rgba(244,63,94,.18); }
+        .mini-performance-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; white-space: nowrap; }
+        .mini-performance-value { font-size: 11px; line-height: 1.2; font-weight: 750; font-variant-numeric: tabular-nums; }
+        .mini-performance-label { font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+        @media (max-width: 640px) { .mini-performance { width: 112px; } }
+
+</style>
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col justify-between">
 
@@ -2127,18 +2139,6 @@ async function activateApp(session) {
 
         // Render Active Assets Table
         // Shared compact, zero-centered performance bar used in holdings and transaction tables.
-        /* Clean, modern mini performance chart shared by dashboard and admin tables */
-        .mini-performance { width: 128px; display: flex; flex-direction: column; gap: 6px; }
-        .mini-performance-track { position: relative; height: 7px; width: 100%; overflow: hidden; border-radius: 999px; background: linear-gradient(90deg, rgba(244,63,94,.10), rgba(148,163,184,.14) 50%, rgba(16,185,129,.12)); box-shadow: inset 0 0 0 1px rgba(148,163,184,.12); }
-        .mini-performance-zero { position: absolute; z-index: 2; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(100,116,139,.55); }
-        .mini-performance-fill { position: absolute; top: 1px; bottom: 1px; border-radius: 999px; }
-        .mini-performance-fill.is-positive { left: 50%; background: linear-gradient(90deg,#34d399,#059669); box-shadow: 0 0 8px rgba(16,185,129,.20); }
-        .mini-performance-fill.is-negative { right: 50%; background: linear-gradient(90deg,#fb7185,#e11d48); box-shadow: 0 0 8px rgba(244,63,94,.18); }
-        .mini-performance-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; white-space: nowrap; }
-        .mini-performance-value { font-size: 11px; line-height: 1.2; font-weight: 750; font-variant-numeric: tabular-nums; }
-        .mini-performance-label { font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
-        @media (max-width: 640px) { .mini-performance { width: 112px; } }
-
         function renderMiniPerformance(percent, label = '') {
             const value = Number(percent) || 0;
             const positive = value >= 0;
