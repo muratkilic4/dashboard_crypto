@@ -1062,6 +1062,7 @@
                                     <th class="p-3">Satış Fiyatı / Tutarı</th>
                                     <th class="p-3">Miktar</th>
                                     <th class="p-3">Gerçekleşen K/Z</th>
+                                    <th class="p-3">Mini Performans</th>
                                     <th class="p-3 rounded-r-lg text-right">Düzenle / Sil</th>
                                 </tr>
                             </thead>
@@ -2125,6 +2126,38 @@ async function activateApp(session) {
         }
 
         // Render Active Assets Table
+        // Shared compact, zero-centered performance bar used in holdings and transaction tables.
+        /* Clean, modern mini performance chart shared by dashboard and admin tables */
+        .mini-performance { width: 128px; display: flex; flex-direction: column; gap: 6px; }
+        .mini-performance-track { position: relative; height: 7px; width: 100%; overflow: hidden; border-radius: 999px; background: linear-gradient(90deg, rgba(244,63,94,.10), rgba(148,163,184,.14) 50%, rgba(16,185,129,.12)); box-shadow: inset 0 0 0 1px rgba(148,163,184,.12); }
+        .mini-performance-zero { position: absolute; z-index: 2; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(100,116,139,.55); }
+        .mini-performance-fill { position: absolute; top: 1px; bottom: 1px; border-radius: 999px; }
+        .mini-performance-fill.is-positive { left: 50%; background: linear-gradient(90deg,#34d399,#059669); box-shadow: 0 0 8px rgba(16,185,129,.20); }
+        .mini-performance-fill.is-negative { right: 50%; background: linear-gradient(90deg,#fb7185,#e11d48); box-shadow: 0 0 8px rgba(244,63,94,.18); }
+        .mini-performance-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; white-space: nowrap; }
+        .mini-performance-value { font-size: 11px; line-height: 1.2; font-weight: 750; font-variant-numeric: tabular-nums; }
+        .mini-performance-label { font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+        @media (max-width: 640px) { .mini-performance { width: 112px; } }
+
+        function renderMiniPerformance(percent, label = '') {
+            const value = Number(percent) || 0;
+            const positive = value >= 0;
+            const magnitude = Math.min(100, Math.max(4, Math.abs(value) * 4));
+            const color = positive ? '#10b981' : '#f43f5e';
+            const sign = positive ? '+' : '';
+            return `
+                <div class="mini-performance" title="${sign}${value.toFixed(2)}%">
+                    <div class="mini-performance-track">
+                        <span class="mini-performance-zero"></span>
+                        <span class="mini-performance-fill ${positive ? 'is-positive' : 'is-negative'}" style="width:${magnitude / 2}%;"></span>
+                    </div>
+                    <div class="mini-performance-meta">
+                        <span class="mini-performance-value" style="color:${color}">${sign}${value.toFixed(1)}%</span>
+                        <span class="mini-performance-label">${label || (positive ? 'Pozitif' : 'Negatif')}</span>
+                    </div>
+                </div>`;
+        }
+
         function renderAssetsTable(assets) {
             const tbody = document.getElementById('assets-table-body');
             tbody.innerHTML = '';
@@ -2157,14 +2190,8 @@ async function activateApp(session) {
                         ${isPos ? '+' : ''}${formatCurrencyVal(asset.pnl)}
                         <span class="text-xs block font-normal opacity-80">(${isPos ? '+' : ''}${asset.pnlPercent.toFixed(2)}%)</span>
                     </td>
-                    <td class="p-3 min-w-[130px]">
-                        <div class="flex items-center gap-2">
-                            <div class="relative h-2 w-16 shrink-0 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
-                                <div class="absolute top-0 h-full rounded-full ${isPos ? 'bg-emerald-500' : 'bg-rose-500'}" style="width:${Math.min(50, Math.max(3, Math.abs(asset.pnlPercent) / 2))}%; ${isPos ? 'left:50%;' : 'right:50%;'}"></div>
-                            </div>
-                            <span class="text-xs font-bold whitespace-nowrap ${isPos ? 'text-emerald-500' : 'text-rose-500'}">${isPos ? '+' : ''}${asset.pnlPercent.toFixed(1)}%</span>
-                        </div>
-                        <span class="text-[10px] text-slate-500 block mt-1">${isPos ? 'Kârda' : 'Zararda'}</span>
+                    <td class="p-3 min-w-[150px]">
+                        ${renderMiniPerformance(asset.pnlPercent, isPos ? 'Kârda' : 'Zararda')}
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -2313,7 +2340,7 @@ async function activateApp(session) {
             }
 
             if (transactions.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500 text-xs">Kayıtlı işlem bulunamadı.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-500 text-xs">Kayıtlı işlem bulunamadı.</td></tr>`;
                 return;
             }
 
@@ -2346,6 +2373,7 @@ async function activateApp(session) {
                     <td class="p-3">${!isBuy ? formatCurrencyVal(total - Number(tx.fee || 0)) : '—'}</td>
                     <td class="p-3 font-medium">${Number(tx.amount).toLocaleString('tr-TR', {maximumFractionDigits: 8})}</td>
                     <td class="p-3 font-semibold ${!isBuy ? ((saleDetails?.pnl || 0) >= 0 ? 'text-emerald-500' : 'text-rose-500') : 'text-slate-400'}">${!isBuy && saleDetails ? ((saleDetails.pnl >= 0 ? '+' : '') + formatCurrencyVal(saleDetails.pnl)) : '—'}</td>
+                    <td class="p-3 min-w-[150px]">${!isBuy && saleDetails ? renderMiniPerformance(saleDetails.costBasis > 0 ? (saleDetails.pnl / saleDetails.costBasis) * 100 : 0, 'Gerçekleşen') : '<span class="text-xs text-slate-400">—</span>'}</td>
                     <td class="p-3 text-right">
                         <div class="flex items-center justify-end gap-2">
                         ${getAvailableCoinAmount(tx.coin) > 1e-10
