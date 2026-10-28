@@ -729,7 +729,7 @@
                 <!-- Date -->
                 <div>
                     <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Tarih</label>
-                    <input type="datetime-local" id="input-date" required class="w-full input-bg border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500">
+                    <input type="date" id="input-date" class="w-full input-bg border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500" aria-label="İsteğe bağlı işlem tarihi">
                 </div>
 
                 <div class="pt-2">
@@ -1224,15 +1224,16 @@ async function activateApp(session) {
                 if (row.coin_id || row.coin_image || row.coin_name) {
                     MARKET_DATA[symbol] = { ...(MARKET_DATA[symbol] || {}), symbol, name: row.coin_name || MARKET_DATA[symbol]?.name || symbol, coinGeckoId: row.coin_id || MARKET_DATA[symbol]?.coinGeckoId || '', icon: row.coin_image || MARKET_DATA[symbol]?.icon || '', binanceSymbol: row.binance_symbol || MARKET_DATA[symbol]?.binanceSymbol || '', price: MARKET_DATA[symbol]?.price || Number(row.price) || 0, change: MARKET_DATA[symbol]?.change || 0, color: MARKET_DATA[symbol]?.color || '#6366F1' };
                 }
-                return { id: row.id, type: String(row.type || '').toUpperCase(), coin: symbol, coinId: row.coin_id || MARKET_DATA[symbol]?.coinGeckoId || '', coinName: row.coin_name || MARKET_DATA[symbol]?.name || symbol, coinImage: row.coin_image || MARKET_DATA[symbol]?.icon || '', binanceSymbol: row.binance_symbol || MARKET_DATA[symbol]?.binanceSymbol || '', tradeCurrency: row.trade_currency || 'USDT', tradeMarket: row.trade_market || (row.trade_currency === 'TRY' ? 'Binance TR' : 'Binance'), amount: Number(row.amount), price: Number(row.price), fee: Number(row.fee || 0), date: toLocalDateTimeInput(row.executed_at) };
+                return { id: row.id, type: String(row.type || '').toUpperCase(), coin: symbol, coinId: row.coin_id || MARKET_DATA[symbol]?.coinGeckoId || '', coinName: row.coin_name || MARKET_DATA[symbol]?.name || symbol, coinImage: row.coin_image || MARKET_DATA[symbol]?.icon || '', binanceSymbol: row.binance_symbol || MARKET_DATA[symbol]?.binanceSymbol || '', tradeCurrency: row.trade_currency || 'USDT', tradeMarket: row.trade_market || (row.trade_currency === 'TRY' ? 'Binance TR' : 'Binance'), amount: Number(row.amount), price: Number(row.price), fee: Number(row.fee || 0), date: toLocalDateInput(row.executed_at) };
             });
         }
 
-        function toLocalDateTimeInput(value) {
+        function toLocalDateInput(value) {
+            if (!value) return '';
             const date = new Date(value);
             if (Number.isNaN(date.getTime())) return '';
             const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-            return local.toISOString().slice(0, 16);
+            return local.toISOString().slice(0, 10);
         }
 
         function applySavedPreferences() {
@@ -1541,7 +1542,15 @@ async function activateApp(session) {
         function validateTransactionSet(candidate, targetId) {
             const balances = new Map();
             const ordered = [...candidate].sort((a, b) => {
-                const dateDiff = new Date(a.date) - new Date(b.date);
+                // Tarihi boş bırakılan işlemler, tarihli işlemlerden sonra değerlendirilir.
+                if (!a.date && b.date) return 1;
+                if (a.date && !b.date) return -1;
+                if (!a.date && !b.date) {
+                    const aPriority = String(a.type).toUpperCase() === 'BUY' ? 0 : 1;
+                    const bPriority = String(b.type).toUpperCase() === 'BUY' ? 0 : 1;
+                    return aPriority - bPriority;
+                }
+                const dateDiff = new Date(a.date + 'T12:00:00') - new Date(b.date + 'T12:00:00');
                 if (dateDiff !== 0) return dateDiff;
                 const aPriority = String(a.type).toUpperCase() === 'BUY' ? 0 : 1;
                 const bPriority = String(b.type).toUpperCase() === 'BUY' ? 0 : 1;
@@ -1556,7 +1565,7 @@ async function activateApp(session) {
                 if (!tx.coin || !/^[A-Z0-9]{2,15}$/.test(tx.coin)) return 'Geçerli bir kripto sembolü seçin.';
                 if (!Number.isFinite(amount) || amount <= 0) return 'Miktar sıfırdan büyük ve geçerli olmalı.';
                 if (!Number.isFinite(price) || price <= 0) return 'Birim fiyat sıfırdan büyük ve geçerli olmalı.';
-                if (Number.isNaN(date.getTime())) return 'Geçerli bir işlem tarihi girin.';
+                if (tx.date && Number.isNaN(date.getTime())) return 'Geçerli bir işlem tarihi girin.';
 
                 const balance = balances.get(tx.coin) || 0;
                 const isSubmitted = String(tx.id) === String(targetId);
@@ -2258,7 +2267,7 @@ async function activateApp(session) {
                 showToast('Geçerli miktar ve birim fiyat giriniz.', true);
                 return;
             }
-            if (!date || Number.isNaN(new Date(date).getTime())) {
+            if (date && Number.isNaN(new Date(date + 'T12:00:00').getTime())) {
                 showToast('Geçerli bir işlem tarihi giriniz.', true);
                 return;
             }
@@ -2286,7 +2295,7 @@ async function activateApp(session) {
             try {
                 const row = {
                     type: selectedTxType.toLowerCase(), coin, amount, price, fee: candidateTx.fee,
-                    executed_at: new Date(date).toISOString(),
+                    executed_at: date ? new Date(date + 'T12:00:00').toISOString() : null,
                     coin_id: coinMeta.coinGeckoId || null,
                     coin_name: coinMeta.name || coin,
                     coin_image: coinMeta.icon || null,
@@ -2312,7 +2321,7 @@ async function activateApp(session) {
                     coinImage: coinMeta.icon || '', binanceSymbol: coinMeta.binanceSymbol || '',
                     tradeCurrency: selectedTradeCurrency, tradeMarket: selectedTradeCurrency === 'TRY' ? 'Binance TR' : 'Binance',
                     amount: Number(saved.amount), price: Number(saved.price),
-                    fee: Number(saved.fee || 0), date: toLocalDateTimeInput(saved.executed_at)
+                    fee: Number(saved.fee || 0), date: toLocalDateInput(saved.executed_at)
                 };
                 if (editId) transactions = transactions.map(tx => String(tx.id) === String(editId) ? mapped : tx);
                 else transactions.push(mapped);
