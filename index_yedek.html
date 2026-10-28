@@ -871,20 +871,8 @@ async function handleAuthSubmit(event) {
   }
 }
 
-  message.textContent = invalidLogin
-    ? 'Kullanıcı adı veya şifre hatalı.'
-    : detail || 'Giriş yapılamadı. Lütfen bağlantıyı ve sunucu ayarlarını kontrol et.';
- {
-    console.error('Giriş hatası:', error);
-    message.textContent =
-      error?.context?.error || error.message || 'Giriş yapılamadı.';
-  } finally {
-    button.disabled = false;
-    button.textContent = 'Giriş yap';
-  }
-}
 
-        function friendlyAuthError(message) {
+                function friendlyAuthError(message) {
             const text = String(message || '');
             if (/Invalid login credentials/i.test(text)) return 'E-posta veya şifre hatalı.';
             if (/Email not confirmed/i.test(text)) return 'Önce e-posta adresini doğrula.';
@@ -1756,7 +1744,7 @@ async function activateApp(session) {
                         .eq('id', editId).eq('user_id', activeUserId)
                         .select('id, type, coin, amount, price, executed_at, fee').single();
                 } else {
-                    result = await dbClient.from('transactions').insert(row)
+                    result = await dbClient.from('transactions').insert({ ...row, user_id: activeUserId })
                         .select('id, type, coin, amount, price, executed_at, fee').single();
                 }
                 if (result.error) throw result.error;
