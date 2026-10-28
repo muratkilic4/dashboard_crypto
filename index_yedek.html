@@ -1618,7 +1618,7 @@ async function activateApp(session) {
                 tr.innerHTML = `
                     <td class="p-3 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">${new Date(tx.date).toLocaleString('tr-TR',{dateStyle:'short',timeStyle:'short'})}</td>
                     <td class="p-3"><span class="px-2 py-0.5 text-[10px] rounded-md font-bold ${isBuy?'bg-emerald-500/10 text-emerald-500':'bg-rose-500/10 text-rose-500'}">${isBuy?'ALIŞ':'SATIŞ'}</span></td>
-                    <td class="p-3"><div class="flex items-center gap-2"><img src="${escapeCoinText(tx.coinImage || MARKET_DATA[tx.coin]?.icon || '')}" alt="" class="w-5 h-5 rounded-full object-cover" onerror="this.style.display='none'"><span class="font-semibold text-slate-900 dark:text-white">${escapeCoinText(tx.coinName || MARKET_DATA[tx.coin]?.name || tx.coin)} <span class="text-[10px] text-slate-400">${escapeCoinText(tx.coin)}</span></span></div></td>
+                    <td class="p-3"><div class="flex items-center gap-2"><img src="${escapeCoinText(tx.coinImage || MARKET_DATA[tx.coin]?.icon || '')}" alt="" class="w-5 h-5 rounded-full object-cover" onerror="this.style.display='none'"><span class="font-semibold text-slate-900 dark:text-white">${escapeCoinText(tx.coinName || MARKET_DATA[tx.coin]?.name || tx.coin)} <span class="text-[10px] text-slate-400">${escapeCoinText(tx.coin)}</span>${tx.tradeCurrency === 'TRY' ? ' <span class="ml-1 text-[9px] font-bold text-sky-500">Binance TR</span>' : ''}</span></div></td>
                     <td class="p-3">${Number(tx.amount).toLocaleString('tr-TR',{maximumFractionDigits:8})}</td>
                     <td class="p-3 whitespace-nowrap">${formatCurrencyVal(tx.price)}</td>
                     <td class="p-3 font-semibold whitespace-nowrap">${formatCurrencyVal(tx.amount*tx.price)}</td>
@@ -1704,7 +1704,7 @@ async function activateApp(session) {
                     <td class="p-3 font-semibold text-slate-900 dark:text-white">
                         <div class="flex items-center gap-2">
                             <img src="${escapeCoinText(tx.coinImage || MARKET_DATA[tx.coin]?.icon || '')}" alt="" class="w-5 h-5 rounded-full object-cover" onerror="this.style.display='none'">
-                            <span>${escapeCoinText(tx.coinName || MARKET_DATA[tx.coin]?.name || tx.coin)} <small class="text-[10px] text-slate-400">${escapeCoinText(tx.coin)}</small></span>
+                            <span>${escapeCoinText(tx.coinName || MARKET_DATA[tx.coin]?.name || tx.coin)} <small class="text-[10px] text-slate-400">${escapeCoinText(tx.coin)}</small>${tx.tradeCurrency === 'TRY' ? ' <small class="ml-1 font-bold text-sky-500">Binance TR</small>' : ''}</span>
                         </div>
                     </td>
                     <td class="p-3 font-medium">${tx.amount}</td>
@@ -1910,7 +1910,8 @@ async function activateApp(session) {
             document.getElementById('input-coin-search').value = `${name} (${symbol})`;
             document.getElementById('selected-coin-symbol').value = symbol;
             document.getElementById('coin-dropdown').classList.add('hidden');
-            if (price > 0) document.getElementById('input-price').value = price;
+            if (price > 0) document.getElementById('input-price').value = selectedTradeCurrency === 'TRY' ? tradePriceFromUsd(price, 'TRY') : price;
+            updateTradeCurrencyUI();
             if (document.getElementById('input-total-amount').value) calculateAmountFromTotal();
             const helper = document.getElementById('coin-search-status');
             if (helper) helper.textContent = binanceSymbol ? 'Binance USDT paritesi bulundu.' : 'Binance USDT paritesi bulunamadı; coin kaydedilebilir, fiyatı manuel girilebilir.';
