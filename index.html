@@ -1904,12 +1904,12 @@ async function activateApp(session) {
                 pageManage.classList.add('hidden');
 
                 navDash.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow-sm";
-                navManage.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white transition-all flex items-center";
+                if (navManage) navManage.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white transition-all flex items-center";
             } else {
                 pageDash.classList.add('hidden');
                 pageManage.classList.remove('hidden');
 
-                navManage.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow-sm flex items-center";
+                if (navManage) navManage.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow-sm flex items-center";
                 navDash.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white transition-all";
 
                 // Check lock status
