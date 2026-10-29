@@ -2522,21 +2522,24 @@ async function activateApp(session) {
                     label:'Birikimli gerçekleşen K/Z',
                     data:[],
                     borderColor:'#10b981',
-                    segment:{borderColor:context => (context.p1.parsed.y < 0 ? '#f43f5e' : '#10b981')},
+                    segment:{
+                        borderColor:context => Number(context.p1.parsed.y) < 0 ? '#f43f5e' : '#10b981',
+                        borderWidth:context => context.p1.parsed.y < 0 ? 2.8 : 3
+                    },
                     borderWidth:3,
                     borderCapStyle:'round',
                     borderJoinStyle:'round',
                     backgroundColor:context=>createPerformanceAreaGradient(context),
                     fill:{target:{value:0}},
-                    tension:.38,
+                    tension:.32,
                     cubicInterpolationMode:'monotone',
-                    pointRadius:context=>context.dataIndex===context.dataset.data.length-1?4:0,
-                    pointBackgroundColor:context => (Number(context.raw) < 0 ? '#f43f5e' : '#10b981'),
+                    pointRadius:context=>context.dataIndex===context.dataset.data.length-1?4.5:2,
+                    pointBackgroundColor:context => Number(context.raw) < 0 ? '#f43f5e' : '#10b981',
                     pointBorderColor:currentTheme==='dark'?'#0f172a':'#ffffff',
-                    pointBorderWidth:2.5,
-                    pointHoverRadius:5,
-                    pointHitRadius:18,
-                    pointHoverBackgroundColor:context => (Number(context.raw) < 0 ? '#f43f5e' : '#10b981'),
+                    pointBorderWidth:2,
+                    pointHoverRadius:5.5,
+                    pointHitRadius:20,
+                    pointHoverBackgroundColor:context => Number(context.raw) < 0 ? '#f43f5e' : '#10b981',
                     pointHoverBorderColor:currentTheme==='dark'?'#0f172a':'#ffffff',
                     pointHoverBorderWidth:2.5
                 }]},
@@ -2564,7 +2567,13 @@ async function activateApp(session) {
                                         ? new Date(rawDate).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'})
                                         : items[0].label;
                                 },
-                                label:context=>' Birikimli K/Z: '+(context.parsed.y>0?'+':'')+formatCurrencyVal(context.parsed.y)
+                                label:context=>{
+                                    const cumulativeValue = Number(context.parsed.y) || 0;
+                                    const saleValue = Number(performanceChartSalePnL[context.dataIndex]) || 0;
+                                    const cumulativeText = 'Birikimli K/Z: '+(cumulativeValue>0?'+':'')+formatCurrencyVal(cumulativeValue);
+                                    const saleText = 'Bu satış: '+(saleValue>0?'+':'')+formatCurrencyVal(saleValue);
+                                    return [cumulativeText, saleText];
+                                }
                             }
                         }
                     },
@@ -2590,8 +2599,10 @@ async function activateApp(session) {
             });
         }
 
+        // The chart uses realized P/L from each SELL transaction only.
         let performanceRange = 'all';
         let performanceChartFullDates = [];
+        let performanceChartSalePnL = [];
         let currentAssetDetails = [];
 
         function setPerformanceRange(range) {
@@ -2634,6 +2645,7 @@ async function activateApp(session) {
             const realizedById = calculateRealizedPnLByTransaction();
             const labels = [], values = [];
             performanceChartFullDates = [];
+            performanceChartSalePnL = [];
             let cumulative = 0;
             const now = Date.now();
             const cutoff = performanceRange === '7d' ? now - 7 * 86400000
@@ -2645,6 +2657,7 @@ async function activateApp(session) {
                 cumulative += Number(realizedById.get(String(tx.id))||0);
                 labels.push(new Date(tx.date).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'}));
                 performanceChartFullDates.push(tx.date);
+                performanceChartSalePnL.push(Number((realizedById.get(String(tx.id)) || 0).toFixed ? realizedById.get(String(tx.id)) || 0 : Number(realizedById.get(String(tx.id)) || 0)));
                 values.push(Number(cumulative.toFixed(8)));
             });
             const periodNote = document.getElementById('performance-chart-period-note');
@@ -2671,8 +2684,14 @@ async function activateApp(session) {
                 // Keep the line and filled area green above zero and rose below zero.
                 // The gradient follows the zero-line position as the scale changes.
                 performanceChartInstance.data.datasets[0].borderColor = '#10b981';
-                performanceChartInstance.data.datasets[0].pointBackgroundColor = '#10b981';
-                performanceChartInstance.data.datasets[0].pointHoverBackgroundColor = '#10b981';
+                performanceChartInstance.data.datasets[0].segment = {
+                    borderColor: context => Number(context.p1.parsed.y) < 0 ? '#f43f5e' : '#10b981',
+                    borderWidth: context => Number(context.p1.parsed.y) < 0 ? 2.8 : 3
+                };
+                performanceChartInstance.data.datasets[0].pointBackgroundColor = context => Number(context.raw) < 0 ? '#f43f5e' : '#10b981';
+                performanceChartInstance.data.datasets[0].pointHoverBackgroundColor = context => Number(context.raw) < 0 ? '#f43f5e' : '#10b981';
+                performanceChartInstance.data.datasets[0].pointBorderColor = currentTheme === 'dark' ? '#0f172a' : '#ffffff';
+                performanceChartInstance.data.datasets[0].pointHoverBorderColor = currentTheme === 'dark' ? '#0f172a' : '#ffffff';
                 performanceChartInstance.data.datasets[0].backgroundColor = context => createPerformanceAreaGradient(context);
                 performanceChartInstance.update();
             }
