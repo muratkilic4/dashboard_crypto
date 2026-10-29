@@ -685,7 +685,7 @@
                         <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
                         <span class="text-xs font-semibold text-indigo-600 dark:text-indigo-200">Canlı piyasa takibi</span>
                     </div>
-                    <span class="terminal-refresh-note text-[9px] leading-tight text-slate-500 dark:text-slate-400">Veriler 60 saniyede otomatik yenilenir</span>
+                    <span id="market-refresh-note" class="terminal-refresh-note text-[9px] leading-tight text-slate-500 dark:text-slate-400">Veriler 60 saniyede otomatik yenilenir</span>
                 </div>
             </section>
 
@@ -931,6 +931,35 @@
                     </div>
                 </div>
 
+                <!-- Market refresh settings -->
+                <section class="card-bg p-5 rounded-2xl border">
+                    <div class="flex items-start gap-3 mb-4">
+                        <div class="p-2 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                            <i data-lucide="timer" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-900 dark:text-white">Piyasa Verisi Yenileme Sıklığı</h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Sayfa açıldığında veriler anında alınır. Buradan sonraki otomatik ekran güncellemelerinin aralığını belirleyebilirsin.</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+                        <label for="market-refresh-interval" class="flex-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                            Otomatik güncelleme aralığı
+                            <select id="market-refresh-interval" class="input-bg border w-full mt-2 px-3 py-2.5 text-sm">
+                                <option value="15">15 saniye</option>
+                                <option value="30">30 saniye</option>
+                                <option value="60">60 saniye</option>
+                                <option value="120">120 saniye</option>
+                                <option value="300">5 dakika</option>
+                            </select>
+                        </label>
+                        <button type="button" onclick="saveMarketRefreshInterval()" class="terminal-primary-btn text-white text-xs font-bold px-4 py-3 rounded-xl inline-flex items-center justify-center gap-2">
+                            <i data-lucide="save" class="w-4 h-4"></i> Ayarı Kaydet
+                        </button>
+                    </div>
+                    <p id="market-refresh-settings-status" class="text-[11px] text-slate-500 dark:text-slate-400 mt-3">Ayar bu tarayıcıda saklanır.</p>
+                </section>
+
                 <!-- Transaction Management Table -->
                 <div class="card-bg p-5 rounded-2xl border">
                     <div class="flex justify-between items-center mb-4">
@@ -1170,6 +1199,13 @@
         let marketDisplayRefreshTimer = null;
         let pendingMarketUpdates = {};
         let marketRetryMs = 2000;
+        const DEFAULT_MARKET_REFRESH_SECONDS = 60;
+        const MARKET_REFRESH_STORAGE_KEY = 'cryptodash_market_refresh_seconds';
+        const MARKET_REFRESH_ALLOWED_SECONDS = [15, 30, 60, 120, 300];
+        let marketRefreshSeconds = (() => {
+            const saved = Number(localStorage.getItem(MARKET_REFRESH_STORAGE_KEY));
+            return MARKET_REFRESH_ALLOWED_SECONDS.includes(saved) ? saved : DEFAULT_MARKET_REFRESH_SECONDS;
+        })();
 
         let authMode = 'signin';
 
@@ -1565,6 +1601,9 @@ async function activateApp(session) {
     applyAccessModeUI();
     connectBinanceStream();
     startMarketDisplayRefresh();
+    syncMarketRefreshSettingsUI();
+    // Fetch a fresh Binance snapshot immediately on every app load; do not wait for the display timer.
+    void refreshMarketDataNow(true);
     void refreshUsdTryRate();
     lucide.createIcons();
 
@@ -1723,9 +1762,10 @@ async function activateApp(session) {
             };
         }
 
-        // Binance verileri canlı alınır; ekranda coin fiyatları 60 saniyede bir uygulanır.
+        // Binance WebSocket arka planda canlı kalır; ekrana uygulama sıklığı yönetim panelinden ayarlanır.
         function startMarketDisplayRefresh() {
-            if (marketDisplayRefreshTimer) return;
+            if (marketDisplayRefreshTimer) clearInterval(marketDisplayRefreshTimer);
+            marketDisplayRefreshTimer = null;
             marketDisplayRefreshTimer = setInterval(() => {
                 if (!activeUserId) return;
                 const updates = Object.entries(pendingMarketUpdates);
@@ -1739,16 +1779,43 @@ async function activateApp(session) {
                 }
                 pendingMarketUpdates = {};
                 updateDashboard();
-            }, 60000);
+            }, marketRefreshSeconds * 1000);
         }
 
-        // Manual refresh applies the newest market snapshot immediately; the 60-second display timer remains active.
-        async function refreshMarketDataNow() {
+        function syncMarketRefreshSettingsUI() {
+            const select = document.getElementById('market-refresh-interval');
+            if (select) select.value = String(marketRefreshSeconds);
+            const note = document.getElementById('market-refresh-note');
+            if (note) note.textContent = 'Veriler ' + (marketRefreshSeconds >= 60 && marketRefreshSeconds % 60 === 0
+                ? (marketRefreshSeconds / 60) + ' dakikada'
+                : marketRefreshSeconds + ' saniyede') + ' otomatik yenilenir';
+            const status = document.getElementById('market-refresh-settings-status');
+            if (status) status.textContent = 'Mevcut aralık: ' + (marketRefreshSeconds >= 60 && marketRefreshSeconds % 60 === 0
+                ? (marketRefreshSeconds / 60) + ' dakika'
+                : marketRefreshSeconds + ' saniye') + '. Ayar bu tarayıcıda saklanır.';
+        }
+
+        function saveMarketRefreshInterval() {
+            const select = document.getElementById('market-refresh-interval');
+            const seconds = Number(select?.value);
+            if (!MARKET_REFRESH_ALLOWED_SECONDS.includes(seconds)) {
+                showToast('Geçerli bir yenileme aralığı seçin.', true);
+                return;
+            }
+            marketRefreshSeconds = seconds;
+            localStorage.setItem(MARKET_REFRESH_STORAGE_KEY, String(seconds));
+            startMarketDisplayRefresh();
+            syncMarketRefreshSettingsUI();
+            showToast('Piyasa yenileme aralığı ' + seconds + ' saniye olarak kaydedildi.');
+        }
+
+        // Manual refresh and initial page load apply the newest market snapshot immediately.
+        async function refreshMarketDataNow(silent = false) {
             const button = document.getElementById('btn-market-refresh');
             const icon = button?.querySelector('[data-lucide="refresh-cw"]');
-            if (button?.disabled) return;
-            if (button) button.disabled = true;
-            if (icon) icon.classList.add('animate-spin');
+            if (!silent && button?.disabled) return;
+            if (!silent && button) button.disabled = true;
+            if (!silent && icon) icon.classList.add('animate-spin');
             try {
                 const symbols = Object.values(MARKET_DATA).map(coin => coin.binanceSymbol);
                 const response = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=' + encodeURIComponent(JSON.stringify(symbols)), { cache: 'no-store' });
@@ -1771,7 +1838,7 @@ async function activateApp(session) {
                 if (!applied) throw new Error('Geçerli piyasa verisi alınamadı.');
                 updateDashboard();
                 setMarketStatus('live');
-                showToast('Piyasa verileri yenilendi. ' + applied + ' coin güncellendi.');
+                if (!silent) showToast('Piyasa verileri yenilendi. ' + applied + ' coin güncellendi.');
             } catch (error) {
                 // If REST is unavailable, at least apply any fresh ticks already buffered by the live WebSocket.
                 const updates = Object.entries(pendingMarketUpdates);
@@ -1782,13 +1849,15 @@ async function activateApp(session) {
                     }
                     pendingMarketUpdates = {};
                     updateDashboard();
-                    showToast('Binance canlı verileri uygulandı; REST yenilemesi başarısız oldu.', true);
-                } else {
+                    if (!silent) showToast('Binance canlı verileri uygulandı; REST yenilemesi başarısız oldu.', true);
+                } else if (!silent) {
                     showToast('Piyasa verileri yenilenemedi: ' + (error.message || 'Bağlantı hatası'), true);
+                } else {
+                    console.warn('İlk piyasa verisi alınamadı:', error);
                 }
             } finally {
-                if (button) button.disabled = false;
-                if (icon) icon.classList.remove('animate-spin');
+                if (!silent && button) button.disabled = false;
+                if (!silent && icon) icon.classList.remove('animate-spin');
                 if (window.lucide) lucide.createIcons();
             }
         }
@@ -1940,6 +2009,7 @@ async function activateApp(session) {
                 document.getElementById('lock-screen').classList.add('hidden');
                 document.getElementById('manage-content').classList.remove('hidden');
                 document.getElementById('pin-input').value = '';
+                syncMarketRefreshSettingsUI();
                 renderManageTable();
                 showToast('İşlem yönetimi kilidi açıldı.');
             } else {
