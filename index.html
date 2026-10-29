@@ -268,73 +268,18 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #62528e; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
         ::selection { background: rgba(139, 92, 246, .32); color: #fff; }
-        /* Mofi-inspired alternate layout. Keeps the existing app DOM and features intact. */
-        body.mofi-design {
-            background: #f3f5f9;
-            color: #263248;
-        }
-        .mofi-design .header-bg {
-            background: rgba(255,255,255,.94) !important;
-            border-color: #e7eaf0 !important;
-            box-shadow: 0 3px 18px rgba(31,45,61,.04);
-        }
-        .mofi-design .dashboard-intro {
-            background: linear-gradient(120deg, #ffffff 0%, #f7f8ff 100%);
-            border: 1px solid #e6eaf2;
-            border-radius: 1.25rem;
-            padding: 1.5rem;
-            box-shadow: 0 6px 24px rgba(31,45,61,.04);
-        }
-        .mofi-design .card-bg {
-            background: #ffffff !important;
-            border-color: #e7eaf0 !important;
-            border-radius: 1.1rem !important;
-            box-shadow: 0 5px 22px rgba(31,45,61,.045);
-        }
-        .mofi-design .input-bg {
-            background: #ffffff !important;
-            border-color: #e1e6ef !important;
-        }
-        .mofi-design main { max-width: 1720px; }
-        .mofi-design #nav-dashboard,
-        .mofi-design #nav-manage {
-            width: 100%;
-            justify-content: flex-start;
-            padding: .85rem 1rem;
-            border-radius: .8rem;
-        }
-        @media (min-width: 768px) {
-            .mofi-design header nav {
-                position: fixed;
-                z-index: 35;
-                top: 82px;
-                bottom: 0;
-                left: 0;
-                width: 220px;
-                height: calc(100vh - 82px);
-                align-items: stretch;
-                flex-direction: column;
-                justify-content: flex-start;
-                gap: .5rem;
-                padding: 1rem .8rem;
-                border-radius: 0;
-                border-top: 0;
-                border-left: 0;
-                border-bottom: 0;
-                background: #fff !important;
-                box-shadow: 4px 0 20px rgba(31,45,61,.035);
-            }
-            .mofi-design header { padding-left: 1.5rem; }
-            .mofi-design main { margin-left: 220px; width: calc(100% - 220px); }
-            .mofi-design #readonly-demo-banner { margin-left: 236px; }
-        }
-        @media (max-width: 767px) {
-            .mofi-design .dashboard-intro { padding: 1rem; }
-            .mofi-design #design-toggle { padding: .55rem .65rem; }
-            .mofi-design #design-toggle-label { display: none; }
-        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
-        /* Chart and control contrast pass for both themes, especially Mofi mode. */
+        
         #portfolioPieChart, #portfolioPerformanceChart {
             display: block;
             max-width: 100%;
@@ -342,211 +287,63 @@
             border: 0 !important;
             box-shadow: none !important;
         }
-        .mofi-design #chart-legend { padding-top: 10px; border-top: 1px solid #edf0f5; }
-        .mofi-design #chart-legend > div { padding: 5px 7px; border-radius: 7px; background: #f8f9fc; color: #536177; }
-        .mofi-design #chart-legend strong { color: #29364a !important; font-weight: 700; }
-        .mofi-design #design-toggle {
-            color: #5145c8 !important;
-            background: #efedff !important;
-            border: 1px solid #d9d4ff !important;
-            font-weight: 700 !important;
-        }
-        .mofi-design #design-toggle:hover { color: #4034b5 !important; background: #e6e2ff !important; }
-        .mofi-design #design-toggle svg { color: currentColor !important; }
-        .mofi-design #btn-currency {
-            color: #344258 !important;
-            background: #fff !important;
-            border-color: #e3e8f0 !important;
-        }
-        .mofi-design #btn-currency span { color: #5145c8 !important; }
-        .mofi-design #profile-open {
-            color: #344258 !important;
-            background: #fff !important;
-            border-color: #e3e8f0 !important;
-        }
-        .mofi-design button.bg-indigo-600,
-        .mofi-design button.bg-indigo-600:hover,
-        .mofi-design button.bg-emerald-600,
-        .mofi-design button.bg-emerald-600:hover,
-        .mofi-design button.bg-rose-600,
-        .mofi-design button.bg-rose-600:hover,
-        .mofi-design button.bg-red-600,
-        .mofi-design button.bg-red-600:hover {
-            color: #fff !important;
-        }
-        .mofi-design button.text-indigo-600,
-        .mofi-design button.text-indigo-500,
-        .mofi-design button.text-violet-600 { color: #5145c8 !important; }
-        .mofi-design button.border { border-color: #e2e7f0; }
-        .mofi-design button:focus-visible,
-        .mofi-design a:focus-visible {
-            outline: 3px solid rgba(115,102,232,.38) !important;
-            outline-offset: 2px;
-        }
-        .mofi-design #theme-icon-sun,
-        .mofi-design #theme-icon-moon { color: #59677c !important; }
-        .mofi-design #design-toggle-label { color: inherit !important; }
-        @media (max-width: 767px) {
-            .mofi-design #design-toggle { min-width: 40px; justify-content: center; }
-        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
-        /* Mofi layout rebuild: dedicated admin shell and working contextual sidebar. */
-        body.mofi-design {
-            --mofi-bg: #f6f7fb;
-            --mofi-card: #ffffff;
-            --mofi-line: #e9edf4;
-            --mofi-ink: #263248;
-            --mofi-muted: #8792a5;
-            --mofi-purple: #7366e8;
-            background: var(--mofi-bg) !important;
-            color: var(--mofi-ink);
-        }
-        body.mofi-design .header-bg {
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            min-height: 78px;
-            background: #fff !important;
-            border: 0 !important;
-            border-bottom: 1px solid var(--mofi-line) !important;
-            box-shadow: 0 3px 16px rgba(42,55,80,.035);
-            backdrop-filter: none;
-        }
-        .mofi-design header > div:first-child > div:first-child {
-            background: linear-gradient(145deg,#796cf0,#5b4ed0) !important;
-            border-radius: 12px !important;
-            box-shadow: 0 5px 12px rgba(115,102,232,.2) !important;
-        }
-        .mofi-design header h1 { color: #283449 !important; letter-spacing: -.035em; }
-        .mofi-design header p { color: #9aa4b4 !important; }
-        .mofi-design .mofi-extra-nav { display: flex !important; flex-direction: column; width: 100%; gap: 5px; margin-top: 14px; }
-        .mofi-design .mofi-nav-caption {
-            padding: 12px 12px 6px;
-            color: #a4adbc;
-            font-size: 10px;
-            line-height: 1.2;
-            font-weight: 800;
-            letter-spacing: .13em;
-        }
-        .mofi-design .mofi-nav-caption-spaced { margin-top: 12px; }
-        .mofi-design .mofi-nav-link {
-            display: flex;
-            width: 100%;
-            align-items: center;
-            gap: 12px;
-            min-height: 43px;
-            padding: 10px 12px;
-            border: 1px solid transparent;
-            border-radius: 9px;
-            background: transparent;
-            color: #78859a;
-            text-align: left;
-            font-size: 12px;
-            font-weight: 600;
-            transition: background .18s ease, color .18s ease;
-        }
-        .mofi-design .mofi-nav-link svg { width: 17px; height: 17px; color: #98a3b6; flex: none; }
-        .mofi-design .mofi-nav-link:hover,
-        .mofi-design .mofi-nav-link.is-current {
-            color: #6255dc;
-            background: #f1efff;
-        }
-        .mofi-design .mofi-nav-link:hover svg,
-        .mofi-design .mofi-nav-link.is-current svg { color: #7366e8; }
-        .mofi-design .mofi-sidebar-foot {
-            display: flex; align-items: center; gap: 10px;
-            margin: auto 5px 10px; padding: 14px 10px 5px;
-            border-top: 1px solid #edf0f5; color: #657187;
-        }
-        .mofi-design .mofi-status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c58b; box-shadow: 0 0 0 4px #e4faf1; flex: none; }
-        .mofi-design .mofi-sidebar-foot strong { display: block; font-size: 10px; font-weight: 700; }
-        .mofi-design .mofi-sidebar-foot small { display: block; margin-top: 3px; color: #a0aabc; font-size: 10px; }
-        .mofi-design header nav {
-            display: flex;
-            position: fixed;
-            z-index: 35;
-            top: 78px;
-            bottom: 0;
-            left: 0;
-            width: 238px;
-            height: calc(100vh - 78px);
-            align-items: stretch;
-            flex-direction: column;
-            justify-content: flex-start;
-            gap: 5px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 18px 13px 14px;
-            border: 0 !important;
-            border-right: 1px solid var(--mofi-line) !important;
-            border-radius: 0 !important;
-            background: #fff !important;
-            box-shadow: 3px 0 18px rgba(38,50,72,.025);
-        }
-        .mofi-design header nav > button#nav-dashboard,
-        .mofi-design header nav > button#nav-manage { display: none !important; }
-        .mofi-design main {
-            width: calc(100% - 238px) !important;
-            max-width: none !important;
-            margin-left: 238px !important;
-            margin-right: 0 !important;
-            padding: 27px 30px 42px !important;
-            gap: 24px;
-        }
-        .mofi-design #readonly-demo-banner { margin-left: 250px; }
-        .mofi-design #page-dashboard { gap: 24px; }
-        .mofi-design .dashboard-intro {
-            min-height: 150px;
-            display: flex;
-            align-items: center;
-            padding: 26px 30px;
-            border: 1px solid #e9e8ff !important;
-            border-radius: 14px !important;
-            background: linear-gradient(110deg,#fff 0%,#f7f6ff 100%) !important;
-            box-shadow: 0 4px 20px rgba(50,55,100,.035) !important;
-        }
-        .mofi-design .dashboard-eyebrow { color: #7366e8 !important; font-size: 10px; letter-spacing: .14em; }
-        .mofi-design .dashboard-intro h2 { color: #273449 !important; font-size: clamp(23px,2.2vw,31px); letter-spacing: -.045em; }
-        .mofi-design .dashboard-intro p { color: #8792a5 !important; }
-        .mofi-design .card-bg {
-            background: var(--mofi-card) !important;
-            border: 1px solid var(--mofi-line) !important;
-            border-radius: 12px !important;
-            box-shadow: 0 4px 18px rgba(38,50,72,.035) !important;
-        }
-        .mofi-design .card-bg > div:first-child,
-        .mofi-design .card-bg h2,
-        .mofi-design .card-bg h3 { letter-spacing: -.015em; }
-        .mofi-design .text-slate-900,
-        .mofi-design .dark\:text-white { color: #29364a !important; }
-        .mofi-design .text-slate-500,
-        .mofi-design .dark\:text-slate-400 { color: #8792a5 !important; }
-        .mofi-design .text-slate-700,
-        .mofi-design .dark\:text-slate-300 { color: #536177 !important; }
-        .mofi-design .input-bg { background: #fff !important; border-color: #e4e9f1 !important; }
-        .mofi-design .table-head-bg,
-        .mofi-design thead { background: #f8f9fc !important; }
-        .mofi-design thead th { color: #8994a6 !important; font-size: 10px; font-weight: 800; letter-spacing: .06em; }
-        .mofi-design tbody tr:hover { background: #fafaff !important; }
-        .mofi-design #design-toggle { color: #6255dc !important; background: #f1efff !important; border-color: #e7e3ff !important; }
-        .mofi-design #btn-currency,
-        .mofi-design #profile-open { box-shadow: none !important; border-radius: 9px !important; }
-        .mofi-design .custom-scrollbar::-webkit-scrollbar-thumb { background: #d5dbea; }
-        @media (max-width: 1023px) and (min-width: 768px) {
-            .mofi-design header nav { width: 205px; }
-            .mofi-design main { width: calc(100% - 205px) !important; margin-left: 205px !important; padding: 22px 20px 34px !important; }
-            .mofi-design #readonly-demo-banner { margin-left: 215px; }
-        }
-        @media (max-width: 767px) {
-            .mofi-design header nav { display: none !important; }
-            .mofi-design main { width: 100% !important; margin: 0 !important; padding: 16px 14px 28px !important; }
-            .mofi-design #readonly-demo-banner { margin-left: 0; }
-            .mofi-design .header-bg { min-height: 68px; padding: 10px 12px !important; }
-            .mofi-design .dashboard-intro { min-height: 0; padding: 20px !important; }
-            .mofi-design .dashboard-intro h2 { font-size: 23px; }
-            .mofi-design #design-toggle { padding: 9px 10px; }
-            .mofi-design #design-toggle-label { display: none; }
-        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
                 @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
@@ -761,32 +558,7 @@
             <button onclick="switchTab('manage')" id="nav-manage" class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white transition-all flex items-center">
                 <i data-lucide="lock" class="w-3.5 h-3.5 inline mr-1.5 text-amber-500"></i> İşlem Yönetimi
             </button>
-            <div class="mofi-extra-nav hidden">
-                <div class="mofi-nav-caption">PORTFÖY</div>
-                <button type="button" class="mofi-nav-link is-current" onclick="switchTab('dashboard'); document.getElementById('page-dashboard').scrollIntoView({behavior:'smooth',block:'start'});">
-                    <i data-lucide="layout-dashboard"></i><span>Genel Bakış</span>
-                </button>
-                <button type="button" class="mofi-nav-link" onclick="switchTab('dashboard'); document.getElementById('mofi-overview-metrics').scrollIntoView({behavior:'smooth',block:'start'});">
-                    <i data-lucide="wallet"></i><span>Portföy Özeti</span>
-                </button>
-                <button type="button" class="mofi-nav-link" onclick="switchTab('dashboard'); document.getElementById('mofi-performance').scrollIntoView({behavior:'smooth',block:'start'});">
-                    <i data-lucide="chart-no-axes-combined"></i><span>Performans</span>
-                </button>
-                <button type="button" class="mofi-nav-link" onclick="switchTab('dashboard'); document.getElementById('mofi-assets').scrollIntoView({behavior:'smooth',block:'start'});">
-                    <i data-lucide="layers"></i><span>Varlıklar ve Piyasa</span>
-                </button>
-                <button type="button" class="mofi-nav-link" onclick="switchTab('dashboard'); document.getElementById('mofi-transactions').scrollIntoView({behavior:'smooth',block:'start'});">
-                    <i data-lucide="history"></i><span>Son İşlemler</span>
-                </button>
-                <div class="mofi-nav-caption mofi-nav-caption-spaced">YÖNETİM</div>
-                <button type="button" class="mofi-nav-link" onclick="switchTab('manage')">
-                    <i data-lucide="shield-check"></i><span>İşlem Yönetimi</span>
-                </button>
-                <div class="mofi-sidebar-foot">
-                    <span class="mofi-status-dot"></span>
-                    <span><strong>Piyasa bağlantısı</strong><small>Binance verileri</small></span>
-                </div>
-            </div>
+            
         </nav>
 
         <div class="flex items-center gap-2.5">
@@ -811,11 +583,8 @@
                 <span id="currency-label">USD</span>
             </button>
 
-            <!-- Alternative Mofi-inspired layout toggle -->
-            <button id="design-toggle" type="button" onclick="toggleDesignMode()" class="flex items-center gap-1.5 rounded-xl border border-violet-400/40 bg-violet-500/10 px-3 py-2 text-xs font-semibold text-violet-600 transition hover:bg-violet-500/20 dark:text-violet-200" title="Alternatif tasarıma geç">
-                <i data-lucide="panels-top-left" class="h-4 w-4"></i>
-                <span id="design-toggle-label">Mofi Tasarımı</span>
-            </button>
+            
+            
 
             <!-- Light / Dark Mode Toggle -->
             <button onclick="toggleTheme()" class="p-2.5 rounded-xl input-bg border text-slate-600 dark:text-slate-300 hover:text-amber-500 transition">
@@ -859,7 +628,7 @@
             </section>
 
             <!-- Top Metrics Cards -->
-            <div id="mofi-overview-metrics" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div id="overview-metrics" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Total Portfolio Value -->
                 <div class="card-bg p-5 rounded-2xl relative overflow-hidden border">
                     <div class="flex justify-between items-center text-slate-500 dark:text-slate-400 text-xs font-medium mb-2">
@@ -906,7 +675,7 @@
             </div>
 
             <!-- Charts & Binance Live Market -->
-            <div id="mofi-performance" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div id="performance-section" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Portfolio Pie Chart -->
                 <div class="card-bg p-5 rounded-2xl border flex flex-col justify-between">
                     <div>
@@ -968,7 +737,7 @@
             </div>
 
             <!-- Holdings & Binance Live Prices -->
-            <div id="mofi-assets" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div id="assets-section" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Active Holdings Table -->
                 <div class="card-bg p-5 rounded-2xl border lg:col-span-2 flex flex-col">
                     <h2 class="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
@@ -1014,7 +783,7 @@
             </div>
 
             <!-- Recent Transactions -->
-            <section id="mofi-transactions" class="card-bg p-5 rounded-2xl border">
+            <section id="transactions-section" class="card-bg p-5 rounded-2xl border">
                 <div class="flex items-center justify-between gap-3 mb-4">
                     <div>
                         <h2 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2"><i data-lucide="history" class="w-4 h-4 text-indigo-500"></i> Son İşlemler</h2>
@@ -1953,31 +1722,6 @@ async function activateApp(session) {
         }
 
         // --- Theme Switcher (Dark / Light) ---
-        function toggleDesignMode(forceMode) {
-            const enable = typeof forceMode === 'boolean'
-                ? forceMode
-                : !document.body.classList.contains('mofi-design');
-            document.body.classList.toggle('mofi-design', enable);
-            localStorage.setItem('cryptodash_design_mode', enable ? 'mofi' : 'classic');
-            const label = document.getElementById('design-toggle-label');
-            const button = document.getElementById('design-toggle');
-            if (label) label.textContent = enable ? 'Mevcut Tasarım' : 'Mofi Tasarımı';
-            if (button) {
-                button.title = enable ? 'Mevcut tasarıma dön' : 'Mofi tarzı tasarıma geç';
-                button.setAttribute('aria-pressed', enable ? 'true' : 'false');
-            }
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-            if (typeof updateChartsTheme === 'function') updateChartsTheme();
-        }
-
-        function restoreDesignMode() {
-            try {
-                toggleDesignMode(localStorage.getItem('cryptodash_design_mode') === 'mofi');
-            } catch (error) {
-                console.warn('Tasarım tercihi yüklenemedi:', error);
-            }
-        }
-
         function toggleTheme() {
             const html = document.documentElement;
             const iconSun = document.getElementById('theme-icon-sun');
@@ -4055,8 +3799,6 @@ async function activateApp(session) {
                 showToast('İşlemler silinemedi: ' + error.message, true);
             }
         }
-
-        restoreDesignMode();
-    </script>
+        </script>
 </body>
 </html>
