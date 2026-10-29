@@ -564,9 +564,11 @@
         .dark .performance-range-btn { color: #94a3b8; }
         .dark .performance-range-btn:hover { color: #c7d2fe; }
         .dark .performance-range-btn.is-active { color: #e0e7ff; background: #334155; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
-        .performance-chart-shell { background: linear-gradient(180deg, rgba(16,185,129,.035), rgba(16,185,129,0) 70%); }
-        .dark .performance-chart-shell { background: linear-gradient(180deg, rgba(16,185,129,.055), rgba(15,23,42,0) 70%); }
+        .performance-chart-shell { background: radial-gradient(ellipse at 50% 0%,rgba(16,185,129,.055),transparent 58%),linear-gradient(180deg,rgba(248,250,252,.72),rgba(255,255,255,0) 78%); }
+        .dark .performance-chart-shell { background: radial-gradient(ellipse at 50% 0%,rgba(16,185,129,.09),transparent 58%),linear-gradient(180deg,rgba(15,23,42,.35),rgba(15,23,42,0) 78%); }
         #portfolioPerformanceChart { border: 0 !important; outline: 0 !important; box-shadow: none !important; }
+        .performance-chart-shell::after { content:''; position:absolute; inset:0; border:1px solid rgba(148,163,184,.12); border-radius:inherit; pointer-events:none; }
+        .dark .performance-chart-shell::after { border-color:rgba(148,163,184,.09); }
         .mini-performance { width: 136px; display: flex; flex-direction: column; gap: 7px; padding: 2px 0; }
         .mini-performance-track { position: relative; height: 10px; width: 100%; overflow: hidden; border-radius: 999px; background: linear-gradient(90deg,rgba(244,63,94,.13) 0%,rgba(148,163,184,.09) 48%,rgba(148,163,184,.09) 52%,rgba(16,185,129,.13) 100%); box-shadow: inset 0 1px 2px rgba(15,23,42,.08); }
         .mini-performance-track::after { content: ''; position: absolute; inset: 0; border: 1px solid rgba(148,163,184,.15); border-radius: inherit; pointer-events: none; }
@@ -919,7 +921,7 @@
                             <button type="button" data-performance-range="30d" onclick="setPerformanceRange('30d')" class="performance-range-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold transition">30 gün</button>
                             <button type="button" data-performance-range="all" onclick="setPerformanceRange('all')" class="performance-range-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold transition">Tümü</button>
                         </div>
-                        <span id="performance-chart-period-note" class="text-[10px] text-slate-500 dark:text-slate-400">Tüm kayıtlı satışlar</span>
+                        <span id="performance-chart-period-note" class="inline-flex items-center gap-1.5 text-[10px] font-medium text-slate-500 dark:text-slate-400"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Tüm kayıtlı satışlar</span>
                     </div>
                     <div class="performance-chart-shell relative h-[260px] w-full rounded-xl overflow-hidden">
                         <canvas id="portfolioPerformanceChart"></canvas>
@@ -2521,28 +2523,28 @@ async function activateApp(session) {
                     data:[],
                     borderColor:'#10b981',
                     segment:{borderColor:context => (context.p1.parsed.y < 0 ? '#f43f5e' : '#10b981')},
-                    borderWidth:2.8,
+                    borderWidth:3,
                     borderCapStyle:'round',
                     borderJoinStyle:'round',
                     backgroundColor:context=>createPerformanceAreaGradient(context),
                     fill:{target:{value:0}},
-                    tension:.32,
+                    tension:.38,
                     cubicInterpolationMode:'monotone',
-                    pointRadius:context=>context.dataIndex===context.dataset.data.length-1?3:0,
-                    pointBackgroundColor:'#10b981',
+                    pointRadius:context=>context.dataIndex===context.dataset.data.length-1?4:0,
+                    pointBackgroundColor:context => (Number(context.raw) < 0 ? '#f43f5e' : '#10b981'),
                     pointBorderColor:currentTheme==='dark'?'#0f172a':'#ffffff',
-                    pointBorderWidth:2,
+                    pointBorderWidth:2.5,
                     pointHoverRadius:5,
-                    pointHitRadius:14,
-                    pointHoverBackgroundColor:'#10b981',
+                    pointHitRadius:18,
+                    pointHoverBackgroundColor:context => (Number(context.raw) < 0 ? '#f43f5e' : '#10b981'),
                     pointHoverBorderColor:currentTheme==='dark'?'#0f172a':'#ffffff',
-                    pointHoverBorderWidth:2
+                    pointHoverBorderWidth:2.5
                 }]},
                 options:{
                     responsive:true,maintainAspectRatio:false,
                     interaction:{intersect:false,mode:'index'},
-                    animation:{duration:500,easing:'easeOutQuart'},
-                    layout:{padding:{top:8,right:8,bottom:0,left:0}},
+                    animation:{duration:650,easing:'easeOutQuart'},
+                    layout:{padding:{top:12,right:10,bottom:2,left:2}},
                     plugins:{
                         legend:{display:false},
                         tooltip:{
