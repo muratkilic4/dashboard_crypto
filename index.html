@@ -751,20 +751,17 @@
                     <div id="chart-legend" class="grid grid-cols-2 gap-2 mt-4 text-xs text-slate-600 dark:text-slate-300"></div>
                 </div>
 
-                <!-- Live Market Summary -->
-                <div class="card-bg p-5 sm:p-6 rounded-2xl border lg:col-span-2 flex flex-col overflow-hidden relative">
-                    <div class="absolute -right-12 -top-16 w-40 h-40 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none"></div>
-                    <div class="relative flex flex-wrap items-center justify-between gap-3 mb-5">
-                        <div class="flex items-center gap-2.5"><span class="flex items-center justify-center w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-500"><i data-lucide="chart-no-axes-combined" class="w-5 h-5"></i></span><div><h2 class="text-sm font-semibold text-slate-900 dark:text-white">Piyasa Özeti</h2><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Binance verileri · Son 24 saat</p></div></div>
-                        <span class="inline-flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Canlı piyasa</span>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative">
-                        <div class="rounded-xl border border-slate-200 dark:border-slate-700/70 bg-slate-50/70 dark:bg-slate-800/30 p-4"><div class="flex items-center justify-between gap-2 mb-3"><span class="text-xs text-slate-500 dark:text-slate-400">Bitcoin fiyatı</span><span class="text-[10px] font-semibold text-amber-500">BTC</span></div><div class="flex flex-wrap items-baseline gap-2"><span id="market-summary-btc-price" class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">—</span><span id="market-summary-btc-change" class="text-[11px] font-semibold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-500">—</span></div><p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">BTC / USDT</p></div>
-                        <div class="rounded-xl border border-slate-200 dark:border-slate-700/70 bg-slate-50/70 dark:bg-slate-800/30 p-4"><div class="flex items-center justify-between gap-2 mb-3"><span class="text-xs text-slate-500 dark:text-slate-400">Ethereum fiyatı</span><span class="text-[10px] font-semibold text-indigo-500">ETH</span></div><div class="flex flex-wrap items-baseline gap-2"><span id="market-summary-eth-price" class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">—</span><span id="market-summary-eth-change" class="text-[11px] font-semibold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-500">—</span></div><p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">ETH / USDT</p></div>
-                        <div class="rounded-xl border border-slate-200 dark:border-slate-700/70 bg-slate-50/70 dark:bg-slate-800/30 p-4"><div class="text-xs text-slate-500 dark:text-slate-400 mb-2">İzleme listesinin 24 saatlik hacmi</div><div id="market-summary-volume" class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">—</div><p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">Takip edilen Binance USDT pariteleri</p></div>
-                        <div class="rounded-xl border border-slate-200 dark:border-slate-700/70 bg-slate-50/70 dark:bg-slate-800/30 p-4"><div class="text-xs text-slate-500 dark:text-slate-400 mb-3">Günün öne çıkanları</div><div id="market-summary-movers" class="space-y-2"><div class="text-xs text-slate-500 dark:text-slate-400">Piyasa verileri bekleniyor…</div></div></div>
-                    </div>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-4">Hacim yalnızca takip edilen coinlerin USDT paritelerini kapsar; toplam kripto piyasası hacmi değildir.</p>
+                <!-- Global Market Overview -->
+                <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                <div class="card-bg rounded-xl border p-4 min-w-0"><div class="text-xs font-semibold text-slate-500 dark:text-slate-400">Toplam piyasa değeri</div><div class="flex flex-wrap items-center gap-2 mt-2"><strong id="global-market-cap" class="text-xl font-bold text-slate-900 dark:text-white">Veri bekleniyor</strong><span id="global-market-cap-change" class="text-[10px] font-bold rounded-full px-2 py-1">—</span></div><div class="mt-4 h-8 flex items-end gap-1"><span class="h-3 w-1/6 rounded-sm bg-indigo-500/40"></span><span class="h-5 w-1/6 rounded-sm bg-indigo-500/50"></span><span class="h-4 w-1/6 rounded-sm bg-indigo-500/60"></span><span class="h-6 w-1/6 rounded-sm bg-indigo-500/70"></span><span class="h-5 w-1/6 rounded-sm bg-indigo-500/80"></span><span class="h-8 w-1/6 rounded-sm bg-indigo-500"></span></div><div class="text-[10px] text-slate-500 mt-1">Küresel piyasa · 24 saat</div></div>
+                <div class="card-bg rounded-xl border p-4 min-w-0"><div class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3">Piyasa dağılımı</div><div class="h-3 rounded-full overflow-hidden flex bg-slate-200 dark:bg-slate-700"><span id="global-dominance-btc-bar" class="bg-amber-500" style="width:0%"></span><span id="global-dominance-eth-bar" class="bg-indigo-500" style="width:0%"></span><span id="global-dominance-alt-bar" class="bg-teal-500" style="width:100%"></span></div><div class="space-y-2 mt-3 text-[11px]"><div class="flex justify-between"><span>🟠 Bitcoin</span><strong id="global-dominance-btc">—</strong></div><div class="flex justify-between"><span>🟣 Ethereum</span><strong id="global-dominance-eth">—</strong></div><div class="flex justify-between"><span>🟢 Altcoinler</span><strong id="global-dominance-alt">—</strong></div></div></div>
+                <div class="card-bg rounded-xl border p-4 min-w-0"><div class="text-xs font-semibold text-slate-500 dark:text-slate-400">Korku ve açgözlülük</div><div class="mt-3 flex items-center gap-3"><div class="relative w-20 h-12 shrink-0 overflow-hidden"><div class="absolute left-1 top-0 w-[72px] h-[72px] rounded-full border-[7px] border-b-0" style="border-top-color:#ef4444;border-left-color:#f97316;border-right-color:#10b981"></div><div id="fear-greed-needle" class="absolute bottom-0 left-1/2 h-8 w-0.5 bg-slate-700 dark:bg-white origin-bottom" style="transform:translateX(-50%) rotate(-90deg)"></div></div><div><div id="fear-greed-value" class="text-2xl font-bold text-slate-900 dark:text-white">—</div><div id="fear-greed-label" class="text-xs font-semibold text-amber-500">Veri bekleniyor</div></div></div><div class="text-[10px] text-slate-500 mt-3">Piyasa duyarlılığı</div></div>
+                <div class="card-bg rounded-xl border p-4 min-w-0"><div class="text-xs font-semibold text-slate-500 dark:text-slate-400">Altcoin sezon endeksi</div><div class="flex items-baseline gap-2 mt-3"><strong id="altcoin-season-value" class="text-2xl font-bold">—</strong><span id="altcoin-season-label" class="text-[11px] text-slate-500">Kaynak bağlantısı gerekli</span></div><div class="mt-3 h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div id="altcoin-season-bar" class="h-full bg-gradient-to-r from-amber-500 via-indigo-500 to-teal-500" style="width:0%"></div></div><div class="flex justify-between text-[10px] text-slate-500 mt-1"><span>Bitcoin</span><span>Altcoin</span></div></div>
+                <div class="card-bg rounded-xl border p-4 min-w-0"><div class="text-xs text-slate-500 dark:text-slate-400">Bitcoin fiyatı</div><div class="flex flex-wrap items-baseline gap-2 mt-2"><strong id="market-summary-btc-price" class="text-xl font-bold">—</strong><span id="market-summary-btc-change" class="text-[10px] font-bold rounded-full px-2 py-1">—</span></div><div class="text-[10px] text-slate-500 mt-3">BTC / USDT · Binance</div></div>
+                <div class="card-bg rounded-xl border p-4 min-w-0"><div class="text-xs text-slate-500 dark:text-slate-400">Ethereum fiyatı</div><div class="flex flex-wrap items-baseline gap-2 mt-2"><strong id="market-summary-eth-price" class="text-xl font-bold">—</strong><span id="market-summary-eth-change" class="text-[10px] font-bold rounded-full px-2 py-1">—</span></div><div class="text-[10px] text-slate-500 mt-3">ETH / USDT · Binance</div></div>
+                <div class="card-bg rounded-xl border p-4 min-w-0"><div class="text-xs text-slate-500 dark:text-slate-400">24 saatlik piyasa hacmi</div><div id="global-market-volume" class="text-xl font-bold mt-2">Veri bekleniyor</div><div class="text-[10px] text-slate-500 mt-3">Küresel kripto piyasası</div></div>
+                <div class="card-bg rounded-xl border p-4 min-w-0"><div class="text-xs text-slate-500 dark:text-slate-400 mb-3">Günün öne çıkanları</div><div id="market-summary-movers" class="space-y-2"><div class="text-xs text-slate-500">Binance verileri bekleniyor…</div></div></div>
+                <div class="sm:col-span-2 xl:col-span-4 flex items-center justify-between gap-3 px-1 text-[10px] text-slate-500 dark:text-slate-400"><span id="global-market-updated">Piyasa verileri yükleniyor…</span><span>CoinGecko · Alternative.me</span></div>
                 </div>
             </div>
 
@@ -1840,6 +1837,7 @@ async function activateApp(session) {
                 marketReconnectTimer = null;
                 marketRetryMs = Math.min(marketRetryMs * 2, 30000);
                 connectBinanceStream();
+            loadGlobalMarketOverview();
             }, marketRetryMs);
         }
 
@@ -2145,39 +2143,33 @@ async function activateApp(session) {
             return null;
         }
 
-        // --- Live Market Summary ---
-        function renderMarketSummary() {
-            const updatePrice = (symbol, prefix) => {
-                const coin = MARKET_DATA[symbol];
-                const priceEl = document.getElementById(`market-summary-${prefix}-price`);
-                const changeEl = document.getElementById(`market-summary-${prefix}-change`);
-                if (!coin || !priceEl || !changeEl) return;
-                priceEl.textContent = coin.price > 0 ? formatCurrencyVal(coin.price) : '—';
-                const change = Number(coin.change) || 0;
-                changeEl.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
-                changeEl.className = `text-[11px] font-semibold px-2 py-1 rounded-md ${change >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`;
-            };
-            updatePrice('BTC', 'btc');
-            updatePrice('ETH', 'eth');
-            const trackedVolume = Object.values(MARKET_DATA).reduce((sum, coin) => sum + (Number(coin.quoteVolume) || 0), 0);
-            const volumeEl = document.getElementById('market-summary-volume');
-            if (volumeEl) {
-                if (trackedVolume > 0) {
-                    const amount = currentCurrency === 'TRY' && Number.isFinite(usdToTryRate) && usdToTryRate > 0 ? trackedVolume * usdToTryRate : trackedVolume;
-                    const compact = new Intl.NumberFormat('tr-TR', { notation: 'compact', maximumFractionDigits: 2 }).format(amount);
-                    volumeEl.textContent = `${currentCurrency === 'TRY' ? '₺' : '$'}${compact}`;
-                } else volumeEl.textContent = 'Veri bekleniyor';
-            }
-            const moversEl = document.getElementById('market-summary-movers');
-            if (!moversEl) return;
-            const coins = Object.values(MARKET_DATA).filter(coin => Number.isFinite(Number(coin.change)) && coin.price > 0).sort((a, b) => Number(b.change) - Number(a.change));
-            if (!coins.length) {
-                moversEl.innerHTML = '<div class="text-xs text-slate-500 dark:text-slate-400">Piyasa verileri bekleniyor…</div>';
-                return;
-            }
-            const row = (coin, positive) => `
-                <div class="flex items-center justify-between gap-2"><div class="min-w-0"><div class="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">${coin.symbol} <span class="font-normal text-slate-500 dark:text-slate-400">${coin.name}</span></div><div class="text-[10px] text-slate-500 dark:text-slate-400">${formatCurrencyVal(coin.price)}</div></div><span class="shrink-0 text-[10px] font-semibold px-2 py-1 rounded-full ${positive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}">${Number(coin.change) > 0 ? '+' : ''}${Number(coin.change).toFixed(2)}%</span></div>`;
-            moversEl.innerHTML = row(coins[0], true) + (coins.length > 1 ? row(coins[coins.length - 1], false) : '');
+        let globalMarketRefreshStarted=false;
+        async function loadGlobalMarketOverview(){
+            if(globalMarketRefreshStarted)return;globalMarketRefreshStarted=true;
+            const updated=document.getElementById('global-market-updated');
+            try{
+                const response=await fetch('https://api.coingecko.com/api/v3/global',{cache:'no-store'});if(!response.ok)throw new Error('CoinGecko unavailable');
+                const data=(await response.json()).data||{},cap=Number(data.total_market_cap?.usd),volume=Number(data.total_volume?.usd),change=Number(data.market_cap_change_percentage_24h_usd);
+                const capEl=document.getElementById('global-market-cap'),changeEl=document.getElementById('global-market-cap-change'),volumeEl=document.getElementById('global-market-volume');
+                if(capEl&&Number.isFinite(cap))capEl.textContent='$'+new Intl.NumberFormat('en-US',{notation:'compact',maximumFractionDigits:2}).format(cap);
+                if(changeEl&&Number.isFinite(change)){changeEl.textContent=(change>0?'+':'')+change.toFixed(2)+'%';changeEl.className='text-[10px] font-bold rounded-full px-2 py-1 '+(change>=0?'bg-emerald-500/10 text-emerald-500':'bg-rose-500/10 text-rose-500');}
+                if(volumeEl&&Number.isFinite(volume))volumeEl.textContent='$'+new Intl.NumberFormat('en-US',{notation:'compact',maximumFractionDigits:2}).format(volume);
+                const d=data.market_cap_percentage||{},btc=Number(d.btc)||0,eth=Number(d.eth)||0,alt=Math.max(0,100-btc-eth);
+                [['btc',btc],['eth',eth],['alt',alt]].forEach(([key,value])=>{const label=document.getElementById('global-dominance-'+key),bar=document.getElementById('global-dominance-'+key+'-bar');if(label)label.textContent=value.toFixed(1)+'%';if(bar)bar.style.width=value+'%';});
+                if(updated)updated.textContent='Küresel piyasa güncellendi: '+new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+            }catch(error){console.warn('Küresel piyasa verisi alınamadı:',error);if(updated)updated.textContent='Küresel veriler alınamadı; fiyat kartları Binance verisini kullanır.';}
+            try{
+                const response=await fetch('https://api.alternative.me/fng/?limit=1&format=json',{cache:'no-store'});if(!response.ok)throw new Error('Alternative.me unavailable');
+                const item=(await response.json()).data?.[0],value=Number(item?.value);
+                if(Number.isFinite(value)){const valEl=document.getElementById('fear-greed-value'),label=document.getElementById('fear-greed-label'),needle=document.getElementById('fear-greed-needle');if(valEl)valEl.textContent=String(value);if(label){label.textContent=item.value_classification||'Güncel';label.className='text-xs font-semibold '+(value<=24?'text-rose-500':value<=44?'text-orange-500':value<=55?'text-amber-500':value<=74?'text-emerald-500':'text-teal-500');}if(needle)needle.style.transform='translateX(-50%) rotate('+(-90+value*1.8)+'deg)';}
+            }catch(error){console.warn('Fear & Greed verisi alınamadı:',error);const label=document.getElementById('fear-greed-label');if(label)label.textContent='Veri alınamadı';}
+            const season=document.getElementById('altcoin-season-label');if(season)season.textContent='Kaynak bağlantısı gerekli';
+        }
+        function renderMarketSummary(){
+            const update=(symbol,prefix)=>{const coin=MARKET_DATA[symbol],price=document.getElementById('market-summary-'+prefix+'-price'),changeEl=document.getElementById('market-summary-'+prefix+'-change');if(!coin||!price||!changeEl)return;price.textContent=coin.price>0?formatCurrencyVal(coin.price):'—';const change=Number(coin.change)||0;changeEl.textContent=(change>0?'+':'')+change.toFixed(2)+'%';changeEl.className='text-[10px] font-bold rounded-full px-2 py-1 '+(change>=0?'bg-emerald-500/10 text-emerald-500':'bg-rose-500/10 text-rose-500');};update('BTC','btc');update('ETH','eth');
+            const el=document.getElementById('market-summary-movers');if(!el)return;const coins=Object.values(MARKET_DATA).filter(c=>Number.isFinite(Number(c.change))&&c.price>0).sort((a,b)=>Number(b.change)-Number(a.change));if(!coins.length){el.innerHTML='<div class="text-xs text-slate-500">Binance verileri bekleniyor…</div>';return;}
+            const row=(c,pos)=>'<div class="flex items-center justify-between gap-2"><div class="min-w-0"><div class="text-xs font-semibold truncate">'+c.symbol+' <span class="font-normal text-slate-500">'+c.name+'</span></div><div class="text-[10px] text-slate-500">'+formatCurrencyVal(c.price)+'</div></div><span class="shrink-0 text-[10px] font-semibold px-2 py-1 rounded-full '+(pos?'bg-emerald-500/10 text-emerald-500':'bg-rose-500/10 text-rose-500')+'">'+(Number(c.change)>0?'+':'')+Number(c.change).toFixed(2)+'%</span></div>';
+            el.innerHTML=row(coins[0],true)+(coins.length>1?row(coins[coins.length-1],false):'');
         }
 
         // --- Update UI Dashboard ---
@@ -2723,251 +2715,17 @@ async function activateApp(session) {
         }
 
         function initCharts() {
-            const pieCanvas = document.getElementById('portfolioPieChart');
-            const performanceCanvas = document.getElementById('portfolioPerformanceChart');
-            if (pieChartInstance) { pieChartInstance.destroy(); pieChartInstance = null; }
-            if (performanceChartInstance) { performanceChartInstance.destroy(); performanceChartInstance = null; }
-            if (window.Chart && typeof Chart.getChart === 'function') {
-                const oldPie = Chart.getChart(pieCanvas), oldPerformance = Chart.getChart(performanceCanvas);
-                if (oldPie) oldPie.destroy();
-                if (oldPerformance) oldPerformance.destroy();
-            }
-            pieChartInstance = new Chart(pieCanvas.getContext('2d'), {
-                type:'bar',
-                data:{labels:[],datasets:[{
-                    label:'Yatırım dağılımı',
-                    data:[],
-                    backgroundColor:[],
-                    borderColor:'transparent',
-                    borderWidth:0,
-                    borderRadius:6,
-                    borderSkipped:false,
-                    barPercentage:.72,
-                    categoryPercentage:.78,
-                    maxBarThickness:24
-                }]},
-                options:{
-                    indexAxis:'y',
-                    responsive:true,
-                    maintainAspectRatio:false,
-                    animation:{duration:550,easing:'easeOutQuart'},
-                    layout:{padding:{left:2,right:12,top:2,bottom:2}},
-                    plugins:{
-                        legend:{display:false},
-                        tooltip:{
-                            backgroundColor:currentTheme==='dark'?'#111827':'#ffffff',
-                            titleColor:currentTheme==='dark'?'#f8fafc':'#243247',
-                            bodyColor:currentTheme==='dark'?'#cbd5e1':'#526176',
-                            borderColor:currentTheme==='dark'?'#374151':'#e6eaf1',
-                            borderWidth:1,
-                            padding:11,
-                            displayColors:false,
-                            callbacks:{label:context=>{
-                                const values=context.dataset.data||[];
-                                const total=values.reduce((sum,value)=>sum+(Number(value)||0),0);
-                                const value=Number(context.raw)||0;
-                                const percent=total>0?(value/total*100):0;
-                                return ` ${formatCurrencyVal(value)} · ${percent.toFixed(1)}% of portfolio`;
-                            }}
-                        }
-                    },
-                    scales:{
-                        x:{
-                            beginAtZero:true,
-                            grid:{color:currentTheme==='dark'?'rgba(148,163,184,.10)':'rgba(100,116,139,.12)',drawTicks:false},
-                            border:{display:false},
-                            ticks:{color:currentTheme==='dark'?'#9ca3af':'#8792a5',maxTicksLimit:4,padding:7,font:{family:'Inter',size:10},callback:value=>formatCurrencyVal(value)}
-                        },
-                        y:{
-                            grid:{display:false},
-                            border:{display:false},
-                            ticks:{color:currentTheme==='dark'?'#cbd5e1':'#526176',padding:8,font:{family:'Inter',size:11,weight:'600'}}
-                        }
-                    }
-                }
-            });
-            performanceChartInstance = new Chart(performanceCanvas.getContext('2d'), {
-                type:'line',
-                data:{labels:[],datasets:[{
-                    label:'Birikimli gerçekleşen K/Z',
-                    data:[],
-                    borderColor:'#10b981',
-                    segment:{
-                        borderColor:context => Number(context.p1.parsed.y) < 0 ? '#f43f5e' : '#10b981',
-                        borderWidth:context => context.p1.parsed.y < 0 ? 2.8 : 3
-                    },
-                    borderWidth:3,
-                    borderCapStyle:'round',
-                    borderJoinStyle:'round',
-                    backgroundColor:context=>createPerformanceAreaGradient(context),
-                    fill:{target:{value:0}},
-                    tension:.32,
-                    cubicInterpolationMode:'monotone',
-                    pointRadius:context=>context.dataIndex===context.dataset.data.length-1?4.5:2,
-                    pointBackgroundColor:context => Number(context.raw) < 0 ? '#f43f5e' : '#10b981',
-                    pointBorderColor:currentTheme==='dark'?'#0f172a':'#ffffff',
-                    pointBorderWidth:2,
-                    pointHoverRadius:5.5,
-                    pointHitRadius:20,
-                    pointHoverBackgroundColor:context => Number(context.raw) < 0 ? '#f43f5e' : '#10b981',
-                    pointHoverBorderColor:currentTheme==='dark'?'#0f172a':'#ffffff',
-                    pointHoverBorderWidth:2.5
-                }]},
-                options:{
-                    responsive:true,maintainAspectRatio:false,
-                    interaction:{intersect:false,mode:'index'},
-                    animation:{duration:650,easing:'easeOutQuart'},
-                    layout:{padding:{top:12,right:10,bottom:2,left:2}},
-                    plugins:{
-                        legend:{display:false},
-                        tooltip:{
-                            backgroundColor:currentTheme==='dark'?'#0b1220':'#ffffff',
-                            titleColor:currentTheme==='dark'?'#f1f5f9':'#0f172a',
-                            bodyColor:currentTheme==='dark'?'#cbd5e1':'#334155',
-                            borderColor:currentTheme==='dark'?'#334155':'#e2e8f0',
-                            borderWidth:1,
-                            padding:12,
-                            cornerRadius:10,
-                            displayColors:false,
-                            callbacks:{
-                                title:items=>{
-                                    if (!items.length) return '';
-                                    const rawDate = performanceChartFullDates[items[0].dataIndex];
-                                    return rawDate
-                                        ? new Date(rawDate).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'})
-                                        : items[0].label;
-                                },
-                                label:context=>{
-                                    const cumulativeValue = Number(context.parsed.y) || 0;
-                                    const saleValue = Number(performanceChartSalePnL[context.dataIndex]) || 0;
-                                    const cumulativeText = 'Birikimli K/Z: '+(cumulativeValue>0?'+':'')+formatCurrencyVal(cumulativeValue);
-                                    const saleText = 'Bu satış: '+(saleValue>0?'+':'')+formatCurrencyVal(saleValue);
-                                    return [cumulativeText, saleText];
-                                }
-                            }
-                        }
-                    },
-                    scales:{
-                        x:{
-                            grid:{display:false},
-                            border:{display:false},
-                            ticks:{color:currentTheme==='dark'?'#94a3b8':'#64748b',maxRotation:0,autoSkip:true,maxTicksLimit:7,font:{family:'Inter',size:10},padding:9}
-                        },
-                        y:{
-                            grid:{
-                                drawTicks:false,
-                                color:context=>context.tick.value===0
-                                    ? (currentTheme==='dark'?'rgba(203,213,225,.34)':'rgba(71,85,105,.28)')
-                                    : (currentTheme==='dark'?'rgba(148,163,184,.10)':'rgba(100,116,139,.11)'),
-                                lineWidth:context=>context.tick.value===0?1.4:1
-                            },
-                            border:{display:false},
-                            ticks:{color:currentTheme==='dark'?'#94a3b8':'#64748b',maxTicksLimit:5,padding:10,callback:value=>formatCurrencyVal(value),font:{family:'Inter',size:10}}
-                        }
-                    }
-                }
-            });
+            const canvas=document.getElementById('portfolioPieChart');if(!canvas||!window.Chart)return;
+            if(pieChartInstance){pieChartInstance.destroy();pieChartInstance=null;}
+            if(typeof Chart.getChart==='function'){const old=Chart.getChart(canvas);if(old)old.destroy();}
+            pieChartInstance=new Chart(canvas.getContext('2d'),{type:'doughnut',data:{labels:[],datasets:[{data:[],backgroundColor:[],borderColor:currentTheme==='dark'?'#111827':'#ffffff',borderWidth:3,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{backgroundColor:currentTheme==='dark'?'#111827':'#ffffff',titleColor:currentTheme==='dark'?'#f8fafc':'#243247',bodyColor:currentTheme==='dark'?'#cbd5e1':'#526176',borderColor:currentTheme==='dark'?'#374151':'#e6eaf1',borderWidth:1,padding:11,callbacks:{label:context=>{const vals=context.dataset.data||[],total=vals.reduce((sum,v)=>sum+(Number(v)||0),0),value=Number(context.raw)||0;return ' '+formatCurrencyVal(value)+' · '+(total>0?(value/total*100).toFixed(1):'0.0')+'%';}}}}}});
         }
 
-        // The chart uses realized P/L from each SELL transaction only.
-        let performanceRange = 'all';
-        let performanceChartFullDates = [];
-        let performanceChartSalePnL = [];
-        let currentAssetDetails = [];
-
-        function setPerformanceRange(range) {
-            if (!['7d', '30d', 'all'].includes(range)) return;
-            performanceRange = range;
-            document.querySelectorAll('[data-performance-range]').forEach(button => {
-                const active = button.dataset.performanceRange === range;
-                button.classList.toggle('is-active', active);
-                button.setAttribute('aria-pressed', active ? 'true' : 'false');
-            });
-            updateCharts(currentAssetDetails || []);
+        function updateChartsTheme() {
+            if(!pieChartInstance)return;const dark=currentTheme==='dark';
+            pieChartInstance.data.datasets[0].borderColor=dark?'#111827':'#ffffff';
+            const tip=pieChartInstance.options.plugins.tooltip;tip.backgroundColor=dark?'#111827':'#ffffff';tip.titleColor=dark?'#f8fafc':'#243247';tip.bodyColor=dark?'#cbd5e1':'#526176';tip.borderColor=dark?'#374151':'#e6eaf1';pieChartInstance.update();
         }
-
-        function updateCharts(assets) {
-            if (!pieChartInstance || !performanceChartInstance) return;
-            // Slice size reflects total invested buy amount; display at most eight assets.
-            const palette = ['#6C63E8','#22A6A1','#4C8BF5','#E6A23C','#E56B8A','#8B78D9','#4F9D78','#8A9AAF'];
-            const topAssets = [...assets].filter(a=>Number(a.investedAmount)>0)
-                .sort((a,b)=>Number(b.investedAmount)-Number(a.investedAmount)).slice(0,8);
-            pieChartInstance.data.labels = topAssets.map(a=>a.symbol);
-            pieChartInstance.data.datasets[0].data = topAssets.map(a=>Number(a.investedAmount)||0);
-            pieChartInstance.data.datasets[0].backgroundColor = topAssets.map((a,i)=>palette[i]);
-            pieChartInstance.data.datasets[0].borderColor = 'transparent';
-            pieChartInstance.data.datasets[0].borderWidth = 0;
-            pieChartInstance.update();
-
-            const legendContainer = document.getElementById('chart-legend');
-            legendContainer.innerHTML = '';
-            const investedTotal = topAssets.reduce((sum,a)=>sum+(Number(a.investedAmount)||0),0);
-            topAssets.forEach((asset,i) => {
-                const percent = investedTotal>0?(Number(asset.investedAmount)||0)/investedTotal*100:0;
-                const div = document.createElement('div');
-                div.className = 'flex items-center gap-1.5 min-w-0';
-                div.innerHTML = `<span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color:${palette[i]}"></span><span class="truncate">${asset.symbol}: <strong class="text-slate-900 dark:text-white">${formatCurrencyVal(asset.investedAmount||0)}</strong> <span class="text-slate-500">(${percent.toFixed(1)}%)</span></span>`;
-                legendContainer.appendChild(div);
-            });
-            if (!topAssets.length) legendContainer.innerHTML='<span class="col-span-2 text-slate-500">Dağılım için alım verisi bulunmuyor.</span>';
-
-            // Realized profit/loss series filtered by selected period.
-            const realizedById = calculateRealizedPnLByTransaction();
-            const labels = [], values = [];
-            performanceChartFullDates = [];
-            performanceChartSalePnL = [];
-            let cumulative = 0;
-            const now = Date.now();
-            const cutoff = performanceRange === '7d' ? now - 7 * 86400000
-                : performanceRange === '30d' ? now - 30 * 86400000 : -Infinity;
-            const periodSales = [...transactions]
-                .filter(tx => tx.type === 'SELL' && new Date(tx.date).getTime() >= cutoff)
-                .sort((a,b)=>new Date(a.date)-new Date(b.date));
-            periodSales.forEach(tx => {
-                const salePnL = Number(realizedById.get(String(tx.id)) || 0);
-                cumulative += salePnL;
-                labels.push(new Date(tx.date).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'}));
-                performanceChartFullDates.push(tx.date);
-                performanceChartSalePnL.push(salePnL);
-                values.push(Number(cumulative.toFixed(8)));
-            });
-            const periodNote = document.getElementById('performance-chart-period-note');
-            const winningSales = periodSales.filter(tx => Number(realizedById.get(String(tx.id)) || 0) > 0).length;
-            const winRate = periodSales.length ? Math.round(winningSales / periodSales.length * 100) : 0;
-            const periodLabel = performanceRange === '7d' ? 'Son 7 gün' : performanceRange === '30d' ? 'Son 30 gün' : 'Tüm dönem';
-            if (periodNote) periodNote.textContent = periodSales.length
-                ? `${periodLabel} · ${periodSales.length} satış · kârlı satış ${winRate}%`
-                : `${periodLabel} · Bu dönemde satış yok`;
-            document.querySelectorAll('[data-performance-range]').forEach(button => {
-                const active = button.dataset.performanceRange === performanceRange;
-                button.classList.toggle('is-active', active);
-                button.setAttribute('aria-pressed', active ? 'true' : 'false');
-            });
-            performanceChartInstance.data.labels = labels;
-            performanceChartInstance.data.datasets[0].data = values;
-            performanceChartInstance.update();
-            const summary = document.getElementById('performance-chart-summary');
-            if (summary) {
-                summary.textContent = labels.length ? ((cumulative>0?'+':'')+formatCurrencyVal(cumulative)) : 'Henüz satış verisi yok';
-                summary.className = 'text-2xl sm:text-3xl font-bold tracking-tight '+(labels.length?(cumulative>=0?'text-emerald-500':'text-rose-500'):'text-slate-500');
-            }
-            if (performanceChartInstance) {
-                // Keep the line and filled area green above zero and rose below zero.
-                // The gradient follows the zero-line position as the scale changes.
-                performanceChartInstance.data.datasets[0].borderColor = '#10b981';
-                performanceChartInstance.data.datasets[0].segment = {
-                    borderColor: context => Number(context.p1.parsed.y) < 0 ? '#f43f5e' : '#10b981',
-                    borderWidth: context => Number(context.p1.parsed.y) < 0 ? 2.8 : 3
-                };
-                performanceChartInstance.data.datasets[0].pointBackgroundColor = context => Number(context.raw) < 0 ? '#f43f5e' : '#10b981';
-                performanceChartInstance.data.datasets[0].pointHoverBackgroundColor = context => Number(context.raw) < 0 ? '#f43f5e' : '#10b981';
-                performanceChartInstance.data.datasets[0].pointBorderColor = currentTheme === 'dark' ? '#0f172a' : '#ffffff';
-                performanceChartInstance.data.datasets[0].pointHoverBorderColor = currentTheme === 'dark' ? '#0f172a' : '#ffffff';
-                performanceChartInstance.data.datasets[0].backgroundColor = context => createPerformanceAreaGradient(context);
-                performanceChartInstance.update();
-            }
-        }
-
         function updateChartsTheme() {
             const dark = currentTheme === 'dark';
             const textColor = dark ? '#94A3B8' : '#475569';
