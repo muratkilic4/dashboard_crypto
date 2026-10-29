@@ -751,50 +751,20 @@
                     <div id="chart-legend" class="grid grid-cols-2 gap-2 mt-4 text-xs text-slate-600 dark:text-slate-300"></div>
                 </div>
 
-                <!-- Portfolio Performance -->
+                <!-- Live Market Summary -->
                 <div class="card-bg p-5 sm:p-6 rounded-2xl border lg:col-span-2 flex flex-col overflow-hidden relative">
-                    <div class="absolute -right-12 -top-16 w-40 h-40 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none"></div>
-                    <div class="relative flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500">
-                                    <i data-lucide="chart-no-axes-combined" class="w-5 h-5"></i>
-                                </span>
-                                <div>
-                                    <h2 class="text-sm font-semibold text-slate-900 dark:text-white">Portföy Performansı</h2>
-                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Gerçekleşen kâr/zarar geçmişi</p>
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <p class="text-[10px] uppercase tracking-[0.16em] font-semibold text-slate-500 dark:text-slate-400">Birikimli gerçekleşen K/Z</p>
-                                <div class="flex flex-wrap items-baseline gap-2 mt-1">
-                                    <span id="performance-chart-summary" class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-500">Henüz satış verisi yok</span>
-                                    <span class="text-xs text-slate-500 dark:text-slate-400">satış işlemlerine göre</span>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="inline-flex items-center gap-1.5 self-start text-[11px] font-medium px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Gerçekleşen getiri
-                        </span>
+                    <div class="absolute -right-12 -top-16 w-40 h-40 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none"></div>
+                    <div class="relative flex flex-wrap items-center justify-between gap-3 mb-5">
+                        <div class="flex items-center gap-2.5"><span class="flex items-center justify-center w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-500"><i data-lucide="chart-no-axes-combined" class="w-5 h-5"></i></span><div><h2 class="text-sm font-semibold text-slate-900 dark:text-white">Piyasa Özeti</h2><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Binance verileri · Son 24 saat</p></div></div>
+                        <span class="inline-flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Canlı piyasa</span>
                     </div>
-                    <div class="relative flex flex-wrap items-center justify-between gap-3 mb-3">
-                        <div class="inline-flex items-center gap-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 p-1" role="group" aria-label="Performans dönemi">
-                            <button type="button" data-performance-range="7d" onclick="setPerformanceRange('7d')" class="performance-range-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold transition">7 gün</button>
-                            <button type="button" data-performance-range="30d" onclick="setPerformanceRange('30d')" class="performance-range-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold transition">30 gün</button>
-                            <button type="button" data-performance-range="all" onclick="setPerformanceRange('all')" class="performance-range-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold transition">Tümü</button>
-                        </div>
-                        <span id="performance-chart-period-note" class="inline-flex items-center gap-1.5 text-[10px] font-medium text-slate-500 dark:text-slate-400"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Tüm kayıtlı satışlar</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative">
+                        <div class="rounded-xl border border-slate-200 dark:border-slate-700/70 bg-slate-50/70 dark:bg-slate-800/30 p-4"><div class="flex items-center justify-between gap-2 mb-3"><span class="text-xs text-slate-500 dark:text-slate-400">Bitcoin fiyatı</span><span class="text-[10px] font-semibold text-amber-500">BTC</span></div><div class="flex flex-wrap items-baseline gap-2"><span id="market-summary-btc-price" class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">—</span><span id="market-summary-btc-change" class="text-[11px] font-semibold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-500">—</span></div><p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">BTC / USDT</p></div>
+                        <div class="rounded-xl border border-slate-200 dark:border-slate-700/70 bg-slate-50/70 dark:bg-slate-800/30 p-4"><div class="flex items-center justify-between gap-2 mb-3"><span class="text-xs text-slate-500 dark:text-slate-400">Ethereum fiyatı</span><span class="text-[10px] font-semibold text-indigo-500">ETH</span></div><div class="flex flex-wrap items-baseline gap-2"><span id="market-summary-eth-price" class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">—</span><span id="market-summary-eth-change" class="text-[11px] font-semibold px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-500">—</span></div><p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">ETH / USDT</p></div>
+                        <div class="rounded-xl border border-slate-200 dark:border-slate-700/70 bg-slate-50/70 dark:bg-slate-800/30 p-4"><div class="text-xs text-slate-500 dark:text-slate-400 mb-2">İzleme listesinin 24 saatlik hacmi</div><div id="market-summary-volume" class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">—</div><p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2">Takip edilen Binance USDT pariteleri</p></div>
+                        <div class="rounded-xl border border-slate-200 dark:border-slate-700/70 bg-slate-50/70 dark:bg-slate-800/30 p-4"><div class="text-xs text-slate-500 dark:text-slate-400 mb-3">Günün öne çıkanları</div><div id="market-summary-movers" class="space-y-2"><div class="text-xs text-slate-500 dark:text-slate-400">Piyasa verileri bekleniyor…</div></div></div>
                     </div>
-                    <div class="performance-chart-shell relative h-[260px] w-full rounded-xl overflow-hidden">
-                        <canvas id="portfolioPerformanceChart"></canvas>
-                    </div>
-                    <div class="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/70">
-                        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-slate-500 dark:text-slate-400">
-                            <span class="inline-flex items-center gap-2"><span class="w-5 h-0.5 rounded-full bg-emerald-500"></span> Kâr bölgesi</span>
-                            <span class="inline-flex items-center gap-2"><span class="w-5 h-0.5 rounded-full bg-rose-500"></span> Zarar bölgesi</span>
-                        </div>
-                        <p class="text-[10px] text-right text-slate-500 dark:text-slate-400">Geçmiş portföy değeri değil; kayıtlı satışlardan hesaplanır.</p>
-                    </div>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-4">Hacim yalnızca takip edilen coinlerin USDT paritelerini kapsar; toplam kripto piyasası hacmi değildir.</p>
                 </div>
             </div>
 
@@ -1828,9 +1798,11 @@ async function activateApp(session) {
                     if (!MARKET_DATA[symbol]) continue;
                     const price = Number(ticker.lastPrice);
                     const change = Number(ticker.priceChangePercent);
+                    const quoteVolume = Number(ticker.quoteVolume);
                     if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(change)) continue;
                     MARKET_DATA[symbol].price = price;
                     MARKET_DATA[symbol].change = change;
+                    MARKET_DATA[symbol].quoteVolume = Number.isFinite(quoteVolume) && quoteVolume >= 0 ? quoteVolume : (MARKET_DATA[symbol].quoteVolume || 0);
                     MARKET_DATA[symbol].lastUpdated = updatedAt;
                     delete pendingMarketUpdates[symbol];
                     applied++;
@@ -2173,6 +2145,41 @@ async function activateApp(session) {
             return null;
         }
 
+        // --- Live Market Summary ---
+        function renderMarketSummary() {
+            const updatePrice = (symbol, prefix) => {
+                const coin = MARKET_DATA[symbol];
+                const priceEl = document.getElementById(`market-summary-${prefix}-price`);
+                const changeEl = document.getElementById(`market-summary-${prefix}-change`);
+                if (!coin || !priceEl || !changeEl) return;
+                priceEl.textContent = coin.price > 0 ? formatCurrencyVal(coin.price) : '—';
+                const change = Number(coin.change) || 0;
+                changeEl.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
+                changeEl.className = `text-[11px] font-semibold px-2 py-1 rounded-md ${change >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`;
+            };
+            updatePrice('BTC', 'btc');
+            updatePrice('ETH', 'eth');
+            const trackedVolume = Object.values(MARKET_DATA).reduce((sum, coin) => sum + (Number(coin.quoteVolume) || 0), 0);
+            const volumeEl = document.getElementById('market-summary-volume');
+            if (volumeEl) {
+                if (trackedVolume > 0) {
+                    const amount = currentCurrency === 'TRY' && Number.isFinite(usdToTryRate) && usdToTryRate > 0 ? trackedVolume * usdToTryRate : trackedVolume;
+                    const compact = new Intl.NumberFormat('tr-TR', { notation: 'compact', maximumFractionDigits: 2 }).format(amount);
+                    volumeEl.textContent = `${currentCurrency === 'TRY' ? '₺' : '$'}${compact}`;
+                } else volumeEl.textContent = 'Veri bekleniyor';
+            }
+            const moversEl = document.getElementById('market-summary-movers');
+            if (!moversEl) return;
+            const coins = Object.values(MARKET_DATA).filter(coin => Number.isFinite(Number(coin.change)) && coin.price > 0).sort((a, b) => Number(b.change) - Number(a.change));
+            if (!coins.length) {
+                moversEl.innerHTML = '<div class="text-xs text-slate-500 dark:text-slate-400">Piyasa verileri bekleniyor…</div>';
+                return;
+            }
+            const row = (coin, positive) => `
+                <div class="flex items-center justify-between gap-2"><div class="min-w-0"><div class="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">${coin.symbol} <span class="font-normal text-slate-500 dark:text-slate-400">${coin.name}</span></div><div class="text-[10px] text-slate-500 dark:text-slate-400">${formatCurrencyVal(coin.price)}</div></div><span class="shrink-0 text-[10px] font-semibold px-2 py-1 rounded-full ${positive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}">${Number(coin.change) > 0 ? '+' : ''}${Number(coin.change).toFixed(2)}%</span></div>`;
+            moversEl.innerHTML = row(coins[0], true) + (coins.length > 1 ? row(coins[coins.length - 1], false) : '');
+        }
+
         // --- Update UI Dashboard ---
         function updateDashboard() {
             const summary = calculatePortfolio();
@@ -2204,7 +2211,8 @@ async function activateApp(session) {
                 document.getElementById('metric-best-asset-pnl').textContent = `Performans: 0.00%`;
             }
 
-            // 2. Tables & Charts
+            // 2. Tables, Charts & Live Market Summary
+            renderMarketSummary();
             currentAssetDetails = summary.assetDetails;
             renderAssetsTable(summary.assetDetails);
             loadInvestingCryptoNews();
