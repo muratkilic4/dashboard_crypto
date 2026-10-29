@@ -2418,6 +2418,38 @@ async function activateApp(session) {
         }
 
         // --- Chart Configuration & Dynamic Updates ---
+        function createPerformanceAreaGradient(context) {
+            const chart = context.chart;
+            const area = chart.chartArea;
+            if (!area) return currentTheme === 'dark' ? 'rgba(16,185,129,.14)' : 'rgba(16,185,129,.10)';
+
+            const zeroY = chart.scales.y.getPixelForValue(0);
+            const span = Math.max(1, area.bottom - area.top);
+            const zeroStop = Math.max(0, Math.min(1, (zeroY - area.top) / span));
+            const gradient = chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
+            const greenTop = currentTheme === 'dark' ? 'rgba(16,185,129,.25)' : 'rgba(16,185,129,.19)';
+            const greenMid = currentTheme === 'dark' ? 'rgba(16,185,129,.09)' : 'rgba(16,185,129,.065)';
+            const redMid = currentTheme === 'dark' ? 'rgba(244,63,94,.09)' : 'rgba(244,63,94,.065)';
+            const redBottom = currentTheme === 'dark' ? 'rgba(244,63,94,.23)' : 'rgba(244,63,94,.17)';
+
+            if (zeroY >= area.bottom) {
+                gradient.addColorStop(0, greenTop);
+                gradient.addColorStop(1, 'rgba(16,185,129,0)');
+            } else if (zeroY <= area.top) {
+                gradient.addColorStop(0, 'rgba(244,63,94,0)');
+                gradient.addColorStop(1, redBottom);
+            } else {
+                const fade = Math.max(0, zeroStop - Math.min(.16, zeroStop * .35));
+                const redFade = Math.min(1, zeroStop + Math.min(.16, (1 - zeroStop) * .35));
+                gradient.addColorStop(0, greenTop);
+                gradient.addColorStop(fade, greenMid);
+                gradient.addColorStop(zeroStop, 'rgba(148,163,184,.015)');
+                gradient.addColorStop(redFade, redMid);
+                gradient.addColorStop(1, redBottom);
+            }
+            return gradient;
+        }
+
         function initCharts() {
             const pieCanvas = document.getElementById('portfolioPieChart');
             const performanceCanvas = document.getElementById('portfolioPerformanceChart');
@@ -2492,15 +2524,7 @@ async function activateApp(session) {
                     borderWidth:2.8,
                     borderCapStyle:'round',
                     borderJoinStyle:'round',
-                    backgroundColor:context=>{
-                        const chart=context.chart, area=chart.chartArea;
-                        if (!area) return 'rgba(16,185,129,.10)';
-                        const gradient=chart.ctx.createLinearGradient(0,area.top,0,area.bottom);
-                        gradient.addColorStop(0,currentTheme==='dark'?'rgba(16,185,129,.24)':'rgba(16,185,129,.18)');
-                        gradient.addColorStop(.58,currentTheme==='dark'?'rgba(16,185,129,.09)':'rgba(16,185,129,.07)');
-                        gradient.addColorStop(1,'rgba(16,185,129,0)');
-                        return gradient;
-                    },
+                    backgroundColor:context=>createPerformanceAreaGradient(context),
                     fill:{target:{value:0}},
                     tension:.32,
                     cubicInterpolationMode:'monotone',
@@ -2633,17 +2657,12 @@ async function activateApp(session) {
                 summary.className = 'text-2xl sm:text-3xl font-bold tracking-tight '+(labels.length?(cumulative>=0?'text-emerald-500':'text-rose-500'):'text-slate-500');
             }
             if (performanceChartInstance) {
-                const lineColor = cumulative >= 0 ? '#10b981' : '#f43f5e';
-                performanceChartInstance.data.datasets[0].borderColor = lineColor;
-                performanceChartInstance.data.datasets[0].pointHoverBackgroundColor = lineColor;
-                performanceChartInstance.data.datasets[0].backgroundColor = context => {
-                    const chart=context.chart, area=chart.chartArea;
-                    if (!area) return cumulative >= 0 ? 'rgba(16,185,129,.12)' : 'rgba(244,63,94,.12)';
-                    const gradient=chart.ctx.createLinearGradient(0,area.top,0,area.bottom);
-                    gradient.addColorStop(0,cumulative >= 0 ? 'rgba(16,185,129,.24)' : 'rgba(244,63,94,.22)');
-                    gradient.addColorStop(1,cumulative >= 0 ? 'rgba(16,185,129,.005)' : 'rgba(244,63,94,.005)');
-                    return gradient;
-                };
+                // Keep the line and filled area green above zero and rose below zero.
+                // The gradient follows the zero-line position as the scale changes.
+                performanceChartInstance.data.datasets[0].borderColor = '#10b981';
+                performanceChartInstance.data.datasets[0].pointBackgroundColor = '#10b981';
+                performanceChartInstance.data.datasets[0].pointHoverBackgroundColor = '#10b981';
+                performanceChartInstance.data.datasets[0].backgroundColor = context => createPerformanceAreaGradient(context);
                 performanceChartInstance.update();
             }
         }
