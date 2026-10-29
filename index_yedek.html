@@ -996,20 +996,21 @@
                     </div>
                 </div>
 
-                <!-- Market Movers -->
-                <div class="card-bg p-5 rounded-2xl border flex flex-col">
-                    <div class="flex justify-between items-center gap-2 mb-4">
-                        <h2 class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                            <i data-lucide="trending-up-down" class="w-4 h-4 text-indigo-500"></i> Yükselenler / Düşenler
-                        </h2>
-                        <span id="market-status" class="text-[10px] font-semibold text-slate-500">● Bekleniyor</span>
+                <!-- Latest Crypto News -->
+                <section class="card-bg p-5 rounded-2xl border flex flex-col min-w-0" aria-labelledby="crypto-news-title">
+                    <div class="flex items-start justify-between gap-3 mb-4">
+                        <div class="min-w-0">
+                            <h2 id="crypto-news-title" class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="newspaper" class="w-4 h-4 text-indigo-500"></i> Kripto Dünyasından Son Haberler
+                            </h2>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Investing.com · En güncel 10 haber</p>
+                        </div>
+                        <a href="https://tr.investing.com/news/cryptocurrency-news" target="_blank" rel="noopener noreferrer" class="shrink-0 text-[11px] font-semibold text-indigo-500 hover:text-indigo-400">Tüm haberler <i data-lucide="arrow-up-right" class="inline w-3 h-3"></i></a>
                     </div>
-                    <div class="grid grid-cols-2 gap-3 mb-3">
-                        <div><div class="text-[10px] uppercase tracking-wider text-emerald-500 font-bold mb-2">En çok yükselen</div><div class="space-y-2" id="market-gainers"></div></div>
-                        <div><div class="text-[10px] uppercase tracking-wider text-rose-500 font-bold mb-2">En çok düşen</div><div class="space-y-2" id="market-losers"></div></div>
-                    </div>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-auto">24 saatlik değişim · Binance USDT piyasaları</p>
-                </div>
+                    <div id="crypto-news-status" class="text-xs text-slate-500 dark:text-slate-400 py-3" role="status" aria-live="polite">Haberler yükleniyor…</div>
+                    <ol id="crypto-news-list" class="space-y-1 max-h-[560px] overflow-y-auto custom-scrollbar pr-1"></ol>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/70">Haber başlıkları ve yayın bilgileri Investing.com kaynaklıdır.</p>
+                </section>
             </div>
 
             <!-- Recent Transactions -->
@@ -2241,7 +2242,7 @@ async function activateApp(session) {
             // 2. Tables & Charts
             currentAssetDetails = summary.assetDetails;
             renderAssetsTable(summary.assetDetails);
-            renderMarketPrices();
+            loadInvestingCryptoNews();
             updateCharts(summary.assetDetails);
             renderRecentTransactions();
             if (isManageUnlocked) renderManageTable();
@@ -2325,30 +2326,121 @@ async function activateApp(session) {
             });
         }
 
-        // Render 24-hour gainers and losers from Binance ticker data.
-        function renderMarketPrices() {
-            const gainersEl = document.getElementById('market-gainers');
-            const losersEl = document.getElementById('market-losers');
-            if (!gainersEl || !losersEl) return;
-            gainersEl.innerHTML = ''; losersEl.innerHTML = '';
-            const rows = Object.keys(MARKET_DATA).map(symbol => ({
-                symbol, ...MARKET_DATA[symbol],
-                change: Number(MARKET_DATA[symbol].change || 0),
-                price: Number(MARKET_DATA[symbol].price || 0)
-            }));
-            const gainers = [...rows].sort((a,b) => b.change - a.change).slice(0,4);
-            const losers = [...rows].sort((a,b) => a.change - b.change).slice(0,4);
-            const makeRow = coin => {
-                const el = document.createElement('button');
-                el.type = 'button';
-                el.className = 'w-full flex items-center justify-between gap-1 p-2 rounded-lg input-bg border border-transparent hover:border-indigo-500/30 transition text-left';
-                el.onclick = () => openCoinInfoModal(coin.symbol);
-                const up = coin.change >= 0;
-                el.innerHTML = `<span class="flex items-center gap-1.5 min-w-0">${getCoinIconHtml(coin.symbol,'w-5 h-5')}<span class="text-xs font-semibold text-slate-900 dark:text-white">${coin.symbol}</span></span><span class="text-[10px] font-bold whitespace-nowrap ${up?'text-emerald-500':'text-rose-500'}">${up?'+':''}${coin.change.toFixed(2)}%</span>`;
-                return el;
-            };
-            gainers.forEach(coin => gainersEl.appendChild(makeRow(coin)));
-            losers.forEach(coin => losersEl.appendChild(makeRow(coin)));
+        // Load the latest 10 crypto headlines from Investing.com RSS.
+        // RSS is requested through a JSON feed adapter because this static GitHub Pages app has no server-side proxy.
+        let cryptoNewsLoadPromise = null;
+        let cryptoNewsLastLoadedAt = 0;
+
+        async function loadInvestingCryptoNews(force = false) {
+            const list = document.getElementById('crypto-news-list');
+            const status = document.getElementById('crypto-news-status');
+            if (!list || !status) return;
+            if (!force && cryptoNewsLastLoadedAt && Date.now() - cryptoNewsLastLoadedAt < 5 * 60 * 1000 && list.children.length) return;
+            if (cryptoNewsLoadPromise) return cryptoNewsLoadPromise;
+
+            status.textContent = 'Güncel haberler alınıyor…';
+            list.innerHTML = '';
+            cryptoNewsLoadPromise = (async () => {
+                const feeds = [
+                    'https://tr.investing.com/rss/news_301.rss',
+                    'https://www.investing.com/rss/news_301.rss'
+                ];
+                let items = [];
+                let lastError = null;
+
+                for (const feedUrl of feeds) {
+                    try {
+                        const endpoint = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedUrl);
+                        const response = await fetch(endpoint, { cache: 'no-store' });
+                        if (!response.ok) throw new Error('Haber servisi yanıt vermedi.');
+                        const payload = await response.json();
+                        if (payload.status !== 'ok' || !Array.isArray(payload.items)) throw new Error('RSS içeriği okunamadı.');
+                        items = payload.items
+                            .map(item => ({
+                                title: String(item.title || '').trim(),
+                                link: String(item.link || '').trim(),
+                                pubDate: item.pubDate || item.isoDate || ''
+                            }))
+                            .filter(item => item.title && isInvestingNewsUrl(item.link))
+                            .filter((item, index, all) => all.findIndex(other => other.link === item.link) === index)
+                            .slice(0, 10);
+                        if (items.length) break;
+                    } catch (error) {
+                        lastError = error;
+                    }
+                }
+
+                if (!items.length) throw lastError || new Error('Gösterilecek haber bulunamadı.');
+                const fragment = document.createDocumentFragment();
+                items.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    const link = document.createElement('a');
+                    link.href = item.link;
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    link.className = 'group flex gap-3 rounded-xl p-3 transition hover:bg-slate-100 dark:hover:bg-slate-800/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500';
+                    const number = document.createElement('span');
+                    number.className = 'flex shrink-0 items-center justify-center w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-500 text-[11px] font-bold';
+                    number.textContent = String(index + 1).padStart(2, '0');
+                    const body = document.createElement('span');
+                    body.className = 'min-w-0 flex-1';
+                    const title = document.createElement('span');
+                    title.className = 'block text-xs sm:text-[13px] leading-5 font-semibold text-slate-800 dark:text-slate-100 group-hover:text-indigo-500 transition';
+                    title.textContent = item.title;
+                    const meta = document.createElement('span');
+                    meta.className = 'mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-slate-500 dark:text-slate-400';
+                    const source = document.createElement('span');
+                    source.textContent = 'Investing.com';
+                    const dot = document.createElement('span');
+                    dot.textContent = '·';
+                    const date = document.createElement('time');
+                    const parsedDate = item.pubDate ? new Date(item.pubDate) : null;
+                    if (parsedDate && !Number.isNaN(parsedDate.getTime())) {
+                        date.dateTime = parsedDate.toISOString();
+                        date.textContent = formatCryptoNewsDate(parsedDate);
+                    } else {
+                        date.textContent = 'Güncel haber';
+                    }
+                    meta.append(source, dot, date);
+                    body.append(title, meta);
+                    link.append(number, body);
+                    li.append(link);
+                    fragment.append(li);
+                });
+                list.append(fragment);
+                status.textContent = 'Son 10 haber · Yeni sekmede açılır';
+                cryptoNewsLastLoadedAt = Date.now();
+                if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+            })().catch(error => {
+                console.warn('Investing.com kripto haberleri yüklenemedi:', error);
+                status.textContent = 'Haberler şu anda yüklenemiyor. Kaynak sayfasından güncel haberlere ulaşabilirsiniz.';
+                const fallback = document.createElement('a');
+                fallback.href = 'https://tr.investing.com/news/cryptocurrency-news';
+                fallback.target = '_blank';
+                fallback.rel = 'noopener noreferrer';
+                fallback.className = 'inline-flex items-center gap-2 mt-2 text-xs font-semibold text-indigo-500 hover:text-indigo-400';
+                fallback.textContent = 'Investing.com kripto haberlerini aç ↗';
+                status.append(document.createElement('br'), fallback);
+            }).finally(() => {
+                cryptoNewsLoadPromise = null;
+            });
+            return cryptoNewsLoadPromise;
+        }
+
+        function isInvestingNewsUrl(value) {
+            try {
+                const url = new URL(value);
+                return url.protocol === 'https:' && (url.hostname === 'investing.com' || url.hostname.endsWith('.investing.com'));
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function formatCryptoNewsDate(date) {
+            const diffMinutes = Math.max(0, Math.floor((Date.now() - date.getTime()) / 60000));
+            if (diffMinutes < 60) return diffMinutes <= 1 ? 'Az önce' : diffMinutes + ' dk önce';
+            if (diffMinutes < 24 * 60) return Math.floor(diffMinutes / 60) + ' sa önce';
+            return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
         }
 
         function renderRecentTransactions() {
