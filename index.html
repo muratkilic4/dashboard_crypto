@@ -1105,6 +1105,8 @@
         let currentTheme = localStorage.getItem('cryptodash_theme') || 'dark';
         let marketSocket = null;
         let marketReconnectTimer = null;
+        let marketDisplayRefreshTimer = null;
+        let pendingMarketUpdates = {};
         let marketRetryMs = 2000;
 
         let authMode = 'signin';
@@ -1500,6 +1502,7 @@ async function activateApp(session) {
     updateDashboard();
     applyAccessModeUI();
     connectBinanceStream();
+    startMarketDisplayRefresh();
     void refreshUsdTryRate();
     lucide.createIcons();
 
@@ -1552,6 +1555,9 @@ async function activateApp(session) {
             }
             if (marketReconnectTimer) clearTimeout(marketReconnectTimer);
             marketReconnectTimer = null;
+            if (marketDisplayRefreshTimer) clearInterval(marketDisplayRefreshTimer);
+            marketDisplayRefreshTimer = null;
+            pendingMarketUpdates = {};
             if (pieChartInstance) { pieChartInstance.destroy(); pieChartInstance = null; }
             if (performanceChartInstance) { performanceChartInstance.destroy(); performanceChartInstance = null; }
             document.getElementById('app-root').classList.add('hidden');
@@ -1636,12 +1642,13 @@ async function activateApp(session) {
                     const price = Number(ticker.c);
                     const change = Number(ticker.P);
                     if (!Number.isFinite(price) || price <= 0 || !Number.isFinite(change)) return;
-                    MARKET_DATA[symbol].price = price;
-                    MARKET_DATA[symbol].change = change;
-                    MARKET_DATA[symbol].lastUpdated = Date.now();
-                    
+                    pendingMarketUpdates[symbol] = {
+                        price,
+                        change,
+                        lastUpdated: Date.now()
+                    };
+
                     setMarketStatus('live');
-                    updateDashboard();
                 } catch (error) {
                     console.warn('Binance mesajı çözümlenemedi:', error);
                 }
@@ -1652,6 +1659,25 @@ async function activateApp(session) {
                 setMarketStatus('offline');
                 scheduleMarketReconnect();
             };
+        }
+
+        // Binance verileri canlı alınır; ekranda coin fiyatları 60 saniyede bir uygulanır.
+        function startMarketDisplayRefresh() {
+            if (marketDisplayRefreshTimer) return;
+            marketDisplayRefreshTimer = setInterval(() => {
+                if (!activeUserId) return;
+                const updates = Object.entries(pendingMarketUpdates);
+                if (!updates.length) return;
+
+                for (const [symbol, update] of updates) {
+                    if (!MARKET_DATA[symbol]) continue;
+                    MARKET_DATA[symbol].price = update.price;
+                    MARKET_DATA[symbol].change = update.change;
+                    MARKET_DATA[symbol].lastUpdated = update.lastUpdated;
+                }
+                pendingMarketUpdates = {};
+                updateDashboard();
+            }, 60000);
         }
 
         function scheduleMarketReconnect() {
