@@ -788,10 +788,13 @@
 
         // --- Boot / Authentication ---
         window.addEventListener('load', async () => {
-            lucide.createIcons();
+            // Giriş formunu önce bağla; harici ikon kütüphanesi yüklenmezse giriş kilitlenmesin.
+            bindAuthUI();
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
             applySavedPreferences();
             initDateInput();
-            bindAuthUI();
             document.addEventListener('click', event => {
                 const dropdown = document.getElementById('coin-dropdown');
                 const searchInput = document.getElementById('input-coin-search');
