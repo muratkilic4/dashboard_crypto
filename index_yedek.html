@@ -1005,7 +1005,7 @@
                             </h2>
                             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Investing.com · En güncel 10 haber</p>
                         </div>
-                        <a href="https://tr.investing.com/news/cryptocurrency-news" target="_blank" rel="noopener noreferrer" class="shrink-0 text-[11px] font-semibold text-indigo-500 hover:text-indigo-400">Tüm haberler <i data-lucide="arrow-up-right" class="inline w-3 h-3"></i></a>
+                        <a href="https://tr.cointelegraph.com/" target="_blank" rel="noopener noreferrer" class="shrink-0 text-[11px] font-semibold text-indigo-500 hover:text-indigo-400">Tüm haberler <i data-lucide="arrow-up-right" class="inline w-3 h-3"></i></a>
                     </div>
                     <div id="crypto-news-status" class="text-xs text-slate-500 dark:text-slate-400 py-3" role="status" aria-live="polite">Haberler yükleniyor…</div>
                     <ol id="crypto-news-list" class="space-y-1 max-h-[560px] overflow-y-auto custom-scrollbar pr-1"></ol>
@@ -2326,8 +2326,8 @@ async function activateApp(session) {
             });
         }
 
-        // Load the latest 10 crypto headlines from Investing.com RSS.
-        // Protect the dashboard from retry loops if an external feed service fails.
+        // Load up to 10 recent crypto headlines from alternative RSS sources.
+        // Failures are throttled to prevent repeated requests and infinite loading.
         let cryptoNewsLoadPromise = null;
         let cryptoNewsLastLoadedAt = 0;
         let cryptoNewsNextAttemptAt = 0;
@@ -2341,36 +2341,37 @@ async function activateApp(session) {
             if (!force && cryptoNewsLastLoadedAt && now - cryptoNewsLastLoadedAt < 5 * 60 * 1000 && list.children.length) return;
             if (cryptoNewsLoadPromise) return cryptoNewsLoadPromise;
 
-            status.textContent = 'Güncel haberler alınıyor…';
+            status.textContent = 'Kripto haberleri alınıyor…';
             list.replaceChildren();
             cryptoNewsLoadPromise = (async () => {
                 const feeds = [
-                    'https://tr.investing.com/rss/news_301.rss',
-                    'https://www.investing.com/rss/news_301.rss'
+                    { url: 'https://tr.cointelegraph.com/rss', name: 'Cointelegraph' },
+                    { url: 'https://cointelegraph.com/rss', name: 'Cointelegraph' },
+                    { url: 'https://www.coindesk.com/arc/outboundfeeds/rss/?outputType=xml', name: 'CoinDesk' },
+                    { url: 'https://cryptoslate.com/feed/', name: 'CryptoSlate' }
                 ];
-                let items = [];
+                const collected = [];
                 let lastError = null;
 
-                for (const feedUrl of feeds) {
+                for (const feed of feeds) {
+                    if (collected.length >= 10) break;
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 10000);
+                    const timeoutId = setTimeout(() => controller.abort(), 9000);
                     try {
-                        const endpoint = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedUrl);
+                        const endpoint = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feed.url);
                         const response = await fetch(endpoint, { cache: 'no-store', signal: controller.signal });
                         if (!response.ok) throw new Error('Haber servisi HTTP ' + response.status);
                         const payload = await response.json();
                         if (payload.status !== 'ok' || !Array.isArray(payload.items)) throw new Error('RSS içeriği okunamadı.');
-                        items = payload.items
-                            .map(item => ({
-                                title: String(item.title || '').trim(),
-                                link: String(item.link || '').trim(),
-                                pubDate: item.pubDate || item.isoDate || ''
-                            }))
-                            .filter(item => item.title && isInvestingNewsUrl(item.link))
-                            .filter((item, index, all) => all.findIndex(other => other.link === item.link) === index)
-                            .slice(0, 10);
-                        if (items.length) break;
-                        lastError = new Error('RSS kaynağında gösterilebilir haber bulunamadı.');
+                        const sourceItems = payload.items.map(item => ({
+                            title: String(item.title || '').trim(),
+                            link: String(item.link || '').trim(),
+                            pubDate: item.pubDate || item.isoDate || '',
+                            source: feed.name
+                        })).filter(item => item.title && isSafeCryptoNewsUrl(item.link));
+                        sourceItems.forEach(item => {
+                            if (collected.length < 10 && !collected.some(existing => existing.link === item.link)) collected.push(item);
+                        });
                     } catch (error) {
                         lastError = error;
                     } finally {
@@ -2378,7 +2379,13 @@ async function activateApp(session) {
                     }
                 }
 
-                if (!items.length) throw lastError || new Error('Gösterilecek haber bulunamadı.');
+                const items = collected.sort((a, b) => {
+                    const da = new Date(a.pubDate).getTime() || 0;
+                    const db = new Date(b.pubDate).getTime() || 0;
+                    return db - da;
+                }).slice(0, 10);
+                if (!items.length) throw lastError || new Error('Gösterilebilir haber bulunamadı.');
+
                 const fragment = document.createDocumentFragment();
                 items.forEach((item, index) => {
                     const li = document.createElement('li');
@@ -2398,7 +2405,7 @@ async function activateApp(session) {
                     const meta = document.createElement('span');
                     meta.className = 'mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-slate-500 dark:text-slate-400';
                     const source = document.createElement('span');
-                    source.textContent = 'Investing.com';
+                    source.textContent = item.source;
                     const dot = document.createElement('span');
                     dot.textContent = '·';
                     const date = document.createElement('time');
@@ -2416,21 +2423,20 @@ async function activateApp(session) {
                     fragment.append(li);
                 });
                 list.replaceChildren(fragment);
-                status.textContent = 'Son ' + items.length + ' haber · Yeni sekmede açılır';
+                status.textContent = 'Son ' + items.length + ' haber · Cointelegraph, CoinDesk ve CryptoSlate · Yeni sekmede açılır';
                 cryptoNewsLastLoadedAt = Date.now();
                 cryptoNewsNextAttemptAt = Date.now() + 5 * 60 * 1000;
                 if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
             })().catch(error => {
-                console.warn('Investing.com kripto haberleri yüklenemedi:', error);
-                // Cool down on failures too: dashboard refreshes must not trigger an endless retry loop.
+                console.warn('Kripto haberleri yüklenemedi:', error);
                 cryptoNewsNextAttemptAt = Date.now() + 5 * 60 * 1000;
-                status.textContent = 'Haberler şu anda alınamıyor. Birkaç dakika sonra yeniden deneyebilir veya kaynak sayfasını açabilirsiniz.';
+                status.textContent = 'Haberler şu anda alınamıyor. Kaynak sitelerden birini açarak son gelişmeleri görebilirsin.';
                 const fallback = document.createElement('a');
-                fallback.href = 'https://tr.investing.com/news/cryptocurrency-news';
+                fallback.href = 'https://tr.cointelegraph.com/';
                 fallback.target = '_blank';
                 fallback.rel = 'noopener noreferrer';
                 fallback.className = 'inline-flex items-center gap-2 mt-2 text-xs font-semibold text-indigo-500 hover:text-indigo-400';
-                fallback.textContent = 'Investing.com kripto haberlerini aç ↗';
+                fallback.textContent = 'Cointelegraph haberlerini aç ↗';
                 status.append(document.createElement('br'), fallback);
             }).finally(() => {
                 cryptoNewsLoadPromise = null;
@@ -2438,10 +2444,10 @@ async function activateApp(session) {
             return cryptoNewsLoadPromise;
         }
 
-        function isInvestingNewsUrl(value) {
+        function isSafeCryptoNewsUrl(value) {
             try {
                 const url = new URL(value);
-                return url.protocol === 'https:' && (url.hostname === 'investing.com' || url.hostname.endsWith('.investing.com'));
+                return url.protocol === 'https:' && ['cointelegraph.com', 'tr.cointelegraph.com', 'coindesk.com', 'www.coindesk.com', 'cryptoslate.com', 'www.cryptoslate.com'].includes(url.hostname);
             } catch (_) {
                 return false;
             }
