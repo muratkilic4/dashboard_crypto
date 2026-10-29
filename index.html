@@ -606,7 +606,6 @@
                 <div class="terminal-brand-mark flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-violet-200">
                     <i data-lucide="chart-no-axes-combined" class="h-5 w-5"></i>
                 </div>
-                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="terminal-home-btn inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-2 text-xs font-bold transition-all" title="Anasayfaya git" aria-label="Anasayfaya git"><i data-lucide="house" class="h-3.5 w-3.5"></i><span class="hidden sm:inline">Anasayfa</span></button>
                 <div class="min-w-0">
                     <div class="flex items-center gap-2">
                         <h1 class="truncate text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">CryptoDash <span class="text-violet-500 dark:text-violet-300">PRO</span></h1>
@@ -618,6 +617,7 @@
                         <span id="market-status" class="font-semibold text-amber-500">● Bağlanıyor</span>
                     </p>
                 </div>
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="terminal-home-btn inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-2 text-xs font-bold transition-all" title="Anasayfaya git" aria-label="Anasayfaya git"><i data-lucide="house" class="h-3.5 w-3.5"></i><span class="hidden sm:inline">Anasayfa</span></button>
             </div>
 
             <div class="terminal-header-actions flex shrink-0 items-center gap-2">
@@ -1907,7 +1907,7 @@ async function activateApp(session) {
                 pageDash.classList.remove('hidden');
                 pageManage.classList.add('hidden');
 
-                navDash.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow-sm";
+                navDash.className = "terminal-home-btn inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-2 text-xs font-bold transition-all bg-violet-600 text-white shadow-sm";
                 if (navManage) navManage.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white transition-all flex items-center";
             } else {
                 pageDash.classList.add('hidden');
