@@ -2327,19 +2327,22 @@ async function activateApp(session) {
         }
 
         // Load the latest 10 crypto headlines from Investing.com RSS.
-        // RSS is requested through a JSON feed adapter because this static GitHub Pages app has no server-side proxy.
+        // Protect the dashboard from retry loops if an external feed service fails.
         let cryptoNewsLoadPromise = null;
         let cryptoNewsLastLoadedAt = 0;
+        let cryptoNewsNextAttemptAt = 0;
 
         async function loadInvestingCryptoNews(force = false) {
             const list = document.getElementById('crypto-news-list');
             const status = document.getElementById('crypto-news-status');
             if (!list || !status) return;
-            if (!force && cryptoNewsLastLoadedAt && Date.now() - cryptoNewsLastLoadedAt < 5 * 60 * 1000 && list.children.length) return;
+            const now = Date.now();
+            if (!force && cryptoNewsNextAttemptAt && now < cryptoNewsNextAttemptAt) return;
+            if (!force && cryptoNewsLastLoadedAt && now - cryptoNewsLastLoadedAt < 5 * 60 * 1000 && list.children.length) return;
             if (cryptoNewsLoadPromise) return cryptoNewsLoadPromise;
 
             status.textContent = 'Güncel haberler alınıyor…';
-            list.innerHTML = '';
+            list.replaceChildren();
             cryptoNewsLoadPromise = (async () => {
                 const feeds = [
                     'https://tr.investing.com/rss/news_301.rss',
@@ -2349,10 +2352,12 @@ async function activateApp(session) {
                 let lastError = null;
 
                 for (const feedUrl of feeds) {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000);
                     try {
                         const endpoint = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedUrl);
-                        const response = await fetch(endpoint, { cache: 'no-store' });
-                        if (!response.ok) throw new Error('Haber servisi yanıt vermedi.');
+                        const response = await fetch(endpoint, { cache: 'no-store', signal: controller.signal });
+                        if (!response.ok) throw new Error('Haber servisi HTTP ' + response.status);
                         const payload = await response.json();
                         if (payload.status !== 'ok' || !Array.isArray(payload.items)) throw new Error('RSS içeriği okunamadı.');
                         items = payload.items
@@ -2365,8 +2370,11 @@ async function activateApp(session) {
                             .filter((item, index, all) => all.findIndex(other => other.link === item.link) === index)
                             .slice(0, 10);
                         if (items.length) break;
+                        lastError = new Error('RSS kaynağında gösterilebilir haber bulunamadı.');
                     } catch (error) {
                         lastError = error;
+                    } finally {
+                        clearTimeout(timeoutId);
                     }
                 }
 
@@ -2407,13 +2415,16 @@ async function activateApp(session) {
                     li.append(link);
                     fragment.append(li);
                 });
-                list.append(fragment);
-                status.textContent = 'Son 10 haber · Yeni sekmede açılır';
+                list.replaceChildren(fragment);
+                status.textContent = 'Son ' + items.length + ' haber · Yeni sekmede açılır';
                 cryptoNewsLastLoadedAt = Date.now();
+                cryptoNewsNextAttemptAt = Date.now() + 5 * 60 * 1000;
                 if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
             })().catch(error => {
                 console.warn('Investing.com kripto haberleri yüklenemedi:', error);
-                status.textContent = 'Haberler şu anda yüklenemiyor. Kaynak sayfasından güncel haberlere ulaşabilirsiniz.';
+                // Cool down on failures too: dashboard refreshes must not trigger an endless retry loop.
+                cryptoNewsNextAttemptAt = Date.now() + 5 * 60 * 1000;
+                status.textContent = 'Haberler şu anda alınamıyor. Birkaç dakika sonra yeniden deneyebilir veya kaynak sayfasını açabilirsiniz.';
                 const fallback = document.createElement('a');
                 fallback.href = 'https://tr.investing.com/news/cryptocurrency-news';
                 fallback.target = '_blank';
