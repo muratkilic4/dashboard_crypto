@@ -632,11 +632,42 @@
 
 <section id="credential-setup-screen" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950">
   <div class="w-full max-w-md rounded-3xl border border-slate-700 bg-slate-900 p-7 shadow-2xl">
-    <div class="mb-6 text-center">
+    <div class="mb-5 text-center">
+      <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
+        <i data-lucide="shield-check" class="h-7 w-7"></i>
+      </div>
       <h2 class="text-2xl font-bold text-white">İlk Kurulum</h2>
-      <p class="mt-2 text-sm text-slate-400">
-        Devam etmek için yeni kullanıcı adını ve şifreni belirle.
+      <p class="mt-2 text-sm leading-6 text-slate-400">
+        CryptoDash Pro hesabını kişiselleştirmek için kullanıcı adını ve şifreni belirle.
       </p>
+    </div>
+
+    <div class="mb-5 rounded-2xl border border-cyan-400/20 bg-gradient-to-br from-cyan-400/10 via-slate-800/70 to-indigo-500/10 p-4">
+      <div class="flex items-start gap-3">
+        <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-400/15 text-cyan-300">
+          <i data-lucide="info" class="h-5 w-5"></i>
+        </div>
+        <div class="min-w-0">
+          <h3 class="text-sm font-bold text-white">Başlamadan önce</h3>
+          <p class="mt-1 text-xs leading-5 text-slate-300">
+            Bu adım, hesabının giriş bilgilerini belirler. Kaydettikten sonra hesabına yeni bilgilerinle giriş yapabilirsin.
+          </p>
+        </div>
+      </div>
+      <ul class="mt-3 space-y-2 border-t border-white/10 pt-3 text-xs leading-5 text-slate-300">
+        <li class="flex items-start gap-2">
+          <i data-lucide="check-circle-2" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-400"></i>
+          <span>Kullanıcı adı 3–32 karakter olmalı; harf, rakam, nokta, tire ve alt çizgi kullanılabilir.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <i data-lucide="check-circle-2" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-400"></i>
+          <span>En az 8 karakterli, başka hesaplarında kullanmadığın bir şifre seç.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <i data-lucide="lock-keyhole" class="mt-0.5 h-4 w-4 shrink-0 text-cyan-300"></i>
+          <span>Giriş bilgilerini güvenli bir yerde sakla ve kimseyle paylaşma.</span>
+        </li>
+      </ul>
     </div>
 
     <form id="credential-setup-form" class="space-y-4">
