@@ -2555,7 +2555,13 @@ async function activateApp(session) {
                             cornerRadius:10,
                             displayColors:false,
                             callbacks:{
-                                title:items=>items.length?items[0].label:'',
+                                title:items=>{
+                                    if (!items.length) return '';
+                                    const rawDate = performanceChartFullDates[items[0].dataIndex];
+                                    return rawDate
+                                        ? new Date(rawDate).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'})
+                                        : items[0].label;
+                                },
                                 label:context=>' Birikimli K/Z: '+(context.parsed.y>0?'+':'')+formatCurrencyVal(context.parsed.y)
                             }
                         }
@@ -2583,6 +2589,7 @@ async function activateApp(session) {
         }
 
         let performanceRange = 'all';
+        let performanceChartFullDates = [];
         let currentAssetDetails = [];
 
         function setPerformanceRange(range) {
@@ -2624,6 +2631,7 @@ async function activateApp(session) {
             // Realized profit/loss series filtered by selected period.
             const realizedById = calculateRealizedPnLByTransaction();
             const labels = [], values = [];
+            performanceChartFullDates = [];
             let cumulative = 0;
             const now = Date.now();
             const cutoff = performanceRange === '7d' ? now - 7 * 86400000
@@ -2634,6 +2642,7 @@ async function activateApp(session) {
             periodSales.forEach(tx => {
                 cumulative += Number(realizedById.get(String(tx.id))||0);
                 labels.push(new Date(tx.date).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'}));
+                performanceChartFullDates.push(tx.date);
                 values.push(Number(cumulative.toFixed(8)));
             });
             const periodNote = document.getElementById('performance-chart-period-note');
