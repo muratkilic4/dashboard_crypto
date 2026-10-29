@@ -2386,7 +2386,8 @@ async function activateApp(session) {
                         const linkNode = entry.querySelector('link[rel="alternate"]') || entry.querySelector('link');
                         const linkText = linkNode ? (linkNode.getAttribute('href') || linkNode.textContent || '').trim() : '';
                         const pubDate = getText(entry, ['pubDate', 'published', 'updated', 'dc\\:date']);
-                        return { title, link: linkText, pubDate, source: 'Cointelegraph Türkiye' };
+                        const image = extractCryptoNewsImage(entry);
+                        return { title, link: linkText, pubDate, image, source: 'Cointelegraph Türkiye' };
                     }).filter(item => item.title && isSafeCryptoNewsUrl(item.link))
                       .sort((a, b) => {
                           const da = new Date(a.pubDate).getTime() || 0;
@@ -2409,6 +2410,27 @@ async function activateApp(session) {
                         const number = document.createElement('span');
                         number.className = 'flex shrink-0 items-center justify-center w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-500 text-[11px] font-bold';
                         number.textContent = String(index + 1).padStart(2, '0');
+
+                        const imageWrap = document.createElement('span');
+                        imageWrap.className = 'relative flex h-[62px] w-[84px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800';
+                        if (item.image) {
+                            const image = document.createElement('img');
+                            image.src = item.image;
+                            image.alt = '';
+                            image.loading = 'lazy';
+                            image.decoding = 'async';
+                            image.referrerPolicy = 'no-referrer';
+                            image.className = 'h-full w-full object-cover transition duration-300 group-hover:scale-105';
+                            image.addEventListener('error', () => {
+                                image.remove();
+                                imageWrap.classList.add('text-slate-400');
+                                imageWrap.innerHTML = '<span aria-hidden="true">📰</span>';
+                            }, { once: true });
+                            imageWrap.append(image);
+                        } else {
+                            imageWrap.className += ' text-slate-400';
+                            imageWrap.innerHTML = '<span aria-hidden="true">📰</span>';
+                        }
 
                         const body = document.createElement('span');
                         body.className = 'min-w-0 flex-1';
@@ -2435,7 +2457,7 @@ async function activateApp(session) {
 
                         meta.append(source, dot, date);
                         body.append(title, meta);
-                        link.append(number, body);
+                        link.append(imageWrap, body);
                         li.append(link);
                         fragment.append(li);
                     });
@@ -2464,6 +2486,49 @@ async function activateApp(session) {
             });
 
             return cryptoNewsLoadPromise;
+        }
+
+        function extractCryptoNewsImage(entry) {
+            // Prefer image metadata supplied by the feed, then inspect its description HTML.
+            const imageNodes = [
+                ...entry.getElementsByTagNameNS('*', 'thumbnail'),
+                ...entry.getElementsByTagNameNS('*', 'content'),
+                ...entry.querySelectorAll('enclosure')
+            ];
+            for (const node of imageNodes) {
+                const type = (node.getAttribute('type') || '').toLowerCase();
+                const raw = node.getAttribute('url') || node.getAttribute('href') || '';
+                if (raw && (!type || type.startsWith('image/'))) {
+                    const safe = normalizeCryptoNewsImageUrl(raw);
+                    if (safe) return safe;
+                }
+            }
+
+            const htmlText = [
+                ...entry.querySelectorAll('description, summary, content\\:encoded, encoded')
+            ].map(node => node.textContent || '').join(' ');
+            if (htmlText) {
+                const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+                const image = doc.querySelector('img');
+                if (image) {
+                    const raw = image.getAttribute('src') || image.getAttribute('data-src') ||
+                        image.getAttribute('data-original') || image.getAttribute('data-lazy-src') || '';
+                    const safe = normalizeCryptoNewsImageUrl(raw);
+                    if (safe) return safe;
+                }
+            }
+            return '';
+        }
+
+        function normalizeCryptoNewsImageUrl(value) {
+            try {
+                const raw = String(value || '').trim();
+                if (!raw || raw.startsWith('data:')) return '';
+                const url = new URL(raw, 'https://cointelegraph-tr.com/');
+                return url.protocol === 'https:' ? url.href : '';
+            } catch (_) {
+                return '';
+            }
         }
 
         function isSafeCryptoNewsUrl(value) {
