@@ -1148,6 +1148,29 @@
         CryptoDash Pro &copy; 2026 - Binance piyasa verisi · Supabase ile kullanıcıya özel kayıtlar
     </footer>
 
+    <!-- Modal: Coin Information -->
+    <section id="coin-info-modal" class="hidden fixed inset-0 z-[115] flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="coin-info-title" onclick="if(event.target===this) closeCoinInfoModal()">
+        <div class="card-bg relative w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border p-5 sm:p-6 shadow-2xl">
+            <button type="button" onclick="closeCoinInfoModal()" aria-label="Pencereyi kapat" class="absolute right-4 top-4 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-white"><i data-lucide="x" class="h-5 w-5"></i></button>
+            <div class="flex items-center gap-3 pr-10"><div id="coin-info-icon" class="h-12 w-12 shrink-0"></div><div class="min-w-0"><h2 id="coin-info-title" class="text-xl font-bold text-slate-900 dark:text-white">Coin bilgisi</h2><p id="coin-info-subtitle" class="text-sm text-slate-500 dark:text-slate-400">Piyasa ve portföy özeti</p></div><span id="coin-info-change" class="ml-auto rounded-lg px-2.5 py-1 text-xs font-bold"></span></div>
+            <div class="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60"><p class="text-xs font-medium text-slate-500 dark:text-slate-400">Anlık fiyat</p><p id="coin-info-price" class="mt-1 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">—</p><p id="coin-info-market-updated" class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">Mevcut piyasa verisi</p></div>
+            <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div class="rounded-xl border border-slate-200 p-3 dark:border-slate-800"><p class="text-[11px] text-slate-500 dark:text-slate-400">Piyasa değeri</p><p id="coin-info-market-cap" class="mt-1 text-sm font-bold text-slate-900 dark:text-white">—</p></div>
+                <div class="rounded-xl border border-slate-200 p-3 dark:border-slate-800"><p class="text-[11px] text-slate-500 dark:text-slate-400">24s hacim</p><p id="coin-info-volume" class="mt-1 text-sm font-bold text-slate-900 dark:text-white">—</p></div>
+                <div class="rounded-xl border border-slate-200 p-3 dark:border-slate-800"><p class="text-[11px] text-slate-500 dark:text-slate-400">Piyasa sırası</p><p id="coin-info-rank" class="mt-1 text-sm font-bold text-slate-900 dark:text-white">—</p></div>
+                <div class="rounded-xl border border-slate-200 p-3 dark:border-slate-800"><p class="text-[11px] text-slate-500 dark:text-slate-400">Dolaşımdaki arz</p><p id="coin-info-supply" class="mt-1 text-sm font-bold text-slate-900 dark:text-white">—</p></div>
+            </div>
+            <div class="mt-5"><h3 class="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white"><i data-lucide="book-open-text" class="h-4 w-4 text-indigo-500"></i> Coin hakkında</h3><p id="coin-info-description" class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Kısa açıklama yükleniyor…</p><p id="coin-info-source" class="mt-2 text-[10px] text-slate-400">Bilgiler CoinGecko piyasa verilerinden alınır.</p></div>
+            <div id="coin-info-holding-wrap" class="mt-5 border-t border-slate-200 pt-4 dark:border-slate-800"><h3 class="text-sm font-bold text-slate-900 dark:text-white">Portföyündeki durum</h3><div class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div><p class="text-[11px] text-slate-500 dark:text-slate-400">Miktar</p><p id="coin-info-holding-amount" class="mt-1 text-sm font-semibold text-slate-900 dark:text-white">—</p></div>
+                <div><p class="text-[11px] text-slate-500 dark:text-slate-400">Ort. maliyet</p><p id="coin-info-holding-cost" class="mt-1 text-sm font-semibold text-slate-900 dark:text-white">—</p></div>
+                <div><p class="text-[11px] text-slate-500 dark:text-slate-400">Toplam değer</p><p id="coin-info-holding-value" class="mt-1 text-sm font-semibold text-slate-900 dark:text-white">—</p></div>
+                <div><p class="text-[11px] text-slate-500 dark:text-slate-400">Kâr / zarar</p><p id="coin-info-holding-pnl" class="mt-1 text-sm font-semibold">—</p></div>
+            </div></div>
+            <div class="mt-5 flex justify-end"><button type="button" onclick="closeCoinInfoModal()" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Kapat</button></div>
+        </div>
+    </section>
+
     <!-- Modal: Add / Edit Transaction -->
     <div id="tx-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex justify-center items-center p-4">
         <div class="card-bg w-full max-w-md rounded-2xl p-6 border shadow-2xl relative">
@@ -1363,6 +1386,16 @@
         };
 
         let transactions = [];
+        let dashboardAssetDetails = new Map();
+        let coinInfoRequestId = 0;
+        const COINGECKO_IDS = {
+            BTC: 'bitcoin', ETH: 'ethereum', SOL: 'solana', BNB: 'binancecoin',
+            AVAX: 'avalanche-2', XRP: 'ripple', ADA: 'cardano', DOGE: 'dogecoin',
+            TON: 'the-open-network', TRX: 'tron', LINK: 'chainlink', DOT: 'polkadot',
+            LTC: 'litecoin', BCH: 'bitcoin-cash', SHIB: 'shiba-inu', NEAR: 'near',
+            SUI: 'sui', APT: 'aptos', ARB: 'arbitrum', OP: 'optimism',
+            UNI: 'uniswap', XLM: 'stellar', ATOM: 'cosmos', ETC: 'ethereum-classic'
+        };
 
         let selectedTxType = 'BUY';
         let selectedTradeCurrency = 'USDT';
@@ -2224,6 +2257,7 @@ async function activateApp(session) {
                 return;
             }
 
+            dashboardAssetDetails = new Map((assets || []).map(asset => [String(asset.symbol || '').toUpperCase(), asset]));
             assets.forEach(asset => {
                 const coinMeta = MARKET_DATA[asset.symbol] || { name: asset.symbol };
                 const isPos = asset.pnl >= 0;
@@ -2251,6 +2285,18 @@ async function activateApp(session) {
                         ${renderMiniPerformance(asset.pnlPercent, isPos ? 'Kârda' : 'Zararda')}
                     </td>
                 `;
+                const coinCell = tr.querySelector('td');
+                if (coinCell) {
+                    coinCell.classList.add('cursor-pointer');
+                    coinCell.setAttribute('title', 'Coin bilgilerini görüntüle');
+                    coinCell.setAttribute('role', 'button');
+                    coinCell.setAttribute('tabindex', '0');
+                    coinCell.setAttribute('aria-label', `${coinMeta.name || asset.symbol} hakkında bilgi aç`);
+                    coinCell.addEventListener('click', () => openCoinInfoModal(asset.symbol));
+                    coinCell.addEventListener('keydown', event => {
+                        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCoinInfoModal(asset.symbol); }
+                    });
+                }
                 tbody.appendChild(tr);
             });
         }
@@ -2272,7 +2318,7 @@ async function activateApp(session) {
                 const el = document.createElement('button');
                 el.type = 'button';
                 el.className = 'w-full flex items-center justify-between gap-1 p-2 rounded-lg input-bg border border-transparent hover:border-indigo-500/30 transition text-left';
-                el.onclick = () => { openModal(); selectCoinFromSearch(coin.symbol); };
+                el.onclick = () => openCoinInfoModal(coin.symbol);
                 const up = coin.change >= 0;
                 el.innerHTML = `<span class="flex items-center gap-1.5 min-w-0">${getCoinIconHtml(coin.symbol,'w-5 h-5')}<span class="text-xs font-semibold text-slate-900 dark:text-white">${coin.symbol}</span></span><span class="text-[10px] font-bold whitespace-nowrap ${up?'text-emerald-500':'text-rose-500'}">${up?'+':''}${coin.change.toFixed(2)}%</span>`;
                 return el;
@@ -3017,6 +3063,519 @@ async function activateApp(session) {
             }
             updateSellAmountControls();
             lucide.createIcons();
+        }
+
+        // --- Coin information modal ---
+        function closeCoinInfoModal() {
+            coinInfoRequestId++;
+            document.getElementById('coin-info-modal')?.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function formatCoinInfoNumber(value, maximumFractionDigits = 2) {
+            const n = Number(value);
+            if (!Number.isFinite(n)) return '—';
+            return n.toLocaleString('tr-TR', { maximumFractionDigits });
+        }
+
+        function formatCoinInfoCompact(value) {
+            const n = Number(value);
+            if (!Number.isFinite(n) || n <= 0) return '—';
+            return new Intl.NumberFormat('tr-TR', { notation: 'compact', maximumFractionDigits: 2 }).format(n) + (currentCurrency === 'TRY' ? ' ₺' : ' 
+        function openModal() {
+            if (denyDemoMutation('İşlem ekleme')) return;
+            document.getElementById('edit-tx-id').value = '';
+            document.getElementById('input-coin-search').value = '';
+            document.getElementById('selected-coin-symbol').value = '';
+            document.getElementById('coin-search-status').textContent = 'CoinGecko üzerinden coin adı veya sembolüyle arayın.';
+            document.getElementById('input-total-amount').value = '';
+            document.getElementById('input-amount').value = '';
+            document.getElementById('input-price').value = '';
+            setTradeCurrency('USDT', true); updateTradeCurrencyUI();
+            setTxType('BUY');
+            initDateInput();
+            
+            document.getElementById('modal-title').innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-indigo-500"></i> Yeni İşlem Kaydı`;
+            document.getElementById('tx-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('tx-modal').classList.add('hidden');
+        }
+
+        function initDateInput() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('input-date').value = now.toISOString().slice(0, 16);
+        }
+
+        function setTxType(type) {
+            const previousType = selectedTxType;
+            selectedTxType = type;
+            if (type === 'SELL' && previousType !== 'SELL' && !document.getElementById('edit-tx-id')?.value) {
+                const priceInput = document.getElementById('input-price');
+                if (priceInput) priceInput.value = '';
+            }
+            const btnBuy = document.getElementById('btn-type-buy');
+            const btnSell = document.getElementById('btn-type-sell');
+
+            if (type === 'BUY') {
+                btnBuy.className = 'py-2 rounded-xl border font-semibold text-xs transition border-emerald-500 bg-emerald-500/10 text-emerald-500';
+                btnSell.className = 'py-2 rounded-xl border font-semibold text-xs transition border-slate-300 dark:border-slate-700 text-slate-500';
+            } else {
+                btnSell.className = 'py-2 rounded-xl border font-semibold text-xs transition border-rose-500 bg-rose-500/10 text-rose-500';
+                btnBuy.className = 'py-2 rounded-xl border font-semibold text-xs transition border-slate-300 dark:border-slate-700 text-slate-500';
+            }
+            updateTransactionFormMode();
+        }
+
+        async function handleFormSubmit(event) {
+            if (denyDemoMutation('İşlem kaydetme')) { event?.preventDefault?.(); return; }
+            event.preventDefault();
+            if (!dbClient || !activeUserId) {
+                showToast('İşlem kaydetmek için giriş yapmalısınız.', true);
+                return;
+            }
+
+            const editId = document.getElementById('edit-tx-id').value;
+            const coin = document.getElementById('selected-coin-symbol').value.toUpperCase().trim();
+            const coinMeta = MARKET_DATA[coin];
+            const amount = Number(document.getElementById('input-amount').value);
+            const enteredPrice = Number(document.getElementById('input-price').value);
+            const price = tradePriceToUsd(enteredPrice);
+            const date = document.getElementById('input-date').value;
+
+            if (!coin || !coinMeta) {
+                showToast('Arama sonuçlarından bir coin seçin.', true);
+                return;
+            }
+            if (!Number.isFinite(amount) || amount <= 0 || !Number.isFinite(price) || price <= 0) {
+                showToast('Geçerli miktar ve birim fiyat giriniz.', true);
+                return;
+            }
+            if (date && Number.isNaN(new Date(date + 'T12:00:00').getTime())) {
+                showToast('Geçerli bir işlem tarihi giriniz.', true);
+                return;
+            }
+
+            const candidateTx = {
+                id: editId || `new-${Date.now()}`,
+                type: selectedTxType,
+                coin,
+                amount,
+                price,
+                fee: editId ? Number(transactions.find(t => String(t.id) === String(editId))?.fee || 0) : 0,
+                date
+            };
+            const candidate = editId
+                ? transactions.map(tx => String(tx.id) === String(editId) ? candidateTx : tx)
+                : [...transactions, candidateTx];
+            const validationError = validateTransactionSet(candidate, candidateTx.id, true);
+            if (validationError) {
+                showToast(validationError, true);
+                return;
+            }
+
+            // Satış miktarını geçmiş kayıtların sıralamasından değil, portföyün gerçek
+            // mevcut bakiyesinden kontrol et. Düzenlenen satışın kendi miktarını geri ekle.
+            if (selectedTxType === 'SELL') {
+                const currentBalance = getAvailableCoinAmount(coin);
+                const oldTx = editId ? transactions.find(t => String(t.id) === String(editId)) : null;
+                const availableBalance = currentBalance + (oldTx && String(oldTx.type).toUpperCase() === 'SELL' ? Number(oldTx.amount) || 0 : 0);
+                const epsilon = Math.max(1e-8, Math.abs(availableBalance) * 1e-10);
+                if (amount > availableBalance + epsilon) {
+                    showToast(`${coin} satışı mevcut bakiyeyi aşıyor. Kullanılabilir miktar: ${availableBalance.toLocaleString('tr-TR', {maximumFractionDigits: 8})}.`, true);
+                    return;
+                }
+            }
+            const saveButton = document.querySelector('#tx-form button[type="submit"]');
+            if (saveButton) { saveButton.disabled = true; saveButton.classList.add('opacity-60'); }
+            try {
+                const row = {
+                    type: selectedTxType.toLowerCase(), coin, amount, price, fee: candidateTx.fee,
+                    executed_at: date ? new Date(date + 'T12:00:00').toISOString() : null,
+                    coin_id: coinMeta.coinGeckoId || null,
+                    coin_name: coinMeta.name || coin,
+                    coin_image: coinMeta.icon || null,
+                    binance_symbol: coinMeta.binanceSymbol || null,
+                    trade_currency: selectedTradeCurrency, trade_market: selectedTradeCurrency === 'TRY' ? 'Binance TR' : 'Binance'
+                };
+                const saveRow = async (includeMetadata) => {
+                    const payload = includeMetadata ? row : (({ coin_id, coin_name, coin_image, binance_symbol, ...legacy }) => legacy)(row);
+                    if (editId) return await dbClient.from('transactions').update(payload).eq('id', editId).eq('user_id', activeUserId).select('id, type, coin, amount, price, executed_at, fee').single();
+                    return await dbClient.from('transactions').insert({ ...payload, user_id: activeUserId }).select('id, type, coin, amount, price, executed_at, fee').single();
+                };
+                let result = await saveRow(true);
+                if (result.error && /coin_id|coin_name|coin_image|binance_symbol|column/i.test(result.error.message || '')) {
+                    result = await saveRow(false);
+                    if (!result.error) showToast('İşlem kaydedildi. Coin logo bilgilerinin kalıcı saklanması için Supabase sütunlarını ekleyin.', true);
+                }
+                if (result.error) throw result.error;
+
+                const saved = result.data;
+                const mapped = {
+                    id: saved.id, type: String(saved.type || '').toUpperCase(), coin: saved.coin,
+                    coinId: coinMeta.coinGeckoId || '', coinName: coinMeta.name || coin,
+                    coinImage: coinMeta.icon || '', binanceSymbol: coinMeta.binanceSymbol || '',
+                    tradeCurrency: selectedTradeCurrency, tradeMarket: selectedTradeCurrency === 'TRY' ? 'Binance TR' : 'Binance',
+                    amount: Number(saved.amount), price: Number(saved.price),
+                    fee: Number(saved.fee || 0), date: toLocalDateInput(saved.executed_at)
+                };
+                if (editId) transactions = transactions.map(tx => String(tx.id) === String(editId) ? mapped : tx);
+                else transactions.push(mapped);
+
+                closeModal();
+                updateDashboard();
+                showToast(editId ? 'İşlem kaydı güncellendi.' : 'Yeni işlem veritabanına kaydedildi.');
+            } catch (error) {
+                showToast('Kayıt başarısız: ' + (error.message || 'Veritabanı hatası'), true);
+            } finally {
+                if (saveButton) { saveButton.disabled = false; saveButton.classList.remove('opacity-60'); }
+            }
+        }
+
+        function editTransaction(id) {
+            if (denyDemoMutation('İşlem düzenleme')) return;
+            const tx = transactions.find(t => String(t.id) === String(id));
+            if (!tx) return;
+
+            // Fill synchronously: the edit modal should open on the first click.
+            const coinMeta = MARKET_DATA[tx.coin] || {};
+            document.getElementById('edit-tx-id').value = tx.id;
+            document.getElementById('input-coin-search').value = `${tx.coinName || coinMeta.name || tx.coin} (${tx.coin})`;
+            document.getElementById('selected-coin-symbol').value = tx.coin;
+            document.getElementById('coin-search-status').textContent = 'Kayıtlı coin seçildi.';
+            document.getElementById('coin-dropdown').classList.add('hidden');
+            setTxType(tx.type);
+            setTradeCurrency(tx.tradeCurrency || 'USDT', true);
+            document.getElementById('input-amount').value = tx.amount;
+            document.getElementById('input-price').value = tradePriceFromUsd(tx.price, selectedTradeCurrency);
+            document.getElementById('input-total-amount').value = tradePriceFromUsd(tx.amount * tx.price, selectedTradeCurrency);
+            document.getElementById('input-date').value = tx.date;
+            updateSellAmountControls();
+            calculateTotalFromAmount();
+
+            document.getElementById('modal-title').innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-indigo-500"></i> İşlem Kaydını Düzenle`;
+            document.getElementById('tx-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        async function deleteTransaction(id) {
+            if (denyDemoMutation('İşlem silme')) return;
+            if (!dbClient || !activeUserId) return;
+            if (!confirm('Bu işlem kaydını kalıcı olarak silmek istiyor musunuz?')) return;
+            try {
+                const { error } = await dbClient.from('transactions').delete()
+                    .eq('id', id).eq('user_id', activeUserId);
+                if (error) throw error;
+                transactions = transactions.filter(tx => String(tx.id) !== String(id));
+                updateDashboard();
+                showToast('İşlem kaydı silindi.');
+            } catch (error) {
+                showToast('Silme başarısız: ' + error.message, true);
+            }
+        }
+
+        async function clearAllTransactions() {
+            if (denyDemoMutation('İşlemleri silme')) return;
+            if (!dbClient || !activeUserId) return;
+            if (!transactions.length) {
+                showToast('Silinecek işlem bulunmuyor.');
+                return;
+            }
+            if (!confirm(`Toplam ${transactions.length} işlem kalıcı olarak silinecek. Devam edilsin mi?`)) return;
+            try {
+                const { error } = await dbClient.from('transactions').delete().eq('user_id', activeUserId);
+                if (error) throw error;
+                transactions = [];
+                updateDashboard();
+                showToast('Tüm işlemler silindi.');
+            } catch (error) {
+                showToast('İşlemler silinemedi: ' + error.message, true);
+            }
+        }
+
+        // --- Login bubbles, account recovery, and editable admin profile ---
+        let currentProfileDetails = { first_name: '', last_name: '', avatar_url: '' };
+        let authBubbleTimer = null;
+        let avatarPreviewObjectUrl = null;
+        function showAuthBubble(message, isError = false) {
+            const bubble = document.getElementById('auth-message');
+            bubble.textContent = message;
+            bubble.className = 'mt-4 rounded-xl border px-4 py-3 text-sm shadow-lg transition-all duration-300 ' +
+                (isError ? 'border-rose-400/40 bg-rose-500/10 text-rose-200' : 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200');
+            bubble.classList.remove('hidden');
+            if (authBubbleTimer) clearTimeout(authBubbleTimer);
+            authBubbleTimer = setTimeout(() => bubble.classList.add('hidden'), 5000);
+        }
+        function openRecoveryModal() {
+            document.getElementById('recovery-message').textContent = '';
+            document.getElementById('forgot-credentials-modal').classList.remove('hidden');
+            const value = document.getElementById('auth-email').value.trim();
+            if (value.includes('@')) document.getElementById('recovery-email').value = value;
+            document.getElementById('recovery-email').focus();
+        }
+        function closeRecoveryModal() { document.getElementById('forgot-credentials-modal').classList.add('hidden'); }
+        async function sendPasswordReset() {
+            if (denyDemoMutation('Şifre sıfırlama')) return;
+            const email = document.getElementById('recovery-email').value.trim();
+            const message = document.getElementById('recovery-message');
+            const button = document.getElementById('send-password-reset');
+            if (!email) { message.textContent = 'Lütfen kayıtlı e-posta adresini yaz.'; return; }
+            button.disabled = true; button.textContent = 'Gönderiliyor…'; message.textContent = '';
+            try {
+                const redirectTo = window.location.origin + window.location.pathname;
+                const { error } = await dbClient.auth.resetPasswordForEmail(email, { redirectTo });
+                if (error) throw error;
+                message.textContent = 'E-posta adresi sistemde kayıtlıysa şifre sıfırlama bağlantısı gönderildi. Gelen kutunu ve spam klasörünü kontrol et.';
+            } catch (error) {
+                console.error('Şifre sıfırlama isteği:', error);
+                message.textContent = friendlyAuthError(error.message) || 'Şifre sıfırlama e-postası gönderilemedi.';
+            } finally { button.disabled = false; button.textContent = 'Şifremi sıfırla'; }
+        }
+        async function sendUsernameReminder() {
+            if (denyDemoMutation('Kullanıcı adı hatırlatma')) return;
+            const email = document.getElementById('recovery-email').value.trim();
+            const message = document.getElementById('recovery-message');
+            const button = document.getElementById('send-username-reminder');
+            if (!email) { message.textContent = 'Lütfen kayıtlı e-posta adresini yaz.'; return; }
+            button.disabled = true; button.textContent = 'Gönderiliyor…'; message.textContent = '';
+            try {
+                const { error } = await dbClient.functions.invoke('username-reminder', { body: { email } });
+                if (error) throw error;
+                message.textContent = 'E-posta adresi sistemde kayıtlıysa kullanıcı adı hatırlatma mesajı gönderildi. Gelen kutunu ve spam klasörünü kontrol et.';
+            } catch (error) {
+                console.error('Kullanıcı adı hatırlatma:', error);
+                message.textContent = 'Kullanıcı adı hatırlatma servisi henüz etkin değil. Supabase Edge Function kurulumu ve e-posta servisi ayarı gerekiyor.';
+            } finally { button.disabled = false; button.textContent = 'Kullanıcı adımı hatırlat'; }
+        }
+        async function saveRecoveredPassword(event) {
+            if (denyDemoMutation('Şifre değiştirme')) { event?.preventDefault?.(); return; }
+            event.preventDefault();
+            const password = document.getElementById('recovery-new-password').value;
+            const confirm = document.getElementById('recovery-confirm-password').value;
+            const message = document.getElementById('password-reset-message');
+            const button = document.getElementById('save-recovered-password');
+            if (password.length < 8) { message.textContent = 'Şifre en az 8 karakter olmalı.'; return; }
+            if (password !== confirm) { message.textContent = 'Şifreler eşleşmiyor.'; return; }
+            button.disabled = true; button.textContent = 'Kaydediliyor…'; message.textContent = '';
+            try {
+                const { error } = await dbClient.auth.updateUser({ password });
+                if (error) throw error;
+                message.textContent = 'Şifren başarıyla güncellendi.';
+                document.getElementById('recovery-new-password').value = '';
+                document.getElementById('recovery-confirm-password').value = '';
+                setTimeout(() => document.getElementById('password-reset-modal').classList.add('hidden'), 1200);
+            } catch (error) {
+                message.textContent = friendlyAuthError(error.message) || 'Şifre güncellenemedi. Bağlantının süresi dolmuş olabilir.';
+            } finally { button.disabled = false; button.textContent = 'Şifreyi kaydet'; }
+        }
+        async function loadProfileDetails(username = '') {
+            if (!dbClient || !activeUserId) return;
+            try {
+                const { data, error } = await dbClient.from('profiles').select('first_name, last_name, avatar_url').eq('user_id', activeUserId).maybeSingle();
+                if (error) throw error;
+                currentProfileDetails = { first_name: data?.first_name || '', last_name: data?.last_name || '', avatar_url: data?.avatar_url || '' };
+                document.getElementById('profile-first-name').value = currentProfileDetails.first_name;
+                document.getElementById('profile-last-name').value = currentProfileDetails.last_name;
+                document.getElementById('profile-avatar-url').value = currentProfileDetails.avatar_url;
+                document.getElementById('profile-display-username').textContent = username;
+                document.getElementById('profile-username-readonly').textContent = username;
+                document.getElementById('profile-display-name').textContent = [currentProfileDetails.first_name, currentProfileDetails.last_name].filter(Boolean).join(' ') || 'Admin';
+                updateAvatarPreview(); updateHeaderProfile();
+            } catch (error) {
+                console.warn('Profil alanları okunamadı; profiles tablosuna first_name, last_name, avatar_url sütunları eklenmeli.', error);
+                currentProfileDetails = { first_name: '', last_name: '', avatar_url: '' };
+                updateHeaderProfile();
+            }
+        }
+        function updateHeaderProfile() {
+            const name = [currentProfileDetails.first_name, currentProfileDetails.last_name].filter(Boolean).join(' ') || 'Profilim';
+            document.getElementById('header-profile-name').textContent = name;
+            const img = document.getElementById('header-avatar'), fallback = document.getElementById('header-avatar-fallback');
+            if (currentProfileDetails.avatar_url) {
+                img.src = currentProfileDetails.avatar_url; img.classList.remove('hidden'); fallback.classList.add('hidden');
+                img.onerror = () => { img.classList.add('hidden'); fallback.classList.remove('hidden'); };
+            } else { img.removeAttribute('src'); img.classList.add('hidden'); fallback.classList.remove('hidden'); }
+        }
+        function updateAvatarPreview() {
+            const file = document.getElementById('profile-avatar-file').files?.[0];
+            const url = document.getElementById('profile-avatar-url').value.trim();
+            const img = document.getElementById('profile-avatar-preview'), fallback = document.getElementById('profile-avatar-fallback');
+            if (avatarPreviewObjectUrl) { URL.revokeObjectURL(avatarPreviewObjectUrl); avatarPreviewObjectUrl = null; }
+            if (file) {
+                avatarPreviewObjectUrl = URL.createObjectURL(file);
+                img.src = avatarPreviewObjectUrl; img.classList.remove('hidden'); fallback.classList.add('hidden');
+                return;
+            }
+            if (url) { img.src = url; img.classList.remove('hidden'); fallback.classList.add('hidden'); img.onerror = () => { img.classList.add('hidden'); fallback.classList.remove('hidden'); }; }
+            else { img.removeAttribute('src'); img.classList.add('hidden'); fallback.classList.remove('hidden'); }
+        }
+        function toggleProfileMenu(event) {
+            event?.stopPropagation();
+            const menu = document.getElementById('profile-dropdown');
+            const button = document.getElementById('profile-open');
+            const willOpen = menu.classList.contains('hidden');
+            menu.classList.toggle('hidden', !willOpen);
+            button.setAttribute('aria-expanded', String(willOpen));
+        }
+        function closeProfileMenu() {
+            const menu = document.getElementById('profile-dropdown');
+            const button = document.getElementById('profile-open');
+            if (menu) menu.classList.add('hidden');
+            if (button) button.setAttribute('aria-expanded', 'false');
+        }
+        function openProfileFromMenu() {
+            if (denyDemoMutation('Profil düzenleme')) return;
+            closeProfileMenu();
+            openProfileModal();
+        }
+        function openProfileModal() {
+            if (denyDemoMutation('Profil düzenleme')) return;
+            closeProfileMenu();
+            document.getElementById('profile-message').textContent = '';
+            document.getElementById('profile-modal').classList.remove('hidden');
+            if (activeUserId) void loadProfileDetails(document.getElementById('profile-username-readonly').textContent);
+        }
+        function closeProfileModal() { document.getElementById('profile-modal').classList.add('hidden'); }
+        async function saveProfile(event) {
+            if (denyDemoMutation('Profil kaydetme')) { event?.preventDefault?.(); return; }
+            event.preventDefault();
+            if (!dbClient || !activeUserId) return;
+            const first_name = document.getElementById('profile-first-name').value.trim();
+            const last_name = document.getElementById('profile-last-name').value.trim();
+            let avatar_url = document.getElementById('profile-avatar-url').value.trim();
+            const avatarFile = document.getElementById('profile-avatar-file').files?.[0];
+            const message = document.getElementById('profile-message'), button = document.getElementById('save-profile-button');
+            if (avatar_url && !/^https?:\/\//i.test(avatar_url)) { message.textContent = 'Avatar bağlantısı http:// veya https:// ile başlamalı.'; return; }
+            if (avatarFile && !['image/png','image/jpeg','image/webp','image/gif'].includes(avatarFile.type)) { message.textContent = 'Avatar dosyası PNG, JPG, WEBP veya GIF olmalı.'; return; }
+            if (avatarFile && avatarFile.size > 3 * 1024 * 1024) { message.textContent = 'Avatar dosyası 3 MB sınırını aşmamalı.'; return; }
+            button.disabled = true; button.textContent = 'Kaydediliyor…'; message.textContent = '';
+            try {
+                if (avatarFile) {
+                    const ext = ({'image/png':'png','image/jpeg':'jpg','image/webp':'webp','image/gif':'gif'})[avatarFile.type];
+                    const path = activeUserId + '/avatar-' + Date.now() + '.' + ext;
+                    const { error: uploadError } = await dbClient.storage.from('avatars').upload(path, avatarFile, { upsert: true, contentType: avatarFile.type });
+                    if (uploadError) throw new Error('Avatar yüklenemedi. Supabase avatars depolama ayarını kontrol et: ' + uploadError.message);
+                    avatar_url = dbClient.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+                }
+                const { error } = await dbClient.from('profiles').update({ first_name, last_name, avatar_url }).eq('user_id', activeUserId);
+                if (error) throw error;
+                currentProfileDetails = { first_name, last_name, avatar_url };
+                document.getElementById('profile-avatar-file').value = '';
+                document.getElementById('profile-display-name').textContent = [first_name, last_name].filter(Boolean).join(' ') || 'Admin';
+                updateHeaderProfile(); message.textContent = 'Profil bilgilerin kaydedildi.'; showToast('Profil bilgileri güncellendi.');
+            } catch (error) {
+                console.error('Profil kaydetme hatası:', error);
+                message.textContent = /column .* does not exist|schema cache/i.test(error.message || '')
+                    ? 'Önce Supabase SQL Editor bölümünde profiles tablosuna first_name, last_name ve avatar_url sütunlarını ekle.'
+                    : 'Profil kaydedilemedi: ' + (error.message || 'Bilinmeyen hata');
+            } finally { button.disabled = false; button.textContent = 'Bilgilerimi kaydet'; }
+        }
+
+        // --- Notification Toast Helper ---
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+
+            toastMsg.textContent = message;
+            toast.className = `fixed bottom-5 right-5 card-bg border text-slate-900 dark:text-white px-4 py-3 rounded-xl shadow-2xl transition transform z-50 flex items-center gap-3 ${
+                isError ? 'border-rose-500/50 text-rose-500' : ''
+            }`;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+        restoreDesignMode();
+    </script>
+</body>
+</html>
+);
+        }
+
+        async function openCoinInfoModal(rawSymbol) {
+            const symbol = String(rawSymbol || '').toUpperCase();
+            if (!symbol) return;
+            const coin = MARKET_DATA[symbol] || { symbol, name: symbol, price: 0, change: 0 };
+            const asset = dashboardAssetDetails.get(symbol);
+            const modal = document.getElementById('coin-info-modal');
+            const put = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+            const price = Number(coin.price || asset?.currentPrice || 0);
+            const change = Number(coin.change || 0);
+            const requestId = ++coinInfoRequestId;
+
+            document.getElementById('coin-info-icon').innerHTML = getCoinIconHtml(symbol, 'h-12 w-12');
+            put('coin-info-title', coin.name || symbol);
+            put('coin-info-subtitle', symbol + ' · Kripto varlık');
+            put('coin-info-price', price > 0 ? formatCurrencyVal(price) : 'Fiyat verisi bekleniyor');
+            put('coin-info-market-updated', 'Binance piyasa fiyatı · 24 saatlik değişim');
+            const changeEl = document.getElementById('coin-info-change');
+            changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+            changeEl.className = 'ml-auto rounded-lg px-2.5 py-1 text-xs font-bold ' + (change >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500');
+            ['coin-info-market-cap','coin-info-volume','coin-info-rank','coin-info-supply'].forEach(id => put(id, 'Yükleniyor…'));
+            put('coin-info-description', 'Coin hakkında kısa açıklama yükleniyor…');
+            put('coin-info-source', 'Bilgiler CoinGecko üzerinden alınır; erişim yoksa bazı alanlar boş kalabilir.');
+            document.getElementById('coin-info-holding-wrap').classList.toggle('hidden', !asset);
+            if (asset) {
+                put('coin-info-holding-amount', formatCoinInfoNumber(asset.amount, 8));
+                put('coin-info-holding-cost', formatCurrencyVal(asset.avgCost || 0));
+                put('coin-info-holding-value', formatCurrencyVal(asset.currentValue || 0));
+                const pnl = Number(asset.pnl || 0);
+                const pnlEl = document.getElementById('coin-info-holding-pnl');
+                pnlEl.textContent = (pnl >= 0 ? '+' : '') + formatCurrencyVal(pnl) + ' (' + (asset.pnlPercent >= 0 ? '+' : '') + Number(asset.pnlPercent || 0).toFixed(2) + '%)';
+                pnlEl.className = 'mt-1 text-sm font-semibold ' + (pnl >= 0 ? 'text-emerald-500' : 'text-rose-500');
+            }
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            if (window.lucide) lucide.createIcons();
+
+            try {
+                let coinId = coin.coinGeckoId || COINGECKO_IDS[symbol] || '';
+                if (!coinId) {
+                    const searchResponse = await fetch('https://api.coingecko.com/api/v3/search?query=' + encodeURIComponent(symbol));
+                    if (searchResponse.ok) {
+                        const searchData = await searchResponse.json();
+                        const match = (searchData.coins || []).find(item => String(item.symbol || '').toUpperCase() === symbol && item.market_cap_rank) || (searchData.coins || []).find(item => String(item.symbol || '').toUpperCase() === symbol);
+                        coinId = match?.id || '';
+                    }
+                }
+                if (!coinId) throw new Error('Bu coin için CoinGecko eşleşmesi bulunamadı.');
+                const response = await fetch('https://api.coingecko.com/api/v3/coins/' + encodeURIComponent(coinId) + '?localization=true&tickers=false&market_data=true&community_data=false&developer_data=false');
+                if (!response.ok) throw new Error('Coin bilgileri şu anda alınamadı.');
+                const detail = await response.json();
+                if (requestId !== coinInfoRequestId || modal.classList.contains('hidden')) return;
+                if (detail.name) put('coin-info-title', detail.name);
+                put('coin-info-subtitle', symbol + (detail.symbol ? ' · ' + String(detail.symbol).toUpperCase() : '') + (detail.genesis_date ? ' · ' + detail.genesis_date : ''));
+                const market = detail.market_data || {};
+                const usdPrice = Number(market.current_price?.usd || price || 0);
+                const localPrice = currentCurrency === 'TRY' ? Number(market.current_price?.try || (usdPrice * (usdToTryRate || 0))) : usdPrice;
+                put('coin-info-price', localPrice > 0 ? formatCurrencyVal(usdPrice) : 'Fiyat verisi yok');
+                const change24h = Number(market.price_change_percentage_24h ?? coin.change ?? 0);
+                changeEl.textContent = (change24h >= 0 ? '+' : '') + change24h.toFixed(2) + '%';
+                changeEl.className = 'ml-auto rounded-lg px-2.5 py-1 text-xs font-bold ' + (change24h >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500');
+                const marketCap = currentCurrency === 'TRY' ? market.market_cap?.try : market.market_cap?.usd;
+                const volume = currentCurrency === 'TRY' ? market.total_volume?.try : market.total_volume?.usd;
+                put('coin-info-market-cap', formatCoinInfoCompact(marketCap));
+                put('coin-info-volume', formatCoinInfoCompact(volume));
+                put('coin-info-rank', detail.market_cap_rank ? '#' + detail.market_cap_rank : '—');
+                put('coin-info-supply', market.circulating_supply ? formatCoinInfoNumber(market.circulating_supply, 0) + (detail.symbol ? ' ' + String(detail.symbol).toUpperCase() : '') : '—');
+                const descriptionHtml = detail.description?.tr || detail.description?.en || '';
+                const descriptionNode = document.createElement('div');
+                descriptionNode.innerHTML = descriptionHtml;
+                const description = String(descriptionNode.textContent || descriptionNode.innerText || '').replace(/\s+/g, ' ').trim();
+                put('coin-info-description', description ? (description.length > 620 ? description.slice(0, 617).trimEnd() + '…' : description) : (detail.name || symbol) + ' için henüz kısa bir açıklama bulunamadı.');
+                put('coin-info-market-updated', 'CoinGecko piyasa verisi · 24 saatlik değişim');
+                put('coin-info-source', 'Piyasa verileri CoinGecko’dan; portföy hesapları kayıtlı işlemlerinden gelir.');
+            } catch (error) {
+                if (requestId !== coinInfoRequestId) return;
+                ['coin-info-market-cap','coin-info-volume','coin-info-rank','coin-info-supply'].forEach(id => put(id, 'Veri yok'));
+                put('coin-info-description', (coin.name || symbol) + ' için ayrıntılı açıklama şu anda alınamadı. Coin adı, fiyatı ve portföyündeki kayıtlı bilgiler görüntülenmeye devam eder.');
+                put('coin-info-source', 'CoinGecko bağlantısı geçici olarak kullanılamıyor olabilir.');
+            }
         }
 
         // --- Modal & Form Actions ---
