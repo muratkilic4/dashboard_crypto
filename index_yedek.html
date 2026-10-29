@@ -3081,7 +3081,9 @@ async function activateApp(session) {
         function formatCoinInfoCompact(value) {
             const n = Number(value);
             if (!Number.isFinite(n) || n <= 0) return '—';
-            return new Intl.NumberFormat('tr-TR', { notation: 'compact', maximumFractionDigits: 2 }).format(n) + (currentCurrency === 'TRY' ? ' ₺' : ' 
+            return new Intl.NumberFormat('tr-TR', { notation: 'compact', maximumFractionDigits: 2 }).format(n) + (currentCurrency === 'TRY' ? ' ₺' : ' $');
+        }
+
         function openModal() {
             if (denyDemoMutation('İşlem ekleme')) return;
             document.getElementById('edit-tx-id').value = '';
@@ -3489,12 +3491,6 @@ async function activateApp(session) {
             setTimeout(() => {
                 toast.classList.add('translate-y-20', 'opacity-0');
             }, 3000);
-        }
-        restoreDesignMode();
-    </script>
-</body>
-</html>
-);
         }
 
         async function openCoinInfoModal(rawSymbol) {
@@ -3793,200 +3789,6 @@ async function activateApp(session) {
             }
         }
 
-        // --- Login bubbles, account recovery, and editable admin profile ---
-        let currentProfileDetails = { first_name: '', last_name: '', avatar_url: '' };
-        let authBubbleTimer = null;
-        let avatarPreviewObjectUrl = null;
-        function showAuthBubble(message, isError = false) {
-            const bubble = document.getElementById('auth-message');
-            bubble.textContent = message;
-            bubble.className = 'mt-4 rounded-xl border px-4 py-3 text-sm shadow-lg transition-all duration-300 ' +
-                (isError ? 'border-rose-400/40 bg-rose-500/10 text-rose-200' : 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200');
-            bubble.classList.remove('hidden');
-            if (authBubbleTimer) clearTimeout(authBubbleTimer);
-            authBubbleTimer = setTimeout(() => bubble.classList.add('hidden'), 5000);
-        }
-        function openRecoveryModal() {
-            document.getElementById('recovery-message').textContent = '';
-            document.getElementById('forgot-credentials-modal').classList.remove('hidden');
-            const value = document.getElementById('auth-email').value.trim();
-            if (value.includes('@')) document.getElementById('recovery-email').value = value;
-            document.getElementById('recovery-email').focus();
-        }
-        function closeRecoveryModal() { document.getElementById('forgot-credentials-modal').classList.add('hidden'); }
-        async function sendPasswordReset() {
-            if (denyDemoMutation('Şifre sıfırlama')) return;
-            const email = document.getElementById('recovery-email').value.trim();
-            const message = document.getElementById('recovery-message');
-            const button = document.getElementById('send-password-reset');
-            if (!email) { message.textContent = 'Lütfen kayıtlı e-posta adresini yaz.'; return; }
-            button.disabled = true; button.textContent = 'Gönderiliyor…'; message.textContent = '';
-            try {
-                const redirectTo = window.location.origin + window.location.pathname;
-                const { error } = await dbClient.auth.resetPasswordForEmail(email, { redirectTo });
-                if (error) throw error;
-                message.textContent = 'E-posta adresi sistemde kayıtlıysa şifre sıfırlama bağlantısı gönderildi. Gelen kutunu ve spam klasörünü kontrol et.';
-            } catch (error) {
-                console.error('Şifre sıfırlama isteği:', error);
-                message.textContent = friendlyAuthError(error.message) || 'Şifre sıfırlama e-postası gönderilemedi.';
-            } finally { button.disabled = false; button.textContent = 'Şifremi sıfırla'; }
-        }
-        async function sendUsernameReminder() {
-            if (denyDemoMutation('Kullanıcı adı hatırlatma')) return;
-            const email = document.getElementById('recovery-email').value.trim();
-            const message = document.getElementById('recovery-message');
-            const button = document.getElementById('send-username-reminder');
-            if (!email) { message.textContent = 'Lütfen kayıtlı e-posta adresini yaz.'; return; }
-            button.disabled = true; button.textContent = 'Gönderiliyor…'; message.textContent = '';
-            try {
-                const { error } = await dbClient.functions.invoke('username-reminder', { body: { email } });
-                if (error) throw error;
-                message.textContent = 'E-posta adresi sistemde kayıtlıysa kullanıcı adı hatırlatma mesajı gönderildi. Gelen kutunu ve spam klasörünü kontrol et.';
-            } catch (error) {
-                console.error('Kullanıcı adı hatırlatma:', error);
-                message.textContent = 'Kullanıcı adı hatırlatma servisi henüz etkin değil. Supabase Edge Function kurulumu ve e-posta servisi ayarı gerekiyor.';
-            } finally { button.disabled = false; button.textContent = 'Kullanıcı adımı hatırlat'; }
-        }
-        async function saveRecoveredPassword(event) {
-            if (denyDemoMutation('Şifre değiştirme')) { event?.preventDefault?.(); return; }
-            event.preventDefault();
-            const password = document.getElementById('recovery-new-password').value;
-            const confirm = document.getElementById('recovery-confirm-password').value;
-            const message = document.getElementById('password-reset-message');
-            const button = document.getElementById('save-recovered-password');
-            if (password.length < 8) { message.textContent = 'Şifre en az 8 karakter olmalı.'; return; }
-            if (password !== confirm) { message.textContent = 'Şifreler eşleşmiyor.'; return; }
-            button.disabled = true; button.textContent = 'Kaydediliyor…'; message.textContent = '';
-            try {
-                const { error } = await dbClient.auth.updateUser({ password });
-                if (error) throw error;
-                message.textContent = 'Şifren başarıyla güncellendi.';
-                document.getElementById('recovery-new-password').value = '';
-                document.getElementById('recovery-confirm-password').value = '';
-                setTimeout(() => document.getElementById('password-reset-modal').classList.add('hidden'), 1200);
-            } catch (error) {
-                message.textContent = friendlyAuthError(error.message) || 'Şifre güncellenemedi. Bağlantının süresi dolmuş olabilir.';
-            } finally { button.disabled = false; button.textContent = 'Şifreyi kaydet'; }
-        }
-        async function loadProfileDetails(username = '') {
-            if (!dbClient || !activeUserId) return;
-            try {
-                const { data, error } = await dbClient.from('profiles').select('first_name, last_name, avatar_url').eq('user_id', activeUserId).maybeSingle();
-                if (error) throw error;
-                currentProfileDetails = { first_name: data?.first_name || '', last_name: data?.last_name || '', avatar_url: data?.avatar_url || '' };
-                document.getElementById('profile-first-name').value = currentProfileDetails.first_name;
-                document.getElementById('profile-last-name').value = currentProfileDetails.last_name;
-                document.getElementById('profile-avatar-url').value = currentProfileDetails.avatar_url;
-                document.getElementById('profile-display-username').textContent = username;
-                document.getElementById('profile-username-readonly').textContent = username;
-                document.getElementById('profile-display-name').textContent = [currentProfileDetails.first_name, currentProfileDetails.last_name].filter(Boolean).join(' ') || 'Admin';
-                updateAvatarPreview(); updateHeaderProfile();
-            } catch (error) {
-                console.warn('Profil alanları okunamadı; profiles tablosuna first_name, last_name, avatar_url sütunları eklenmeli.', error);
-                currentProfileDetails = { first_name: '', last_name: '', avatar_url: '' };
-                updateHeaderProfile();
-            }
-        }
-        function updateHeaderProfile() {
-            const name = [currentProfileDetails.first_name, currentProfileDetails.last_name].filter(Boolean).join(' ') || 'Profilim';
-            document.getElementById('header-profile-name').textContent = name;
-            const img = document.getElementById('header-avatar'), fallback = document.getElementById('header-avatar-fallback');
-            if (currentProfileDetails.avatar_url) {
-                img.src = currentProfileDetails.avatar_url; img.classList.remove('hidden'); fallback.classList.add('hidden');
-                img.onerror = () => { img.classList.add('hidden'); fallback.classList.remove('hidden'); };
-            } else { img.removeAttribute('src'); img.classList.add('hidden'); fallback.classList.remove('hidden'); }
-        }
-        function updateAvatarPreview() {
-            const file = document.getElementById('profile-avatar-file').files?.[0];
-            const url = document.getElementById('profile-avatar-url').value.trim();
-            const img = document.getElementById('profile-avatar-preview'), fallback = document.getElementById('profile-avatar-fallback');
-            if (avatarPreviewObjectUrl) { URL.revokeObjectURL(avatarPreviewObjectUrl); avatarPreviewObjectUrl = null; }
-            if (file) {
-                avatarPreviewObjectUrl = URL.createObjectURL(file);
-                img.src = avatarPreviewObjectUrl; img.classList.remove('hidden'); fallback.classList.add('hidden');
-                return;
-            }
-            if (url) { img.src = url; img.classList.remove('hidden'); fallback.classList.add('hidden'); img.onerror = () => { img.classList.add('hidden'); fallback.classList.remove('hidden'); }; }
-            else { img.removeAttribute('src'); img.classList.add('hidden'); fallback.classList.remove('hidden'); }
-        }
-        function toggleProfileMenu(event) {
-            event?.stopPropagation();
-            const menu = document.getElementById('profile-dropdown');
-            const button = document.getElementById('profile-open');
-            const willOpen = menu.classList.contains('hidden');
-            menu.classList.toggle('hidden', !willOpen);
-            button.setAttribute('aria-expanded', String(willOpen));
-        }
-        function closeProfileMenu() {
-            const menu = document.getElementById('profile-dropdown');
-            const button = document.getElementById('profile-open');
-            if (menu) menu.classList.add('hidden');
-            if (button) button.setAttribute('aria-expanded', 'false');
-        }
-        function openProfileFromMenu() {
-            if (denyDemoMutation('Profil düzenleme')) return;
-            closeProfileMenu();
-            openProfileModal();
-        }
-        function openProfileModal() {
-            if (denyDemoMutation('Profil düzenleme')) return;
-            closeProfileMenu();
-            document.getElementById('profile-message').textContent = '';
-            document.getElementById('profile-modal').classList.remove('hidden');
-            if (activeUserId) void loadProfileDetails(document.getElementById('profile-username-readonly').textContent);
-        }
-        function closeProfileModal() { document.getElementById('profile-modal').classList.add('hidden'); }
-        async function saveProfile(event) {
-            if (denyDemoMutation('Profil kaydetme')) { event?.preventDefault?.(); return; }
-            event.preventDefault();
-            if (!dbClient || !activeUserId) return;
-            const first_name = document.getElementById('profile-first-name').value.trim();
-            const last_name = document.getElementById('profile-last-name').value.trim();
-            let avatar_url = document.getElementById('profile-avatar-url').value.trim();
-            const avatarFile = document.getElementById('profile-avatar-file').files?.[0];
-            const message = document.getElementById('profile-message'), button = document.getElementById('save-profile-button');
-            if (avatar_url && !/^https?:\/\//i.test(avatar_url)) { message.textContent = 'Avatar bağlantısı http:// veya https:// ile başlamalı.'; return; }
-            if (avatarFile && !['image/png','image/jpeg','image/webp','image/gif'].includes(avatarFile.type)) { message.textContent = 'Avatar dosyası PNG, JPG, WEBP veya GIF olmalı.'; return; }
-            if (avatarFile && avatarFile.size > 3 * 1024 * 1024) { message.textContent = 'Avatar dosyası 3 MB sınırını aşmamalı.'; return; }
-            button.disabled = true; button.textContent = 'Kaydediliyor…'; message.textContent = '';
-            try {
-                if (avatarFile) {
-                    const ext = ({'image/png':'png','image/jpeg':'jpg','image/webp':'webp','image/gif':'gif'})[avatarFile.type];
-                    const path = activeUserId + '/avatar-' + Date.now() + '.' + ext;
-                    const { error: uploadError } = await dbClient.storage.from('avatars').upload(path, avatarFile, { upsert: true, contentType: avatarFile.type });
-                    if (uploadError) throw new Error('Avatar yüklenemedi. Supabase avatars depolama ayarını kontrol et: ' + uploadError.message);
-                    avatar_url = dbClient.storage.from('avatars').getPublicUrl(path).data.publicUrl;
-                }
-                const { error } = await dbClient.from('profiles').update({ first_name, last_name, avatar_url }).eq('user_id', activeUserId);
-                if (error) throw error;
-                currentProfileDetails = { first_name, last_name, avatar_url };
-                document.getElementById('profile-avatar-file').value = '';
-                document.getElementById('profile-display-name').textContent = [first_name, last_name].filter(Boolean).join(' ') || 'Admin';
-                updateHeaderProfile(); message.textContent = 'Profil bilgilerin kaydedildi.'; showToast('Profil bilgileri güncellendi.');
-            } catch (error) {
-                console.error('Profil kaydetme hatası:', error);
-                message.textContent = /column .* does not exist|schema cache/i.test(error.message || '')
-                    ? 'Önce Supabase SQL Editor bölümünde profiles tablosuna first_name, last_name ve avatar_url sütunlarını ekle.'
-                    : 'Profil kaydedilemedi: ' + (error.message || 'Bilinmeyen hata');
-            } finally { button.disabled = false; button.textContent = 'Bilgilerimi kaydet'; }
-        }
-
-        // --- Notification Toast Helper ---
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toast-message');
-
-            toastMsg.textContent = message;
-            toast.className = `fixed bottom-5 right-5 card-bg border text-slate-900 dark:text-white px-4 py-3 rounded-xl shadow-2xl transition transform z-50 flex items-center gap-3 ${
-                isError ? 'border-rose-500/50 text-rose-500' : ''
-            }`;
-
-            toast.classList.remove('translate-y-20', 'opacity-0');
-
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
-        }
         restoreDesignMode();
     </script>
 </body>
