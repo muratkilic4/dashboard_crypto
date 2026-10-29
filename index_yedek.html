@@ -1404,10 +1404,27 @@
 
         // --- Boot / Authentication ---
         window.addEventListener('load', async () => {
-            lucide.createIcons();
+            // Kimlik doğrulama olaylarını ikon/kullanıcı arayüzü başlatmasından önce bağla.
+            // Harici ikon CDN'i yüklenmese bile giriş formu çalışmaya devam etsin.
+            try {
+                bindAuthUI();
+            } catch (bindError) {
+                console.error('Giriş arayüzü bağlanamadı:', bindError);
+                const authMessage = document.getElementById('auth-message');
+                if (authMessage) {
+                    authMessage.textContent = 'Giriş ekranı başlatılamadı. Sayfayı yenileyip tekrar dene.';
+                    authMessage.classList.remove('hidden');
+                }
+            }
+            try {
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+            } catch (iconError) {
+                console.warn('İkonlar yüklenemedi; giriş işlemi devam edecek.', iconError);
+            }
             applySavedPreferences();
             initDateInput();
-            bindAuthUI();
             document.addEventListener('click', event => {
                 const dropdown = document.getElementById('coin-dropdown');
                 const searchInput = document.getElementById('input-coin-search');
@@ -1567,7 +1584,14 @@ document.getElementById('credential-setup-form')
 async function handleAuthSubmit(event) {
   event.preventDefault();
 
-  if (!dbClient) return;
+  if (!dbClient) {
+    const message = document.getElementById('auth-message');
+    if (message) {
+      message.textContent = 'Veritabanı bağlantısı henüz hazır değil. Sayfayı yenileyip tekrar dene.';
+      message.classList.remove('hidden');
+    }
+    return;
+  }
 
   const username = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
