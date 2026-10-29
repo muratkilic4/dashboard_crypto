@@ -2722,6 +2722,59 @@ async function activateApp(session) {
             pieChartInstance=new Chart(canvas.getContext('2d'),{type:'doughnut',data:{labels:[],datasets:[{data:[],backgroundColor:[],borderColor:currentTheme==='dark'?'#111827':'#ffffff',borderWidth:3,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{backgroundColor:currentTheme==='dark'?'#111827':'#ffffff',titleColor:currentTheme==='dark'?'#f8fafc':'#243247',bodyColor:currentTheme==='dark'?'#cbd5e1':'#526176',borderColor:currentTheme==='dark'?'#374151':'#e6eaf1',borderWidth:1,padding:11,callbacks:{label:context=>{const vals=context.dataset.data||[],total=vals.reduce((sum,v)=>sum+(Number(v)||0),0),value=Number(context.raw)||0;return ' '+formatCurrencyVal(value)+' · '+(total>0?(value/total*100).toFixed(1):'0.0')+'%';}}}}}});
         }
 
+        function updateCharts(assets = []) {
+            // Dashboard'un portföy grafiği ve açıklama listesini güvenli şekilde güncelle.
+            if (!pieChartInstance) return;
+
+            const palette = ['#6C63E8','#22A6A1','#4C8BF5','#E6A23C','#E56B8A','#8B78D9','#4F9D78','#8A9AAF'];
+            const topAssets = [...(Array.isArray(assets) ? assets : [])]
+                .filter(asset => Number(asset?.investedAmount) > 0)
+                .sort((a, b) => Number(b.investedAmount) - Number(a.investedAmount))
+                .slice(0, 8);
+
+            pieChartInstance.data.labels = topAssets.map(asset => asset.symbol || asset.name || 'Bilinmeyen');
+            pieChartInstance.data.datasets[0].data = topAssets.map(asset => Number(asset.investedAmount) || 0);
+            pieChartInstance.data.datasets[0].backgroundColor = topAssets.map((asset, index) => palette[index % palette.length]);
+            pieChartInstance.data.datasets[0].borderColor = currentTheme === 'dark' ? '#111827' : '#ffffff';
+            pieChartInstance.data.datasets[0].borderWidth = 3;
+            pieChartInstance.update();
+
+            const legendContainer = document.getElementById('chart-legend');
+            if (!legendContainer) return;
+            legendContainer.innerHTML = '';
+
+            const investedTotal = topAssets.reduce((sum, asset) => sum + (Number(asset.investedAmount) || 0), 0);
+            topAssets.forEach((asset, index) => {
+                const amount = Number(asset.investedAmount) || 0;
+                const percent = investedTotal > 0 ? amount / investedTotal * 100 : 0;
+                const item = document.createElement('div');
+                item.className = 'flex items-center gap-1.5 min-w-0';
+                const swatch = document.createElement('span');
+                swatch.className = 'w-2.5 h-2.5 rounded-full shrink-0';
+                swatch.style.backgroundColor = palette[index % palette.length];
+                const label = document.createElement('span');
+                label.className = 'truncate';
+                label.append(document.createTextNode((asset.symbol || asset.name || 'Bilinmeyen') + ': '));
+                const strong = document.createElement('strong');
+                strong.className = 'text-slate-900 dark:text-white';
+                strong.textContent = formatCurrencyVal(amount);
+                label.appendChild(strong);
+                const percentage = document.createElement('span');
+                percentage.className = 'text-slate-500';
+                percentage.textContent = ' (' + percent.toFixed(1) + '%)';
+                label.appendChild(percentage);
+                item.append(swatch, label);
+                legendContainer.appendChild(item);
+            });
+
+            if (!topAssets.length) {
+                const empty = document.createElement('span');
+                empty.className = 'col-span-2 text-slate-500';
+                empty.textContent = 'Dağılım için alım verisi bulunmuyor.';
+                legendContainer.appendChild(empty);
+            }
+        }
+
         function updateChartsTheme() {
             if(!pieChartInstance)return;const dark=currentTheme==='dark';
             pieChartInstance.data.datasets[0].borderColor=dark?'#111827':'#ffffff';
