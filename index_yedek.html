@@ -2494,8 +2494,6 @@ async function activateApp(session) {
                     cryptoNewsLastLoadedAt = Date.now();
                     cryptoNewsNextAttemptAt = Date.now() + 5 * 60 * 1000;
                     if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
-                } finally {
-                    clearTimeout(timeoutId);
                 }
             })().catch(error => {
                 console.warn('Cointelegraph Türkiye haberleri yüklenemedi:', error);
