@@ -2654,10 +2654,11 @@ async function activateApp(session) {
                 .filter(tx => tx.type === 'SELL' && new Date(tx.date).getTime() >= cutoff)
                 .sort((a,b)=>new Date(a.date)-new Date(b.date));
             periodSales.forEach(tx => {
-                cumulative += Number(realizedById.get(String(tx.id))||0);
+                const salePnL = Number(realizedById.get(String(tx.id)) || 0);
+                cumulative += salePnL;
                 labels.push(new Date(tx.date).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'}));
                 performanceChartFullDates.push(tx.date);
-                performanceChartSalePnL.push(Number((realizedById.get(String(tx.id)) || 0).toFixed ? realizedById.get(String(tx.id)) || 0 : Number(realizedById.get(String(tx.id)) || 0)));
+                performanceChartSalePnL.push(salePnL);
                 values.push(Number(cumulative.toFixed(8)));
             });
             const periodNote = document.getElementById('performance-chart-period-note');
