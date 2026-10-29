@@ -998,18 +998,23 @@
 
                 <!-- Latest Crypto News -->
                 <section class="card-bg p-5 rounded-2xl border flex flex-col min-w-0" aria-labelledby="crypto-news-title">
-                    <div class="flex items-start justify-between gap-3 mb-4">
+                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
                         <div class="min-w-0">
                             <h2 id="crypto-news-title" class="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                                 <i data-lucide="newspaper" class="w-4 h-4 text-indigo-500"></i> Kripto Dünyasından Son Haberler
                             </h2>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Cointelegraph Türkiye · En güncel 5 haber</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Cointelegraph Türkiye · En güncel 10 haber</p>
                         </div>
-                        <a href="https://cointelegraph-tr.com/" target="_blank" rel="noopener noreferrer" class="shrink-0 text-[11px] font-semibold text-indigo-500 hover:text-indigo-400">Tüm haberler <i data-lucide="arrow-up-right" class="inline w-3 h-3"></i></a>
+                        <div class="flex items-center gap-2 self-start shrink-0">
+                            <button id="crypto-news-refresh" type="button" onclick="loadInvestingCryptoNews(true)" class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-[11px] font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition disabled:opacity-60 disabled:cursor-wait" aria-label="Kripto haberlerini yenile">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i><span id="crypto-news-refresh-label">Haberleri yenile</span>
+                            </button>
+                            <a href="https://cointelegraph-tr.com/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 shrink-0 text-[11px] font-semibold text-indigo-500 hover:text-indigo-400">Tüm haberler <i data-lucide="arrow-up-right" class="w-3 h-3"></i></a>
+                        </div>
                     </div>
                     <div id="crypto-news-status" class="text-xs text-slate-500 dark:text-slate-400 py-3" role="status" aria-live="polite">Haberler yükleniyor…</div>
                     <ol id="crypto-news-list" class="space-y-1 max-h-[560px] overflow-y-auto custom-scrollbar pr-1"></ol>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/70">Haberler doğrudan Cointelegraph Türkiye RSS akışından alınır. Bir habere tıklayarak kaynak sayfasını açabilirsin.</p>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-3 pt-3 border-t border-slate-200 dark:border-slate-700/70">Haberler Cointelegraph Türkiye akışından alınır. Yenile düğmesi güncel haberleri yeniden yükler; bir habere tıklayarak kaynak sayfasını açabilirsin.</p>
                 </section>
             </div>
 
@@ -2326,9 +2331,8 @@ async function activateApp(session) {
             });
         }
 
-        // Load the latest 5 headlines from the requested Cointelegraph Türkiye source.
-        // RSS2JSON is intentionally not used: its browser requests can be blocked by Cloudflare.
-        // The RSS XML is read through a CORS proxy and parsed locally.
+        // Load the latest 10 headlines from Cointelegraph Türkiye with bounded retries across CORS proxies.
+        // A manual refresh bypasses the cooldown; concurrent requests are deduplicated.
         let cryptoNewsLoadPromise = null;
         let cryptoNewsLastLoadedAt = 0;
         let cryptoNewsNextAttemptAt = 0;
@@ -2344,34 +2348,57 @@ async function activateApp(session) {
             if (cryptoNewsLoadPromise) return cryptoNewsLoadPromise;
 
             status.textContent = 'Cointelegraph Türkiye haberleri alınıyor…';
-            list.replaceChildren();
+            const refreshButton = document.getElementById('crypto-news-refresh');
+            const refreshLabel = document.getElementById('crypto-news-refresh-label');
+            if (refreshButton) {
+                refreshButton.disabled = true;
+                refreshButton.setAttribute('aria-busy', 'true');
+            }
+            if (refreshLabel) refreshLabel.textContent = 'Yenileniyor…';
 
             cryptoNewsLoadPromise = (async () => {
                 const feedUrl = 'https://cointelegraph-tr.com/rss';
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                const proxyUrls = [
+                    'https://proxy.cors.dev/' + feedUrl,
+                    'https://api.allorigins.win/raw?url=' + encodeURIComponent(feedUrl),
+                    'https://corsproxy.io/?url=' + encodeURIComponent(feedUrl)
+                ];
+                let xml = null;
+                const fetchErrors = [];
+
+                for (const proxyUrl of proxyUrls) {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 8000);
+                    try {
+                        const response = await fetch(proxyUrl, {
+                            method: 'GET',
+                            cache: 'no-store',
+                            credentials: 'omit',
+                            signal: controller.signal
+                        });
+                        if (!response.ok) {
+                            const proxyError = response.headers.get('X-Cors-Error');
+                            throw new Error('RSS isteği başarısız: ' + (proxyError || response.status));
+                        }
+
+                        const xmlText = await response.text();
+                        const candidate = new DOMParser().parseFromString(xmlText, 'application/xml');
+                        const candidateRoot = candidate.documentElement;
+                        const candidateRootName = candidateRoot ? (candidateRoot.localName || candidateRoot.nodeName).toLowerCase() : '';
+                        if (candidate.querySelector('parsererror') || !['rss', 'rdf', 'feed'].includes(candidateRootName)) {
+                            throw new Error('Yanıt geçerli RSS/Atom XML değil.');
+                        }
+                        xml = candidate;
+                        break;
+                    } catch (error) {
+                        fetchErrors.push(error && error.message ? error.message : 'Bilinmeyen bağlantı hatası');
+                    } finally {
+                        clearTimeout(timeoutId);
+                    }
+                }
 
                 try {
-                    const response = await fetch('https://proxy.cors.dev/' + feedUrl, {
-                        method: 'GET',
-                        cache: 'no-store',
-                        credentials: 'omit',
-                        signal: controller.signal
-                    });
-                    if (!response.ok) {
-                        const proxyError = response.headers.get('X-Cors-Error');
-                        throw new Error('RSS isteği başarısız: ' + (proxyError || response.status));
-                    }
-
-                    const xmlText = await response.text();
-                    const xml = new DOMParser().parseFromString(xmlText, 'application/xml');
-                    if (xml.querySelector('parsererror')) throw new Error('RSS yanıtı geçerli XML değil.');
-
-                    const root = xml.documentElement;
-                    const rootName = (root.localName || root.nodeName).toLowerCase();
-                    if (!['rss', 'rdf', 'feed'].includes(rootName)) {
-                        throw new Error('Kaynak beklenen RSS/Atom biçiminde yanıt vermedi.');
-                    }
+                    if (!xml) throw new Error('RSS akışına erişilemedi. ' + fetchErrors.join(' | '));
 
                     const entries = [...xml.querySelectorAll('item, entry')];
                     const getText = (element, selectors) => {
@@ -2394,7 +2421,7 @@ async function activateApp(session) {
                           const db = new Date(b.pubDate).getTime() || 0;
                           return db - da;
                       })
-                      .slice(0, 5);
+                      .slice(0, 10);
 
                     if (!items.length) throw new Error('RSS akışında gösterilebilir haber bulunamadı.');
 
@@ -2483,6 +2510,12 @@ async function activateApp(session) {
                 status.append(document.createElement('br'), fallback);
             }).finally(() => {
                 cryptoNewsLoadPromise = null;
+                if (refreshButton) {
+                    refreshButton.disabled = false;
+                    refreshButton.removeAttribute('aria-busy');
+                }
+                if (refreshLabel) refreshLabel.textContent = 'Haberleri yenile';
+                if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
             });
 
             return cryptoNewsLoadPromise;
