@@ -199,11 +199,10 @@
         .terminal-refresh-btn:hover { background: rgba(139,92,246,.28); border-color: rgba(196,181,253,.65); }
         .terminal-refresh-btn:disabled { opacity: .6; cursor: wait; }
         .terminal-refresh-note { white-space: nowrap; }
-        .terminal-home-btn { text-decoration: none; }
-        .terminal-home-btn:hover { background: rgba(139,92,246,.22); }
+        .terminal-home-btn { text-decoration: none; color: #e9ddff; background: rgba(139,92,246,.12); border-color: rgba(167,139,250,.28); }
+        .terminal-home-btn:hover { background: rgba(139,92,246,.22); border-color: rgba(196,181,253,.55); }
         @media (max-width: 767px) {
-            .terminal-refresh-group { align-items: flex-start; }
-            .terminal-refresh-note { white-space: normal; max-width: 170px; text-align: left; }
+            .terminal-refresh-note { white-space: normal; max-width: 180px; }
         }
         .terminal-icon-btn, .terminal-profile-btn {
             color: #d8d4e8;
@@ -607,6 +606,7 @@
                 <div class="terminal-brand-mark flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-violet-200">
                     <i data-lucide="chart-no-axes-combined" class="h-5 w-5"></i>
                 </div>
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="terminal-home-btn inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-2 text-xs font-bold transition-all" title="Anasayfaya git" aria-label="Anasayfaya git"><i data-lucide="house" class="h-3.5 w-3.5"></i><span class="hidden sm:inline">Anasayfa</span></button>
                 <div class="min-w-0">
                     <div class="flex items-center gap-2">
                         <h1 class="truncate text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">CryptoDash <span class="text-violet-500 dark:text-violet-300">PRO</span></h1>
@@ -621,12 +621,11 @@
             </div>
 
             <div class="terminal-header-actions flex shrink-0 items-center gap-2">
-                <div class="terminal-refresh-group flex shrink-0 flex-col items-center gap-1">
+                <div class="terminal-refresh-group flex shrink-0 items-center">
                     <button id="btn-market-refresh" type="button" onclick="refreshMarketDataNow()" class="terminal-refresh-btn inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-bold" title="Piyasa verilerini şimdi yenile" aria-label="Piyasa verilerini yenile">
                         <i data-lucide="refresh-cw" class="h-4 w-4"></i>
                         <span class="hidden sm:inline">Piyasa verilerini yenile</span>
                     </button>
-                    <span class="terminal-refresh-note text-[9px] leading-tight text-slate-500 dark:text-slate-400 text-center">Veriler 60 saniyede otomatik yenilenir</span>
                 </div>
 
                 <button onclick="toggleCurrency()" id="btn-currency" class="terminal-icon-btn flex items-center gap-1.5 rounded-xl border px-3 py-2.5 text-xs font-bold" title="Para birimini değiştir">
@@ -662,15 +661,7 @@
                 </div>
             </div>
         </div>
-        <nav class="terminal-nav hidden md:flex items-center gap-1 mt-3 pt-2.5 border-t">
-            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="terminal-home-btn inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold transition-all bg-violet-600 text-white shadow-sm" title="Anasayfaya git"><i data-lucide="house" class="h-3.5 w-3.5"></i> Anasayfa</button>
-        </nav>
     </header>
-
-    <!-- Mobile Navigation Bar -->
-    <div class="md:hidden flex input-bg border-b p-2 justify-around text-xs font-medium">
-        <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="terminal-home-btn inline-flex items-center gap-2 rounded-lg px-4 py-1.5 text-indigo-600 dark:text-indigo-400 font-bold" title="Anasayfaya git"><i data-lucide="house" class="h-3.5 w-3.5"></i> Anasayfa</button>
-    </div>
 
     <!-- MAIN VIEW CONTAINER -->
     <main class="flex-1 p-4 lg:p-8 max-w-[1600px] mx-auto w-full space-y-6">
@@ -685,9 +676,12 @@
                     <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Portföyüne tek bakışta hakim ol.</h2>
                     <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Varlıklarını, performansını ve canlı piyasa hareketlerini takip et.</p>
                 </div>
-                <div class="relative z-10 flex items-center gap-2 self-start sm:self-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-3 py-2">
-                    <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span class="text-xs font-semibold text-indigo-600 dark:text-indigo-200">Canlı piyasa takibi</span>
+                <div class="relative z-10 flex flex-col items-start gap-1 self-start sm:self-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-3 py-2">
+                    <div class="flex items-center gap-2">
+                        <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="text-xs font-semibold text-indigo-600 dark:text-indigo-200">Canlı piyasa takibi</span>
+                    </div>
+                    <span class="terminal-refresh-note text-[9px] leading-tight text-slate-500 dark:text-slate-400">Veriler 60 saniyede otomatik yenilenir</span>
                 </div>
             </section>
 
