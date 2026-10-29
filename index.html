@@ -1567,6 +1567,7 @@ async function activateApp(session) {
     updateDashboard();
     applyAccessModeUI();
     connectBinanceStream();
+    void loadGlobalMarketOverview();
     startMarketDisplayRefresh();
     syncMarketRefreshSettingsUI();
     // Fetch a fresh Binance snapshot immediately on every app load; do not wait for the display timer.
@@ -2157,7 +2158,7 @@ async function activateApp(session) {
                 const d=data.market_cap_percentage||{},btc=Number(d.btc)||0,eth=Number(d.eth)||0,alt=Math.max(0,100-btc-eth);
                 [['btc',btc],['eth',eth],['alt',alt]].forEach(([key,value])=>{const label=document.getElementById('global-dominance-'+key),bar=document.getElementById('global-dominance-'+key+'-bar');if(label)label.textContent=value.toFixed(1)+'%';if(bar)bar.style.width=value+'%';});
                 if(updated)updated.textContent='Küresel piyasa güncellendi: '+new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
-            }catch(error){console.warn('Küresel piyasa verisi alınamadı:',error);if(updated)updated.textContent='Küresel veriler alınamadı; fiyat kartları Binance verisini kullanır.';}
+            }catch(error){globalMarketRefreshStarted=false;console.warn('Küresel piyasa verisi alınamadı:',error);if(updated)updated.textContent='Küresel veriler alınamadı; fiyat kartları Binance verisini kullanır.';}
             try{
                 const response=await fetch('https://api.alternative.me/fng/?limit=1&format=json',{cache:'no-store'});if(!response.ok)throw new Error('Alternative.me unavailable');
                 const item=(await response.json()).data?.[0],value=Number(item?.value);
